@@ -27,6 +27,8 @@ I (Magnus Lidström) developed Symbiosis partly because I needed such a tool for
 
 Symbiosis was first used in [http://www.soniccharge.com/mtonic MicroTonic 2.0] in late 2005 and my plan was to release Symbiosis as open source shortly after that but other things kept me busy and it took over four years before it finally happened. Regardless, Symbiosis has been used in numerous other plug-ins already, including [http://www.soniccharge.com/synplant Synplant], [http://www.xlnaudio.com Addictive Drums] and [http://www.cytomic.com/ The Glue]
 
+Notice that the coding style of Symbiosis is a bit "old-school" C++. When I began writing it back in 2004 I was still concerned about the performance of STL etc. Today I wouldn't have hesitated, but Symbiosis seems solid and very efficient as it is so I see no reason to change things now.
+
 == Further Reading ==
 
 The full documentation to Symbiosis can be found in text and html format in the svn repository.
