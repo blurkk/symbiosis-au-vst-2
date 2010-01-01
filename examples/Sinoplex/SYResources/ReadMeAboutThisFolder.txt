@@ -1,0 +1,4 @@
+This folder contains resources that were first auto-generated (inside the bundle) when launching the plug-in with Symbiosis for the first time. They have then been added to the XCode project and further edited and fine-tuned.
+
+We can of course leave these files out of the project as well and they will be created the first time the end-user runs the Audio Unit. The caveat with this solution (except obviously not being able to fine tune the resources) is that the end-user may not have write access in his root /Library path. This means that Symbiosis may not be able to launch because it can't create the necessary resource files.
+ 

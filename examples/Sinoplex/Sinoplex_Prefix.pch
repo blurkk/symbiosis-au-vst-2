@@ -1,0 +1,16 @@
+//
+// Prefix header for all source files of the 'Sinoplex' target in the 'Sinoplex' project.
+//
+
+// Define to 2300 to use version 2.3 of the VST SDK or 2400 to use version 2.4.
+// Alternatively, you may include one of the VST header files here (such as aeffect.h) and the version will be detected automatically.
+
+#define SY_USE_VST_VERSION 2400
+#define SINOPLEX_USE_VST_VERSION 2400
+
+#include <Carbon/Carbon.h>
+
+#if (SINOPLEX_USE_VST_VERSION == 2300)
+	#include "VST2300/source/common/vstplugsmacho.h"
+#endif
+

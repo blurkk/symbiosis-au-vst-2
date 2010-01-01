@@ -1,0 +1,26 @@
+run('stdlib.pika');
+run('htmlify.pika');
+
+head = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+		<meta http-equiv="Content-Style-Type" content="text/css">
+		<title>Symbiosis</title>
+		<style type="text/css">
+			table, th, td { border: 1px solid black; padding: 5px; border-collapse:collapse; }
+			th { text-align: left }
+			img { border: 0 none }
+		</style>
+	</head>
+	<body>
+';
+tail = '
+	</body>
+</html>
+';
+map(@::STD_PATTERNS, "[?][?]{*}[?][?]" # STD_PATTERN_SUFFIX, '<font color="red">??{$1}??</font>');
+map(@::STD_PATTERNS, "=== {*} ===" # STD_PATTERN_SUFFIX, '<b>{$1}</b>');
+map(@::HTML_XLATE_PAIRS, 'å', '&aring;', 'ä', '&auml;', 'ö', '&ouml;', 'Å', '&Aring;', 'Ä', '&Auml;', 'Ö', '&Ouml;');
+save('Symbiosis Documentation.html', head # htmlify(load('Symbiosis Documentation.txt')) # tail);
+print(LF # '***** DONE *****' # LF);

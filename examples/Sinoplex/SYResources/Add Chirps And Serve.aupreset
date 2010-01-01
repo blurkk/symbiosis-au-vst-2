@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>manufacturer</key>
+	<integer>1316308324</integer>
+	<key>name</key>
+	<string>Add Chirps And Serve</string>
+	<key>subtype</key>
+	<integer>1399410808</integer>
+	<key>type</key>
+	<integer>1635085670</integer>
+	<key>version</key>
+	<integer>1</integer>
+	<key>vstdata</key>
+	<data>
+	Q2NuSwAAAGBGeENrAAAAAVNpUHgAAAABAAAADEFkZCBDaGlycHMgQW5kIFNlcnZlAAAA
+	AAAAAAA/LhR7PCPXCj+AAAAAAAAAAAAAAD+AAAA/gAAAPlcKPT5XCj0AAAAAAAAAAD6A
+	AAA=
+	</data>
+</dict>
+</plist>
