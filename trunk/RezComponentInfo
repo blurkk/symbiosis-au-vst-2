@@ -1,2 +1,0 @@
-#!/bin/sh
-/Developer/Tools/Rez -d SystemSevenOrLater=1 -useDF -o Symbiosis.rsrc Symbiosis.r
