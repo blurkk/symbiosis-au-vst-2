@@ -185,7 +185,48 @@
 	<key>Notifications</key>
 	<array/>
 	<key>OpenEditors</key>
-	<array/>
+	<array>
+		<dict>
+			<key>Content</key>
+			<dict>
+				<key>PBXProjectModuleGUID</key>
+				<string>F726EE1910EEC27400BA1494</string>
+				<key>PBXProjectModuleLabel</key>
+				<string>BuildWrappers.command</string>
+				<key>PBXSplitModuleInNavigatorKey</key>
+				<dict>
+					<key>Split0</key>
+					<dict>
+						<key>PBXProjectModuleGUID</key>
+						<string>F726EE1A10EEC27400BA1494</string>
+						<key>PBXProjectModuleLabel</key>
+						<string>BuildWrappers.command</string>
+						<key>_historyCapacity</key>
+						<integer>0</integer>
+						<key>bookmark</key>
+						<string>F73DDC7410EEC289007C4D3F</string>
+						<key>history</key>
+						<array>
+							<string>F726EE1D10EEC27400BA1494</string>
+						</array>
+					</dict>
+					<key>SplitCount</key>
+					<string>1</string>
+				</dict>
+				<key>StatusBarVisibility</key>
+				<true/>
+			</dict>
+			<key>Geometry</key>
+			<dict>
+				<key>Frame</key>
+				<string>{{0, 20}, {1230, 681}}</string>
+				<key>PBXModuleWindowStatusBarHidden2</key>
+				<false/>
+				<key>RubberWindowFrame</key>
+				<string>415 -20 1230 722 0 0 1280 778 </string>
+			</dict>
+		</dict>
+	</array>
 	<key>PerspectiveWidths</key>
 	<array>
 		<integer>1276</integer>
@@ -220,6 +261,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -263,7 +306,6 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>7</integer>
 									<integer>0</integer>
 								</array>
 							</array>
@@ -298,41 +340,18 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>Symbiosis.plist</string>
+								<string>&lt;No Editor&gt;</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
 									<dict>
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
-										<key>PBXProjectModuleLabel</key>
-										<string>Symbiosis.plist</string>
-										<key>_historyCapacity</key>
-										<integer>0</integer>
-										<key>bookmark</key>
-										<string>F7BACB9710ECDB60005AB7FA</string>
-										<key>history</key>
-										<array>
-											<string>F7FA8F2010EC1E3900FA9980</string>
-											<string>F7BACB8C10ECDB60005AB7FA</string>
-											<string>F7BACB8D10ECDB60005AB7FA</string>
-											<string>F7BACB8E10ECDB60005AB7FA</string>
-											<string>F7BACB8F10ECDB60005AB7FA</string>
-											<string>F7BACB9110ECDB60005AB7FA</string>
-										</array>
-										<key>prevStack</key>
-										<array>
-											<string>F7BACB9310ECDB60005AB7FA</string>
-											<string>F7BACB9410ECDB60005AB7FA</string>
-											<string>F7BACB9510ECDB60005AB7FA</string>
-										</array>
 									</dict>
 									<key>SplitCount</key>
 									<string>1</string>
@@ -343,14 +362,14 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 0}, {1087, 677}}</string>
+								<string>{{0, 0}, {1087, 0}}</string>
 								<key>RubberWindowFrame</key>
 								<string>4 55 1276 723 0 0 1280 778 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
 							<key>Proportion</key>
-							<string>677pt</string>
+							<string>0pt</string>
 						</dict>
 						<dict>
 							<key>ContentConfiguration</key>
@@ -363,14 +382,14 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 682}, {1087, 0}}</string>
+								<string>{{0, 5}, {1087, 677}}</string>
 								<key>RubberWindowFrame</key>
 								<string>4 55 1276 723 0 0 1280 778 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
 							<key>Proportion</key>
-							<string>0pt</string>
+							<string>677pt</string>
 						</dict>
 					</array>
 					<key>Proportion</key>
@@ -389,9 +408,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>F7BACB0E10ECCB9A005AB7FA</string>
+				<string>F73DDC7110EEC289007C4D3F</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>F7BACB0F10ECCB9A005AB7FA</string>
+				<string>F73DDC7210EEC289007C4D3F</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -532,7 +551,8 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>/Users/Magnus/projects/SonicCharge/Cuttlefish/Symbiosis/Symbiosis.xcodeproj</string>
+		<string>F726EE1910EEC27400BA1494</string>
+		<string>/Users/Magnus/projects/Symbiosis/trunk/Symbiosis.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
 	<string>4 55 1276 723 0 0 1280 778 </string>

@@ -63,8 +63,8 @@ far from trivial to understand all aspects and details of this fairly complex AP
 supporting and maintaining the source code for two different plug-in interfaces and the advantage of using Symbiosis
 should be obvious.
 
- The availability of Symbiosis may also make VST a good choice as a first plug-in format for the beginner Mac developer
-who one day plan to port his plug-in to the VST-dominant environment of Windows.
+ The availability of Symbiosis may also makes VST a good choice as a first plug-in format for the beginner Mac developer
+who one day plan to port his / her plug-in to the VST-dominant environment of Windows.
 
 What Does It Cost?
 ==================
@@ -80,8 +80,8 @@ feasible to support two of these formats with a minimal amount of overhead in co
 your product documentation, "about box" or any other promotional material. For example, "Audio Unit version implemented
 using Symbiosis from NuEdge Development."
 
- My dear friends over at Bitplant have also designed a very stylish logo that I would be thrilled if you would like to
-use. You can find it (and other related logotypes) at http://fogbugz.nuedge.net/default.asp?W101.
+ My dear friends over at Bitplant (http://www.bitplant.com/) have also designed a very stylish logo that I would be
+thrilled if you used. You can find it (and other related logotypes) at http://fogbugz.nuedge.net/default.asp?W101.
 
 What Are the Prerequisites?
 ===========================
@@ -116,7 +116,7 @@ differences between the two formats.
  
  -   AU inputs and outputs are grouped into buses and the same AU plug-in can provide a number of input and output
     configurations.
-	
+    
  -   AU GUIs must be implemented with HIViews. (This has become the standard for VSTs too, but previously VSTs had a
     different user input / window drawing mechanism.)
 
@@ -139,8 +139,8 @@ decide how you wish to wrap your VST.
    uninstalls or throws away the VST. (Nevertheless, this approach may be the best choice during development even if you
    choose to wrap the final product using one of the other solutions.)
    
-										      [Symbiosis Wrap Alt 1.png]
-	
+                                              [Symbiosis Wrap Alt 1.png]
+    
    
 2)  === Using the pre-built wrapper AU component and placing a copy of your VST inside the wrapper bundle ===
    
@@ -149,8 +149,8 @@ decide how you wish to wrap your VST.
    plug-in is small, this alternative should be preferred to alternative number 1, at least when you are packaging the
    final product.
    
-										      [Symbiosis Wrap Alt 2.png]
-	
+                                              [Symbiosis Wrap Alt 2.png]
+    
    
 3)  === Adding the Symbiosis sources to your VST project and copy + change extension ===
    
@@ -160,8 +160,8 @@ decide how you wish to wrap your VST.
    disadvantages of choosing this solution are practically the same as for alternative number 2. The difference is that
    the Symbiosis wrapper gets compiled into the product binary (with the same build options etc as your own code).
    
-										      [Symbiosis Wrap Alt 3.png]
-	
+                                              [Symbiosis Wrap Alt 3.png]
+    
    
 4)  === Adding the Symbiosis sources to your project and place an alias to your VST in the "Components folder" ===
    
@@ -173,8 +173,8 @@ decide how you wish to wrap your VST.
     Also, this solution depends on an undocumented OS X feature (support for aliases in the "Components folder"). No
    guarantees that it will work under all circumstances for all future.
    
-										      [Symbiosis Wrap Alt 4.png]
-	
+                                              [Symbiosis Wrap Alt 4.png]
+    
    
 5)  === Creating a specific build target for the Audio Unit version ===
    
@@ -188,8 +188,8 @@ decide how you wish to wrap your VST.
    is always good for build times, debugging, testing and maintenance. If you need to treat the AU differently from the
    VST in run-time you can always check if the VST host is "Symbiosis" through the `getHostProductString` VST call.
    
-											  [Symbiosis Wrap Alt 5.png]
-	
+                                              [Symbiosis Wrap Alt 5.png]
+    
 
 Wrapping the VST Using Alternatives 1 or 2
 ------------------------------------------
@@ -252,9 +252,9 @@ Running Your AU for the First Time
 ==================================
 
  Now let us fire up the engines and take your AU for a spin. A good idea for the first tour is to make sure your plug-in
-passes the "AU validation tests" by using the AUVal tool from Apple (AUVal should come preinstalled with OS X or with
-the development tools). If it does not pass, some hosts will not load your Audio Unit. Although Symbiosis will do its
-best to assure that your adapted VST passes validation, there is no guarantee that your VST code is 100% compatible
+passes the "AU validation tests" by using the "AUVal" tool from Apple ("AUVal" should come preinstalled with OS X or
+with the development tools). If it does not pass, some hosts will not load your Audio Unit. Although Symbiosis will do
+its best to assure that your adapted VST passes validation, there is no guarantee that your VST code is 100% compatible
 without modification. (For example, there are a few tweakable configuration settings and vendor-specific VST extensions
 that may affect the outcome of the validation.)
 
@@ -272,7 +272,7 @@ with MIDI"). Hold your breath and pray for your plug-in to pass the tests.
 your component bundle under `Contents/Resources/` as well as ".aupresets" files for the default / initial VST program
 bank. It is a very good idea to distribute your Audio Units with these files pre-created, even if you do not modify
 them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have
-sufficient write priviligies for the directory in question, this might prevent the Audio Unit from loading. See
+sufficient write privileges for the directory in question, this might prevent the Audio Unit from loading. See
 Advanced Porting Options for more info on these files.
 
 Advanced Porting Options
@@ -299,19 +299,19 @@ this file.
 
  The columns in this file are as follows:
 
- Column			Description
- ------			-----------
- vst param #	The VST parameter number (zero based), which is also the unique identifier for the parameter.
- name			The parameter name as shown to the end user.*
- min			The minimum parameter value.**
- max			The maximum parameter value.**
- display		A string that defines how the parameter is displayed to the end user. Use one of the following:
-				`=` for linear scaling (within the `min` to `max` range).
-				`b` for boolean switch (0 is off, 1 is on)
-				a|b|c|d for discrete parameter settings (evenly spaced between 0 and 1), e.g. `sine|tri|saw|pulse`
-				`?` to convert the value with the Vendor-Specific Extensions (described below).
- unit			The parameter suffix / unit.
- default		The initial default setting.
+ Column         Description
+ ------         -----------
+ vst param #    The VST parameter number (zero based), which is also the unique identifier for the parameter.
+ name           The parameter name as shown to the end user.*
+ min            The minimum parameter value.**
+ max            The maximum parameter value.**
+ display        A string that defines how the parameter is displayed to the end user. Use one of the following:
+                `=` for linear scaling (within the `min` to `max` range).
+                `b` for boolean switch (0 is off, 1 is on)
+                a|b|c|d for discrete parameter settings (evenly distributed between 0 and 1), e.g. `sine|tri|saw|pulse`
+                `?` to convert the value with the Vendor-Specific Extensions (described below).
+ unit           The parameter suffix / unit.
+ default        The initial default setting.
 
  * You may wish to edit this column as AU can handle longer parameter names than VST.
 
@@ -334,13 +334,13 @@ these features if you should choose to implement the required support on your si
 it receives two generic integers, one void pointer and a float. Symbiosis uses the first integer (`lArg1`) as a 32-bit
 four-character value to indicate which function it expects you to perform. These are the functions:
 
- lArg1     Description														   lArg2	    ptrArg					  Expected return
- -----     -----------														   -----		------					  ---------------
- `'sHi!'`  Do you support these extensions?																			  1
- `'sI00'`  Is input for the next processing call silent or not (all zeroes).*  1 if silent							  1
- `'sO00'`  Is your output from the last processing call silent (all zeroes)?*										  1 if silent
- `'sV2S'`  Convert parameter value to string.								   VST param #	float & string pointer**  1
- `'sS2V'`  Convert parameter string to value.								   VST param #	string & float pointer**  1
+ lArg1     Description                                                          lArg2         ptrArg                     Return
+ -----     -----------                                                          -----         ------                     ------
+ `'sHi!'`  Do you support these extensions?                                                                              1
+ `'sI00'`  Is input for the next processing call silent or not (all zeroes).*   1 if silent                              1
+ `'sO00'`  Is your output from the last processing call silent (all zeroes)?*                                            1 if silent
+ `'sV2S'`  Convert parameter value to string.                                   VST param #   float & string pointer**   1
+ `'sS2V'`  Convert parameter string to value.                                   VST param #   string & float pointer**   1
 
  * The silent flags should be considered as hints only. The input and output data is expected to be fully zeroed if the
 flag is set.
@@ -352,51 +352,53 @@ terminated string to this pointer on output (and vice versa for string to value 
  As always, the best explanation is an example. This is from the example plug-in "Sinoplex" that is provided with
 Symbiosis.
 
-	VstIntPtr Sinoplex::vendorSpecific(VstInt32 lArg1, VstIntPtr lArg2, void* ptrArg, float floatArg) {
-		switch (lArg1) {
-			case 'sHi!': return 1;																						// Can we speak Symbiosian?
-			case 'sI00': inputIsSilent = (lArg2 != 0); return 1;														// Is input silent?
-			case 'sO00': return outputIsSilent;																			// Is output silent?
-			
-			case 'sV2S': {																								// Parameter value to string conversion.
-				float value = *reinterpret_cast<float*>(ptrArg);
-				SinoplexProgram::Parameter param = static_cast<SinoplexProgram::Parameter>(lArg2);
-				currentProgram->convertParameterValueToString(param, value, reinterpret_cast<char*>(ptrArg));
-				return 1;
-			}
-			
-			case 'sS2V': {																								// String to parameter value conversion.
-				SinoplexProgram::Parameter param = static_cast<SinoplexProgram::Parameter>(lArg2);
-				float value = currentProgram->convertParameterStringToValue(param, reinterpret_cast<char*>(ptrArg));
-				*reinterpret_cast<float*>(ptrArg) = value;
-				return 1;
-			}
-		
-			default: return AudioEffectX::hostVendorSpecific(lArg1, lArg2, ptrArg, floatArg);
-		}
-	}
+    VstIntPtr Sinoplex::vendorSpecific(VstInt32 lArg1, VstIntPtr lArg2, void* ptrArg, float floatArg) {
+        switch (lArg1) {
+            case 'sHi!': return 1;                                                                                      // Can we speak Symbiosian?
+            case 'sI00': inputIsSilent = (lArg2 != 0); return 1;                                                        // Is input silent?
+            case 'sO00': return outputIsSilent;                                                                         // Is output silent?
+            
+            case 'sV2S': {                                                                                              // Parameter value to string conversion.
+                float value = *reinterpret_cast<float*>(ptrArg);
+                SinoplexProgram::Parameter param = static_cast<SinoplexProgram::Parameter>(lArg2);
+                currentProgram->convertParameterValueToString(param, value, reinterpret_cast<char*>(ptrArg));
+                return 1;
+            }
+            
+            case 'sS2V': {                                                                                              // String to parameter value conversion.
+                SinoplexProgram::Parameter param = static_cast<SinoplexProgram::Parameter>(lArg2);
+                float value = currentProgram->convertParameterStringToValue(param, reinterpret_cast<char*>(ptrArg));
+                *reinterpret_cast<float*>(ptrArg) = value;
+                return 1;
+            }
+        
+            default: return AudioEffectX::hostVendorSpecific(lArg1, lArg2, ptrArg, floatArg);
+        }
+    }
 
 Preprocessor Defines
 ====================
 
  These are the preprocessor macros used to configure Symbiosis.cpp.
 
- Macro						Description							Alternatives	Default
- -----						-----------							------------	-------
- SY_USE_VST_VERSION			VST SDK version to include			2300, 2400		2400 or automatically detected if the VST SDK is included in the precompiled headers.
- SY_DO_ASSERT				Enable assertion checks				0, 1			1 or 0 if NDEBUG is defined
- SY_STD_ASSERT				Use standard C assert()				0, 1			1
- SY_ASSERT(x)				Macro for asserts without details					assert() if SY_STD_ASSERT == 1
- SY_ASSERT0..n(x, d, ...)	Macros for asserts with details						first trace out the details, then assert
- SY_DO_TRACE				Tracing "master switch"				0, 1			1 or 0 if NDEBUG is defined
- SY_TRACE_EXCEPTIONS		Trace caught exceptions				0, 1			1
- SY_TRACE_AU				Trace AU messages / calls			0, 1			1
- SY_TRACE_VST				Trace VST messages / calls			0, 1			1
- SY_TRACE_FREQUENT			Trace frequent calls (e.g. render)	0, 1			0
- SY_TRACE_MISC				Trace misc							0, 1			0
- SY_STD_TRACE				Trace to stderr						0, 1			1
- SY_TRACE(c, s)				Macro for tracing a string							prints to stderr if SY_STD_TRACE == 1
- SY_TRACE1..n				Macros for tracing with arguments					- " -
+ Macro                      Description                         Alternatives    Default
+ -----                      -----------                         ------------    -------
+ SY_USE_VST_VERSION         VST SDK version to include          2300, 2400      2400 or automatically detected if the VST SDK is included in the precompiled headers.
+ SY_DO_ASSERT               Enable assertion checks             0, 1            1 or 0 if NDEBUG is defined
+ SY_STD_ASSERT              Use standard C assert()             0, 1            1
+ SY_ASSERT(x)               Macro for asserts without details                   assert() if SY_STD_ASSERT == 1
+ SY_ASSERT0..n(x, d, ...)   Macros for asserts with details                     first trace out the details, then assert
+ SY_DO_TRACE                Tracing "master switch"             0, 1            1 or 0 if NDEBUG is defined
+ SY_TRACE_EXCEPTIONS        Trace caught exceptions             0, 1            1
+ SY_TRACE_AU                Trace AU messages / calls           0, 1            1
+ SY_TRACE_VST               Trace VST messages / calls          0, 1            1
+ SY_TRACE_FREQUENT          Trace frequent calls (e.g. render)  0, 1            0
+ SY_TRACE_MISC              Trace misc                          0, 1            0
+ SY_STD_TRACE               Trace to stderr                     0, 1            1
+ SY_TRACE(c, s)             Macro for tracing a string                          prints to stderr if SY_STD_TRACE == 1
+ SY_TRACE1..n               Macros for tracing with arguments                   - " -
+
+ Most of these can be overridden by redefining them in your build settings or in a "prefix header file".
 
 Copyrights and Trademarks
 =========================

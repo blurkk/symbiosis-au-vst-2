@@ -49,12 +49,12 @@
 <h2><a name="Who_Is_It_For?">Who Is It For?</a></h2>
 <p>This is a tool for developers. It was not designed to be used by end-users. The idea is that Symbiosis is packaged into the final product, either compiled into the product on source-code level or as a "wrapper" that bridges to your VST.</p>
 <p>Symbiosis will be of great interest to you if you already have a VST plug-in running under Mac OS X and you now wish to support the Audio Unit format. With Symbiosis, there is no need to master and implement the Audio Unit interface yourself. Although plenty of documentation and examples are available for learning the art of Audio Unit coding, it is far from trivial to understand all aspects and details of this fairly complex API. Add to this the continuous work of supporting and maintaining the source code for two different plug-in interfaces and the advantage of using Symbiosis should be obvious.</p>
-<p>The availability of Symbiosis may also make VST a good choice as a first plug-in format for the beginner Mac developer who one day plan to port his plug-in to the VST-dominant environment of Windows.</p>
+<p>The availability of Symbiosis may also makes VST a good choice as a first plug-in format for the beginner Mac developer who one day plan to port his / her plug-in to the VST-dominant environment of Windows.</p>
 <h2><a name="What_Does_It_Cost?">What Does It Cost?</a></h2>
 <p>Nothing. Symbiosis is released as open source under the BSD license form (see <a href="#Copyrights_and_Trademarks">Copyrights and Trademarks</a>).</p>
 <p>I (Magnus Lidstr&ouml;m) developed Symbiosis partly because I needed such a tool for my own use, but also because I felt that all developers would benefit from a unified plug-in world with a single standard API. We will probably never be able to change the fact that certain hosts only work with certain plug-in formats, but at least, Symbiosis will make it feasible to support two of these formats with a minimal amount of overhead in code, work and continuous maintenance.</p>
 <p>My only request if you find this tool useful is that you spread the word, preferably by adding an acknowledgment in your product documentation, "about box" or any other promotional material. For example, "Audio Unit version implemented using Symbiosis from NuEdge Development."</p>
-<p>My dear friends over at Bitplant have also designed a very stylish logo that I would be thrilled if you would like to use. You can find it (and other related logotypes) at <a href="http://fogbugz.nuedge.net/default.asp?W101">http://fogbugz.nuedge.net/default.asp?W101</a>.</p>
+<p>My dear friends over at Bitplant (<a href="http://www.bitplant.com/">http://www.bitplant.com/</a>) have also designed a very stylish logo that I would be thrilled if you used. You can find it (and other related logotypes) at <a href="http://fogbugz.nuedge.net/default.asp?W101">http://fogbugz.nuedge.net/default.asp?W101</a>.</p>
 <h2><a name="What_Are_the_Prerequisites?">What Are the Prerequisites?</a></h2>
 <p>The minimum requirement is that you have the Apple OS X development tools and the CoreAudio SDK installed. (Configuring Symbiosis for your product requires at least using the "Rez" tool in order to compile the required AU "component resources".)</p>
 <p>If you wish to compile the Symbiosis "wrapper plug-in" project, you will need XCode 2.5 or later. The VST SDK from Steinberg is required to compile Symbiosis as well, but due to licensing restrictions, the source files from this SDK are not included in this distribution but must be obtained separately from Steinberg and added to the project manually.</p>
@@ -165,10 +165,10 @@
 </ul>
 <p>That's about it.</p>
 <h2><a name="Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a></h2>
-<p>Now let us fire up the engines and take your AU for a spin. A good idea for the first tour is to make sure your plug-in passes the "AU validation tests" by using the AUVal tool from Apple (AUVal should come preinstalled with OS X or with the development tools). If it does not pass, some hosts will not load your Audio Unit. Although Symbiosis will do its best to assure that your adapted VST passes validation, there is no guarantee that your VST code is 100% compatible without modification. (For example, there are a few tweakable configuration settings and vendor-specific VST extensions that may affect the outcome of the validation.)</p>
+<p>Now let us fire up the engines and take your AU for a spin. A good idea for the first tour is to make sure your plug-in passes the "AU validation tests" by using the "AUVal" tool from Apple ("AUVal" should come preinstalled with OS X or with the development tools). If it does not pass, some hosts will not load your Audio Unit. Although Symbiosis will do its best to assure that your adapted VST passes validation, there is no guarantee that your VST code is 100% compatible without modification. (For example, there are a few tweakable configuration settings and vendor-specific VST extensions that may affect the outcome of the validation.)</p>
 <p>First, put your AU component in <tt>Library/Audio/Plug-Ins/Components</tt> either in the root (system-wide) or your home dir (local). Next, open up the terminal application and type <tt>auval -a</tt>. Look for your unique AU signature (the one you chose for your <tt>.r</tt> file). If you cannot see it, you may need to restart the computer for the OS to discover the new AU. If this still fails, something has gone seriously wrong with your wrapping. Start over from square 1 and try a different wrapping alternative as a test. </p>
 <p>Now run <tt>auval -v &lt;type&gt; &lt;subtype&gt; &lt;signature&gt;</tt> where <tt>&lt;type&gt;</tt>, <tt>&lt;subtype&gt;</tt> and <tt>&lt;signature&gt;</tt> should be the ones defined in the <tt>.r</tt> file. (<tt>&lt;type&gt;</tt> is typically one of <tt>aufx</tt>, <tt>aumu</tt> or <tt>aumf</tt> for "instrument", "effect" and "effect with MIDI"). Hold your breath and pray for your plug-in to pass the tests.</p>
-<p>Important! When you run the AU for the first time, the wrapper automatically creates a few configuration files inside your component bundle under <tt>Contents/Resources/</tt> as well as ".aupresets" files for the default / initial VST program bank. It is a very good idea to distribute your Audio Units with these files pre-created, even if you do not modify them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have sufficient write priviligies for the directory in question, this might prevent the Audio Unit from loading. See <a href="#Advanced_Porting_Options">Advanced Porting Options</a> for more info on these files.</p>
+<p>Important! When you run the AU for the first time, the wrapper automatically creates a few configuration files inside your component bundle under <tt>Contents/Resources/</tt> as well as ".aupresets" files for the default / initial VST program bank. It is a very good idea to distribute your Audio Units with these files pre-created, even if you do not modify them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have sufficient write privileges for the directory in question, this might prevent the Audio Unit from loading. See <a href="#Advanced_Porting_Options">Advanced Porting Options</a> for more info on these files.</p>
 <h2><a name="Advanced_Porting_Options">Advanced Porting Options</a></h2>
 <p>Symbiosis creates two configuration files inside your AU bundle the first time it is launched. <tt>SYParameters.txt</tt> and <tt>SYFactoryPresets.txt</tt>. It will also create <tt>.aupreset</tt> files for all the VST programs in the initial startup bank. All these files are created directly under <tt>Contents/Resources/</tt> in your bundle.</p>
 <p>It is a good idea to edit at least <tt>SYParameters.txt</tt> and include all the created files in the final distribution of your Audio Unit. (Please read an important note concerning this under <a href="#Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a>.) If you are using wrapping alternative 3, 4 or 5 (including Symbiosis.cpp etc into your VST project) you can simply drop the files into your project and they will be copied in the build process.</p>
@@ -202,7 +202,7 @@
 <td>&nbsp;</td><td><tt>b</tt> for boolean switch (0 is off, 1 is on)</td>
 </tr>
 <tr>
-<td>&nbsp;</td><td>a|b|c|d for discrete parameter settings (evenly spaced between 0 and 1), e.g. <tt>sine|tri|saw|pulse</tt></td>
+<td>&nbsp;</td><td>a|b|c|d for discrete parameter settings (evenly distributed between 0 and 1), e.g. <tt>sine|tri|saw|pulse</tt></td>
 </tr>
 <tr>
 <td>&nbsp;</td><td><tt>?</tt> to convert the value with the <a href="#Vendor-Specific_Extensions">Vendor-Specific Extensions</a> (described below).</td>
@@ -222,7 +222,7 @@
 <p>For the full AU end-user experience, the VST standard lacks just a few minor functions, namely text conversion to and from arbitrary parameter values (and not just from the currently assigned settings) and silent buffer detection (for CPU optimization). Luckily there is a method in the VST SDK for custom extensions that allows Symbiosis to support these features if you should choose to implement the required support on your side. The method is <tt>vendorSpecific</tt> and it receives two generic integers, one void pointer and a float. Symbiosis uses the first integer (<tt>lArg1</tt>) as a 32-bit four-character value to indicate which function it expects you to perform. These are the functions:</p>
 <table>
 <tr>
-<th>lArg1</th><th>Description</th><th>lArg2</th><th>ptrArg</th><th>Expected return</th>
+<th>lArg1</th><th>Description</th><th>lArg2</th><th>ptrArg</th><th>Return</th>
 </tr>
 <tr>
 <td><tt>'sHi!'</tt></td><td>Do you support these extensions?</td><td>&nbsp;</td><td>&nbsp;</td><td>1</td>
@@ -293,6 +293,7 @@
 <td>SY_TRACE1..n</td><td>Macros for tracing with arguments</td><td>&nbsp;</td><td>- " -</td>
 </tr>
 </table>
+<p>Most of these can be overridden by redefining them in your build settings or in a "prefix header file".</p>
 <h2><a name="Copyrights_and_Trademarks">Copyrights and Trademarks</a></h2>
 <p>Symbiosis is released under the "New Simplified BSD License". <br>
 <a href="http://www.opensource.org/licenses/bsd-license.php">http://www.opensource.org/licenses/bsd-license.php</a></p>
