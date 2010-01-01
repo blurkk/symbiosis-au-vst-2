@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!---------------------------------------------------------------------------------------------------------------->
+	<!--- Configuration elements for Symbiosis (if you have an existing Info.plist, this is what you need to add). --->
+	<!---------------------------------------------------------------------------------------------------------------->
+
+	<key>SYConfig</key>
+	<dict>
+		<!---
+				Set to true if you wish Symbiosis to check the global and local preset folders (Library/Audio/Presets)
+				for ".fxb" or ".fxp" files and automatically convert discovered presets to ".aupreset" files.
+		--->
+		<key>AutoConvertPresets</key>
+		<false/>
+		
+		<!---
+				Set to true if the AU preset (i.e. the "total recall state") must be represented by a VST program bank
+				(an ".fxb") as opposed to a single program only (an ".fxp").
+		--->
+		<key>PresetIsFXB</key>
+		<false/>
+
+		<!---
+				Set to true if you wish to disable support for loading a multi-channel plug-in (with more than 2 inputs
+				and / or outputs) into a stereo configuration.
+		--->
+		<key>DisableStereoSupport</key>
+		<false/>
+	</dict>
+
+	<!---------------------------------------------------------------------------------------------------------------->
+	<!---                                Modify / update the following elements...                                 --->
+	<!---------------------------------------------------------------------------------------------------------------->
+	
+	<!---
+			This identifier should 100% uniquely identify this "wrapped" AU.
+	--->
+	<key>CFBundleIdentifier</key>
+	<string>com.mycompany.myau</string>
+	
+	 <!---
+			Unique four-character identifier / creator of this AU.
+	--->
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	
+	<!---
+			Display name of plug-in (used by some hosts instead of the file name).
+	--->
+	<key>CFBundleName</key>
+	<string>myplugin</string>
+
+	<!---
+			Release version, should match the AU version as defined in the Symbiosis.r file.
+	--->
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	
+	<!---
+			Exact build version.
+	--->
+	<key>CFBundleVersion</key>
+	<string>1.0.0</string>
+		
+	<!---
+			This string is shown by the finder info and usually holds copyright info.
+	--->
+	<key>CFBundleGetInfoString</key>
+	<string>Copyright 2009 My Company</string>
+		
+	<!---------------------------------------------------------------------------------------------------------------->
+	<!---  That's it. Don't touch the rest. If you have an existing Info.plist, do not add the following entries.  --->
+	<!---------------------------------------------------------------------------------------------------------------->
+
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>Symbiosis</string>
+	<key>CFBundleIconFile</key>
+	<string></string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CSResourcesFileMapped</key>
+	<true/>
+	<key>VSTWindowCompositing</key>
+	<true/>
+</dict>
+</plist>

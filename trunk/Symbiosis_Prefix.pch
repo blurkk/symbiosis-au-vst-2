@@ -1,0 +1,13 @@
+//
+// Prefix header for all source files of the 'Symbiosis' target in the 'Symbiosis' project.
+//
+
+// Define to 2300 to use version 2.3 of the VST SDK or 2400 to use version 2.4.
+// Alternatively, you may include one of the VST header files here (such as aeffect.h) and the version will be detected
+// automatically.
+
+// Notice that the choice of VST SDK version here only concerns which version of the SDK you install to build Symbiosis.
+// Regardless of this choice, Symbiosis will be compatible with VSTs built with version 2.3 or version 2.4 of the SDK.
+
+#define SY_USE_VST_VERSION 2400
+#include <Carbon/Carbon.h>
