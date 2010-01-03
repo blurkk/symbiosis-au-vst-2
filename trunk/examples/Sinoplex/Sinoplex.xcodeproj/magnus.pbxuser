@@ -139,19 +139,19 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 283955607;
-			PBXWorkspaceStateSaveDate = 283955607;
+			PBXPerProjectTemplateStateSaveDate = 284246163;
+			PBXWorkspaceStateSaveDate = 284246163;
 		};
 		perUserProjectItems = {
+			F743802810F1327B00D42A1D /* PBXTextBookmark */ = F743802810F1327B00D42A1D /* PBXTextBookmark */;
+			F743802B10F1327B00D42A1D /* PBXTextBookmark */ = F743802B10F1327B00D42A1D /* PBXTextBookmark */;
+			F743807610F135BC00D42A1D /* PBXTextBookmark */ = F743807610F135BC00D42A1D /* PBXTextBookmark */;
+			F74380A810F1413200D42A1D /* PBXTextBookmark */ = F74380A810F1413200D42A1D /* PBXTextBookmark */;
 			F7BACB5810ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5810ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5910ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5910ECD346005AB7FA /* PBXTextBookmark */;
 			F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */;
 			F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5D10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5D10ECD346005AB7FA /* PBXTextBookmark */;
 			F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */;
 			F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB6010ECD346005AB7FA /* PBXTextBookmark */ = F7BACB6010ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB9910ECDB61005AB7FA /* PBXTextBookmark */ = F7BACB9910ECDB61005AB7FA /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7A920640903D3A3009996D9 /* Source Control */;
 		userBuildSettings = {
@@ -268,6 +268,59 @@
 		location = Symbiosis;
 		modificationTime = 258590594.83089;
 		state = 1;
+	};
+	F743802810F1327B00D42A1D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
+		name = "Sinoplex.cpp: 72";
+		rLen = 0;
+		rLoc = 2931;
+		rType = 0;
+		vrLen = 627;
+		vrLoc = 2501;
+	};
+	F743802B10F1327B00D42A1D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
+		name = "Sinoplex.cpp: 72";
+		rLen = 0;
+		rLoc = 2931;
+		rType = 0;
+		vrLen = 627;
+		vrLoc = 2501;
+	};
+	F743807610F135BC00D42A1D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F743807710F135BC00D42A1D /* SinoplexExports */;
+		name = "(null): 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 63;
+		vrLoc = 0;
+	};
+	F743807710F135BC00D42A1D /* SinoplexExports */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = text;
+		name = SinoplexExports;
+		path = /Users/Magnus/projects/Symbiosis/trunk/examples/Sinoplex/SinoplexExports;
+		sourceTree = "<absolute>";
+	};
+	F74380A810F1413200D42A1D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74380A910F1413200D42A1D /* SinoplexExports */;
+		name = "(null): 5";
+		rLen = 0;
+		rLoc = 63;
+		rType = 0;
+		vrLen = 63;
+		vrLoc = 0;
+	};
+	F74380A910F1413200D42A1D /* SinoplexExports */ = {
+		isa = PBXFileReference;
+		name = SinoplexExports;
+		path = /Users/Magnus/projects/Symbiosis/trunk/examples/Sinoplex/SinoplexExports;
+		sourceTree = "<absolute>";
 	};
 	F74920C30C87B0380057A327 /* audioeffect.cpp */ = {
 		uiCtxt = {
@@ -398,10 +451,10 @@
 	};
 	F7A920930903D63C009996D9 /* Sinoplex.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {3100, 18943}}";
-			sepNavSelRange = "{2671, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {3100, 19057}}";
+			sepNavSelRange = "{2931, 0}";
 			sepNavVisRange = "{1947, 1486}";
-			sepNavVisRect = "{{0, 1254}, {1235, 171}}";
+			sepNavVisRect = "{{0, 1121}, {970, 442}}";
 			sepNavWindowFrame = "{{15, 4}, {1076, 769}}";
 		};
 	};
@@ -414,23 +467,6 @@
 		rType = 0;
 		vrLen = 1189;
 		vrLoc = 1403;
-	};
-	F7BACB5910ECD346005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7BACB5A10ECD346005AB7FA /* Symbiosis.plist */;
-		name = "(null): 91";
-		rLen = 0;
-		rLoc = 3203;
-		rType = 0;
-		vrLen = 1063;
-		vrLoc = 2148;
-	};
-	F7BACB5A10ECD346005AB7FA /* Symbiosis.plist */ = {
-		isa = PBXFileReference;
-		lastKnownFileType = text.xml;
-		name = Symbiosis.plist;
-		path = /Users/Magnus/projects/SonicCharge/Cuttlefish/Symbiosis/Symbiosis.plist;
-		sourceTree = "<absolute>";
 	};
 	F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
@@ -452,16 +488,6 @@
 		vrLen = 1041;
 		vrLoc = 2192;
 	};
-	F7BACB5D10ECD346005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 70";
-		rLen = 0;
-		rLoc = 2931;
-		rType = 0;
-		vrLen = 1113;
-		vrLoc = 2263;
-	};
 	F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = F74921790C87BB340057A327 /* Sinoplex.r */;
@@ -481,26 +507,6 @@
 		rType = 0;
 		vrLen = 1041;
 		vrLoc = 2192;
-	};
-	F7BACB6010ECD346005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 32BAE0B30371A71500C91783 /* Sinoplex_Prefix.pch */;
-		name = "Sinoplex_Prefix.pch: 5";
-		rLen = 0;
-		rLoc = 101;
-		rType = 0;
-		vrLen = 525;
-		vrLoc = 0;
-	};
-	F7BACB9910ECDB61005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 70";
-		rLen = 0;
-		rLoc = 2931;
-		rType = 0;
-		vrLen = 705;
-		vrLoc = 2504;
 	};
 	F7FBB3470C888B470018C690 /* AULab */ = {
 		isa = PBXExecutable;

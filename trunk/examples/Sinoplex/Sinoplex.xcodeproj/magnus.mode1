@@ -220,8 +220,6 @@
 			<key>Layout</key>
 			<array>
 				<dict>
-					<key>BecomeActive</key>
-					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -261,13 +259,13 @@
 								<string>19C28FB4FE9D528D11CA2CBB</string>
 								<string>F749207C0C87B0370057A327</string>
 								<string>1C37FBAC04509CD000000102</string>
-								<string>F7BACB8710ECDA5A005AB7FA</string>
 								<string>1C37FAAC04509CD000000102</string>
 								<string>1C37FABC05509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
+									<integer>18</integer>
 									<integer>17</integer>
 								</array>
 							</array>
@@ -291,7 +289,7 @@
 							<real>243</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>3 54 1276 723 0 0 1280 778 </string>
+						<string>2 55 1276 723 0 0 1280 778 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -302,12 +300,14 @@
 					<key>Dock</key>
 					<array>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>Sinoplex.cpp</string>
+								<string>SinoplexExports</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -315,27 +315,24 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>Sinoplex.cpp</string>
+										<string>SinoplexExports</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>F7BACB9910ECDB61005AB7FA</string>
+										<string>F74380A810F1413200D42A1D</string>
 										<key>history</key>
 										<array>
 											<string>F7BACB5810ECD346005AB7FA</string>
-											<string>F7BACB5910ECD346005AB7FA</string>
 											<string>F7BACB5B10ECD346005AB7FA</string>
 											<string>F7BACB5C10ECD346005AB7FA</string>
-											<string>F7BACB5D10ECD346005AB7FA</string>
-										</array>
-										<key>nextStack</key>
-										<array>
-											<string>F7BACB6010ECD346005AB7FA</string>
+											<string>F743802810F1327B00D42A1D</string>
+											<string>F743807610F135BC00D42A1D</string>
 										</array>
 										<key>prevStack</key>
 										<array>
 											<string>F7BACB5E10ECD346005AB7FA</string>
 											<string>F7BACB5F10ECD346005AB7FA</string>
+											<string>F743802B10F1327B00D42A1D</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -349,7 +346,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {1011, 474}}</string>
 								<key>RubberWindowFrame</key>
-								<string>3 54 1276 723 0 0 1280 778 </string>
+								<string>2 55 1276 723 0 0 1280 778 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -369,7 +366,7 @@
 								<key>Frame</key>
 								<string>{{0, 479}, {1011, 203}}</string>
 								<key>RubberWindowFrame</key>
-								<string>3 54 1276 723 0 0 1280 778 </string>
+								<string>2 55 1276 723 0 0 1280 778 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -393,9 +390,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>F7BACB6210ECD346005AB7FA</string>
+				<string>F743809C10F140A800D42A1D</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>F7BACB6310ECD346005AB7FA</string>
+				<string>F743809D10F140A800D42A1D</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -529,11 +526,11 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>/Users/Magnus/projects/SonicCharge/Cuttlefish/Symbiosis/examples/Sinoplex/Sinoplex.xcodeproj</string>
 		<string>F7D6997E090961DE00040FB7</string>
+		<string>/Users/Magnus/projects/Symbiosis/trunk/examples/Sinoplex/Sinoplex.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
-	<string>3 54 1276 723 0 0 1280 778 </string>
+	<string>2 55 1276 723 0 0 1280 778 </string>
 	<key>WindowTools</key>
 	<array>
 		<dict>
@@ -554,7 +551,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CD0528F0623707200166675</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>Sinoplex.cpp</string>
+								<string></string>
 								<key>StatusBarVisibility</key>
 								<true/>
 							</dict>
@@ -576,7 +573,7 @@
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXBuildLogShowsTranscriptDefaultKey</key>
-								<string>{{0, 170}, {1276, 303}}</string>
+								<string>{{0, 150}, {1276, 323}}</string>
 								<key>PBXProjectModuleGUID</key>
 								<string>XCMainBuildResultsModuleGUID</string>
 								<key>PBXProjectModuleLabel</key>
@@ -614,7 +611,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>F7D6997E090961DE00040FB7</string>
-				<string>F7BACB3610ECD27D005AB7FA</string>
+				<string>F743809A10F140A400D42A1D</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -625,7 +622,7 @@
 			<key>WindowToolGUID</key>
 			<string>F7D6997E090961DE00040FB7</string>
 			<key>WindowToolIsVisible</key>
-			<true/>
+			<false/>
 		</dict>
 		<dict>
 			<key>FirstTimeWindowDisplayed</key>
