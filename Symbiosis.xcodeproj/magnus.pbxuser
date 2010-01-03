@@ -159,12 +159,12 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 284082816;
-			PBXWorkspaceStateSaveDate = 284082816;
+			PBXPerProjectTemplateStateSaveDate = 284246156;
+			PBXWorkspaceStateSaveDate = 284246156;
 		};
 		perUserProjectItems = {
-			F726EE1D10EEC27400BA1494 /* PBXTextBookmark */ = F726EE1D10EEC27400BA1494 /* PBXTextBookmark */;
 			F73DDC7410EEC289007C4D3F /* PBXTextBookmark */ = F73DDC7410EEC289007C4D3F /* PBXTextBookmark */;
+			F74380B310F1448400D42A1D /* PBXTextBookmark */ = F74380B310F1448400D42A1D /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7D698380909427700040FB7 /* Source Control */;
 		userBuildSettings = {
@@ -182,9 +182,9 @@
 	8D01CCC60486CAD60068D4B7 /* Symbiosis */ = {
 		activeExec = 0;
 	};
-	F726EE1D10EEC27400BA1494 /* PBXTextBookmark */ = {
+	F73DDC7410EEC289007C4D3F /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
-		fRef = F726EE1E10EEC27400BA1494 /* BuildWrappers.command */;
+		fRef = F73DDC7510EEC289007C4D3F /* BuildWrappers.command */;
 		name = "ditto -ck --rsrc build PreBuiltWrappers.zip";
 		rLen = 44;
 		rLoc = 272;
@@ -192,7 +192,7 @@
 		vrLen = 316;
 		vrLoc = 0;
 	};
-	F726EE1E10EEC27400BA1494 /* BuildWrappers.command */ = {
+	F73DDC7510EEC289007C4D3F /* BuildWrappers.command */ = {
 		isa = PBXFileReference;
 		lastKnownFileType = text.script.sh;
 		name = BuildWrappers.command;
@@ -205,9 +205,9 @@
 			sepNavWindowFrame = "{{415, -76}, {1230, 778}}";
 		};
 	};
-	F73DDC7410EEC289007C4D3F /* PBXTextBookmark */ = {
+	F74380B310F1448400D42A1D /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
-		fRef = F73DDC7510EEC289007C4D3F /* BuildWrappers.command */;
+		fRef = F74380B410F1448400D42A1D /* BuildWrappers.command */;
 		name = "ditto -ck --rsrc build PreBuiltWrappers.zip";
 		rLen = 44;
 		rLoc = 272;
@@ -215,7 +215,7 @@
 		vrLen = 316;
 		vrLoc = 0;
 	};
-	F73DDC7510EEC289007C4D3F /* BuildWrappers.command */ = {
+	F74380B410F1448400D42A1D /* BuildWrappers.command */ = {
 		isa = PBXFileReference;
 		name = BuildWrappers.command;
 		path = /Users/Magnus/projects/Symbiosis/trunk/BuildWrappers.command;

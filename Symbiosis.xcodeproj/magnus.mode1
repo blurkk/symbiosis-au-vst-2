@@ -204,10 +204,10 @@
 						<key>_historyCapacity</key>
 						<integer>0</integer>
 						<key>bookmark</key>
-						<string>F73DDC7410EEC289007C4D3F</string>
+						<string>F74380B310F1448400D42A1D</string>
 						<key>history</key>
 						<array>
-							<string>F726EE1D10EEC27400BA1494</string>
+							<string>F73DDC7410EEC289007C4D3F</string>
 						</array>
 					</dict>
 					<key>SplitCount</key>
@@ -306,7 +306,8 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>0</integer>
+									<integer>10</integer>
+									<integer>9</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
@@ -345,13 +346,15 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>&lt;No Editor&gt;</string>
+								<string></string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
 									<dict>
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
+										<key>PBXProjectModuleLabel</key>
+										<string></string>
 									</dict>
 									<key>SplitCount</key>
 									<string>1</string>
@@ -408,9 +411,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>F73DDC7110EEC289007C4D3F</string>
+				<string>F743808710F1408F00D42A1D</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>F73DDC7210EEC289007C4D3F</string>
+				<string>F743808810F1408F00D42A1D</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -552,6 +555,7 @@
 	<key>WindowOrderList</key>
 	<array>
 		<string>F726EE1910EEC27400BA1494</string>
+		<string>F7D69A1A09096C2C00040FB7</string>
 		<string>/Users/Magnus/projects/Symbiosis/trunk/Symbiosis.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
@@ -598,7 +602,7 @@
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXBuildLogShowsTranscriptDefaultKey</key>
-								<string>{{0, 249}, {1024, 335}}</string>
+								<string>{{0, 185}, {1024, 399}}</string>
 								<key>PBXProjectModuleGUID</key>
 								<string>XCMainBuildResultsModuleGUID</string>
 								<key>PBXProjectModuleLabel</key>
@@ -636,7 +640,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>F7D69A1A09096C2C00040FB7</string>
-				<string>F713E76A10EC244C004C57D8</string>
+				<string>F74380B510F1448400D42A1D</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
