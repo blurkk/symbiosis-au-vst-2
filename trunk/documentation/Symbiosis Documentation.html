@@ -148,13 +148,13 @@
 <p>Move on to <a href="#Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a>.</p>
 <p><small><a name="fn0001"><sup>*</sup> Notice that the standard assertion handling in C++ simply terminates the entire application if something fails. If the application terminates during beta testing, always check <tt>console.log</tt> for the reason. If you build your own wrapper you may want to use a custom assertion mechanism. See <a href="#Preprocessor_Defines">Preprocessor Defines</a> for more info.</a></small></p>
 <h3><a name="Wrapping_the_VST_Using_Alternatives_3,_4_or_5">Wrapping the VST Using Alternatives 3, 4 or 5</a></h3>
-<p>If you have chosen one of the latter wrapping alternative (i.e. including the Symbiosis source in your project) you should first make sure that you have a "Copy Bundle Resources" build phase for your target. If there is no such phase, create one by choosing "New Build Phase -&gt; New Copy Bundle Resources Build Phase" from the "Project" menu. Now you can copy and add the following files to your VST project:</p>
+<p>If you have chosen one of the latter wrapping alternative (i.e. including the Symbiosis source in your project) you should first make sure that you have a "Build ResourceManager Resources" build phase for your target. If there is no such phase, create one by choosing "New Build Phase -&gt; New Build ResourceManager Resources Build Phase" from the "Project" menu. Now you can copy and add the following files to your VST project:</p>
 
 <ul>
 <li>Symbiosis.cpp<br></li>
-<li>Symbiosis.r<br></li>
-<li>AudioUnit.framework<br></li>
-<li>AudioToolbox.framework</li>
+<li>Symbiosis.r (make sure it also appears under the "Build ResourceManager Resources" build phase)<br></li>
+<li>AudioUnit.framework (from <tt>/System/Library/Frameworks/</tt>)<br></li>
+<li>AudioToolbox.framework (from <tt>/System/Library/Frameworks/</tt>)</li>
 </ul>
 <p>Edit your copy of <tt>Symbiosis.r</tt> according to the instructions inside. Next, add the Symbiosis specific configuration options found in <tt>Symbiosis.plist</tt> to the <tt>Info.plist</tt> file that should already exist for your VST project (you may have called it something else though). You will find more instructions in the <tt>Symbiosis.plist</tt> file.</p>
 <p>If you have a custom "exported symbols file" for your project, you need to add these two entries to it:</p>
@@ -166,7 +166,7 @@
 <p>That's about it.</p>
 <h2><a name="Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a></h2>
 <p>Now let us fire up the engines and take your AU for a spin. A good idea for the first tour is to make sure your plug-in passes the "AU validation tests" by using the "AUVal" tool from Apple ("AUVal" should come preinstalled with OS X or with the development tools). If it does not pass, some hosts will not load your Audio Unit. Although Symbiosis will do its best to assure that your adapted VST passes validation, there is no guarantee that your VST code is 100% compatible without modification. (For example, there are a few tweakable configuration settings and vendor-specific VST extensions that may affect the outcome of the validation.)</p>
-<p>First, put your AU component in <tt>Library/Audio/Plug-Ins/Components</tt> either in the root (system-wide) or your home dir (local). Next, open up the terminal application and type <tt>auval -a</tt>. Look for your unique AU signature (the one you chose for your <tt>.r</tt> file). If you cannot see it, you may need to restart the computer for the OS to discover the new AU. If this still fails, something has gone seriously wrong with your wrapping. Start over from square 1 and try a different wrapping alternative as a test. </p>
+<p>First, put your AU component in <tt>Library/Audio/Plug-Ins/Components/</tt> either in the root (system-wide) or your home dir (local). Next, open up the terminal application and type <tt>auval -a</tt>. Look for your unique AU signature (the one you chose for your <tt>.r</tt> file). If you cannot see it, you may need to restart the computer for the OS to discover the new AU. If this still fails, something has gone seriously wrong with your wrapping. Start over from square 1 and try a different wrapping alternative as a test. </p>
 <p>Now run <tt>auval -v &lt;type&gt; &lt;subtype&gt; &lt;signature&gt;</tt> where <tt>&lt;type&gt;</tt>, <tt>&lt;subtype&gt;</tt> and <tt>&lt;signature&gt;</tt> should be the ones defined in the <tt>.r</tt> file. (<tt>&lt;type&gt;</tt> is typically one of <tt>aufx</tt>, <tt>aumu</tt> or <tt>aumf</tt> for "instrument", "effect" and "effect with MIDI"). Hold your breath and pray for your plug-in to pass the tests.</p>
 <p>Important! When you run the AU for the first time, the wrapper automatically creates a few configuration files inside your component bundle under <tt>Contents/Resources/</tt> as well as ".aupresets" files for the default / initial VST program bank. It is a very good idea to distribute your Audio Units with these files pre-created, even if you do not modify them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have sufficient write privileges for the directory in question, this might prevent the Audio Unit from loading. See <a href="#Advanced_Porting_Options">Advanced Porting Options</a> for more info on these files.</p>
 <h2><a name="Advanced_Porting_Options">Advanced Porting Options</a></h2>
@@ -297,7 +297,7 @@
 <h2><a name="Copyrights_and_Trademarks">Copyrights and Trademarks</a></h2>
 <p>Symbiosis is released under the "New Simplified BSD License". <br>
 <a href="http://www.opensource.org/licenses/bsd-license.php">http://www.opensource.org/licenses/bsd-license.php</a></p>
-<p>Copyright (c) 2009, NuEdge Development / Magnus Lidstr&ouml;m <br>
+<p>Copyright (c) 2010, NuEdge Development / Magnus Lidstr&ouml;m <br>
 All rights reserved.</p>
 
 <ul>

@@ -49,22 +49,22 @@ map(@::STD_PATTERNS
 
 ::html = function {
 	args(@in);
-	for (out = ''; in != '';) {
+	for (out = ''; in !== '';) {
 		out #= in{:i = find(in, HTML_XLATE_CHARS)};
-		if ((in = in{i:}) != '') { out #= HTML_XLATE_PAIRS[in{0}]; in = in{1:} }
+		if ((in = in{i:}) !== '') { out #= HTML_XLATE_PAIRS[in{0}]; in = in{1:} }
 	};
 	out
 };
 
 ::urlEncode = function {
 	args(@in);
-	for (out = ''; in != '';) {
+	for (out = ''; in !== '';) {
 		if (!wildmatch(in, "{*}{[^0-9a-zA-Z$-_.+!*'(),]?*}{[]*}", @left, @middle, @right)) {
 			out #= in;
 			in = '';
 		} else {
 			out #= left;
-			for (; middle != ''; middle = middle{1:}) out #= '%' # radix(ordinal(middle{0}), 16, 2);
+			for (; middle !== ''; middle = middle{1:}) out #= '%' # radix(ordinal(middle{0}), 16, 2);
 			in = right;
 		}
 	};
@@ -74,21 +74,21 @@ map(@::STD_PATTERNS
 
 ::wildEscape = function {
 	args(@in);
-	for (out = ''; in != '';) {
+	for (out = ''; in !== '';) {
 		out #= in{:i = find(in, '*?~[{')};
-		if ((in = in{i:}) != '') { out #= '[' # in{0} # ']'; in = in{1:} }
+		if ((in = in{i:}) !== '') { out #= '[' # in{0} # ']'; in = in{1:} }
 	};
 	out
 };
 
 ::expandTabs = function {
 	args(@in, @tabWidth);
-	for ({ out = ''; x = 0 }; in != '';) {
+	for ({ out = ''; x = 0 }; in !== '';) {
 		x += (i = find(in, "\t\n"));
 		out #= in{:i};
 		in = in{i:};
-		if (in{0} == "\t") { spaces = tabWidth - x % tabWidth; out #= repeat(' ', spaces); x += spaces }
-		else if (in{0} == "\n") { out #= LF; x = 0 };
+		if (in{0} === "\t") { spaces = tabWidth - x % tabWidth; out #= repeat(' ', spaces); x += spaces }
+		else if (in{0} === "\n") { out #= LF; x = 0 };
 		in = in{1:};
 	};
 	out
@@ -110,14 +110,14 @@ map(@::STD_PATTERNS
 	findHeader => {
 		args(@line0, @line1);
 		found = void;
-		foreach(@::HEADERS, >if (line1 == repeat($1, length(line0))) found = $2);
+		foreach(@::HEADERS, >if (line1 === repeat($1, length(line0))) found = $2);
 		found
 	};
 
 	isInside => {
 		args(@captured);
 		inside = false;
-		foreach(@insideHeaders, >if ($2 == captured) inside = true);
+		foreach(@insideHeaders, >if ($2 === captured) inside = true);
 		inside
 	};
 	
@@ -125,12 +125,12 @@ map(@::STD_PATTERNS
 		args(@in);
 		
 		in = LF # html(in) # LF;
-		for (out = ''; in != '';) {
+		for (out = ''; in !== '';) {
 			// find next word-break
 			$i += span(in{$i += span(in{$i = find(in, " \n"):}, " \n"):}, '(');
 			out #= in{:$i}; in = in{$i:};
 			
-			if (in != '') {
+			if (in !== '') {
 				matched = false;
 				foreach(@patterns, >{
 					resetQueue(@$cq);
@@ -143,7 +143,7 @@ map(@::STD_PATTERNS
 							append(@$capt, in{$offset:$length});
 						};
 						matched = true;
-						out #= invoke('', >concretize($0), @$capt);
+						out #= invoke('', >bake($0), @$capt);
 						in = $capt[$capt.n - 1];
 					}
 				})
@@ -162,23 +162,23 @@ map(@::STD_PATTERNS
 					|| wildmatch($l, '{{-}[ ]?*}{[^ ]?[]*}', @$lead, @$bullet, @rest)) {
 				if ($spaces > $d) {	// sub-list
 					if ($d >= 0) body #= '<br>';
-					body #= LF # (if ($bullet{0} == '*' || $bullet{0} == '-') '<ul>' else '<ol>') # LF;
+					body #= LF # (if ($bullet{0} === '*' || $bullet{0} === '-') '<ul>' else '<ol>') # LF;
 					body #= '<li>' # format(rest);
 					++lineIndex;
 					doList($spaces, $spaces + length($lead));
 					body #= '</li>' # LF;
-					body #= (if ($bullet{0} == '*' || $bullet{0} == '-') '</ul>' else '</ol>') # LF;
+					body #= (if ($bullet{0} === '*' || $bullet{0} === '-') '</ul>' else '</ol>') # LF;
 					$brk = ''; // swallow next leading break cause the end of list causes automatic break
 				} else if ($spaces == $d) {	// new list item
 					if ($d >= 0) body #= $brk;
-					body #= concretize('</li>{LF}<li>{format(rest)}');
+					body #= bake('</li>{LF}<li>{format(rest)}');
 					$i = $spaces + length($lead);
 					++lineIndex;
 				};
 				$spaces >= $d;
 			} else {
 				if ($spaces > $d) {
-					if ($l == '') { body #= $brk; $i =$d; } else {
+					if ($l === '') { body #= $brk; $i =$d; } else {
 						if ($spaces < $i) body #= ' ' else { body #= $brk; $i = $spaces };
 						body #= format($l) # LF
 					};
@@ -193,27 +193,27 @@ map(@::STD_PATTERNS
 	src = expandTabs(src, 4);
 	
 	body = '';
-	if (right(src, 1) == "\n") src = chop(src, 1);
+	if (right(src, 1) === "\n") src = chop(src, 1);
 
 	// Find headers
 // Fix : either save the sections here for later processing, or make a subroutine of this split
 
-	for (xsrc = src; xsrc != '';) {
+	for (xsrc = src; xsrc !== '';) {
 		section = xsrc{:search(xsrc, "\n\n")};
 		xsrc = xsrc{length(section):};
 		xsrc = xsrc{span(xsrc, "\n"):};
 		lines.n = 0;
 		tokenize(section, >append(@lines, $0));
-		if (lines.n == 2 && (foundHeader = findHeader(lines[0], lines[1])) != void) {
+		if (lines.n == 2 && (foundHeader = findHeader(lines[0], lines[1])) !== void) {
 			head = html(lines[0]);
 			pattern = '{' # wildEscape(head) # '}' # STD_PATTERN_SUFFIX;
-			patterns[pattern] = "{if (isInside($1)) $1 else concretize('<a href=\"#{urlEncode(replace($1, \" \", \"_\"))}\">{$1}</a>')}"
+			patterns[pattern] = "{if (isInside($1)) $1 else bake('<a href=\"#{urlEncode(replace($1, \" \", \"_\"))}\">{$1}</a>')}"
 		}
 	};
 	
 	// Process ...
 
-	for (; src != '';) {
+	for (; src !== '';) {
 		section = src{:search(src, "\n\n")};
 		src = src{length(section):};
 		src = src{span(src, "\n"):};
@@ -221,9 +221,9 @@ map(@::STD_PATTERNS
 
 		tokenize(section, >append(@lines, $0));
 		leadingSpaces = 0;
-		if (lines.n == 2 && (foundHeader = findHeader(lines[0], lines[1])) != void) {
+		if (lines.n == 2 && (foundHeader = findHeader(lines[0], lines[1])) !== void) {
 			head = html(lines[0]);
-			body #= concretize('<{foundHeader}><a name="{replace(head, " ", "_")}">{head}</a></{foundHeader}>{LF}');
+			body #= bake('<{foundHeader}><a name="{replace(head, " ", "_")}">{head}</a></{foundHeader}>{LF}');
 			print('Processing ' # head);
 			insideHeaders[foundHeader] = head;
 		} else if (wildmatch(lines[0], '{[ ]?*}[^ ]?[]*', @s) && (leadingSpaces = length(s)) >= 4) {
@@ -250,10 +250,10 @@ map(@::STD_PATTERNS
 			body #= '<table>' # LF;
 			headCol = true;
 			headRow = true;
-			foreach(@cells[1], >if (!exists(cell = @cells[0][$1]) || $2 != repeat('-', length([cell]))) headRow = false);
+			foreach(@cells[1], >if (!exists(cell = @cells[0][$1]) || $2 !== repeat('-', length([cell]))) headRow = false);
 			if (columns.n > 0) {
 				for (y = (if (headRow) 2 else 0); headCol && y < lines.n; ++y) {
-					if (exists(cell = @cells[y][columns[1]]) && [cell] != ':') headCol = false;
+					if (exists(cell = @cells[y][columns[1]]) && [cell] !== ':') headCol = false;
 				}
 			};
 			for (y = 0; y < lines.n; ++y) {
@@ -265,7 +265,7 @@ map(@::STD_PATTERNS
 							if (!exists(cell = @cells[y][p = columns[x]])) body #= '<td>&nbsp;</td>'
 							else {
 								for (colspan = 1; x + 1 < columns.n && p + length([cell]) >= columns[x + 1]; ++x) ++colspan;
-								body #= concretize("<{td}{if (colspan > 1) (' colspan=' # colspan) else ''}>{format([cell])}</{td}>");
+								body #= bake("<{td}{if (colspan > 1) (' colspan=' # colspan) else ''}>{format([cell])}</{td}>");
 							}
 						}
 					};
@@ -286,19 +286,19 @@ map(@::STD_PATTERNS
 			if (wildmatch(s, "{[*]?*}{ *}", @stars, @rest)) {
 				if (!exists(r = @footnotes[length(stars)])) {
 					print('Warning! Unreferenced or multiple defined footnote: ' # escape(section{leadingSpaces:}));
-					body #= concretize('<p><small><sup>{stars}</sup>{rest}</small></p>{LF}')
+					body #= bake('<p><small><sup>{stars}</sup>{rest}</small></p>{LF}')
 				} else {
 					fn = 'fn' # radix([r], 10, 4);
 					delete(r);
-					body #= concretize('<p><small><a name="{fn}"><sup>{stars}</sup>{rest}</a></small></p>{LF}')
+					body #= bake('<p><small><a name="{fn}"><sup>{stars}</sup>{rest}</a></small></p>{LF}')
 				}
 			} else {
-				body #= concretize('<p>{s}</p>{LF}')
+				body #= bake('<p>{s}</p>{LF}')
 			}
 		}
 	};
 
-	foreach(@footnotes, >if ($1 != 'next') { delete($0); print('Warning! Undefined footnote: ' # repeat('*', $1)) });
+	foreach(@footnotes, >if ($1 !== 'next') { delete($0); print('Warning! Undefined footnote: ' # repeat('*', $1)) });
 	
 	body
 };

@@ -19,7 +19,7 @@
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		32BAE0B30371A71500C91783 /* Symbiosis_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Symbiosis_Prefix.pch; sourceTree = "<group>"; };
 		F713E73C10EC2062004C57D8 /* Symbiosis.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Symbiosis.component; sourceTree = BUILT_PRODUCTS_DIR; };
-		F7D698480909601200040FB7 /* Symbiosis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbiosis.cpp; sourceTree = "<group>"; };
+		F7D698480909601200040FB7 /* Symbiosis.cpp */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = Symbiosis.cpp; sourceTree = "<group>"; };
 		F7D698E50909606000040FB7 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F7D698F60909606B00040FB7 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
 		F7D69A5F09096C9F00040FB7 /* Symbiosis.r */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.rez; path = Symbiosis.r; sourceTree = "<group>"; };
