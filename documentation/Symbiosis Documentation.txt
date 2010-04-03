@@ -228,14 +228,14 @@ Wrapping the VST Using Alternatives 3, 4 or 5
 ---------------------------------------------
 
  If you have chosen one of the latter wrapping alternative (i.e. including the Symbiosis source in your project) you
-should first make sure that you have a "Copy Bundle Resources" build phase for your target. If there is no such phase,
-create one by choosing "New Build Phase -> New Copy Bundle Resources Build Phase" from the "Project" menu. Now you can
-copy and add the following files to your VST project:
+should first make sure that you have a "Build ResourceManager Resources" build phase for your target. If there is no
+such phase, create one by choosing "New Build Phase -> New Build ResourceManager Resources Build Phase" from the
+"Project" menu. Now you can copy and add the following files to your VST project:
 
  - Symbiosis.cpp
- - Symbiosis.r
- - AudioUnit.framework
- - AudioToolbox.framework
+ - Symbiosis.r (make sure it also appears under the "Build ResourceManager Resources" build phase)
+ - AudioUnit.framework (from `/System/Library/Frameworks/`)
+ - AudioToolbox.framework (from `/System/Library/Frameworks/`)
 
  Edit your copy of `Symbiosis.r` according to the instructions inside. Next, add the Symbiosis specific configuration
 options found in `Symbiosis.plist` to the `Info.plist` file that should already exist for your VST project (you may have
@@ -258,7 +258,7 @@ its best to assure that your adapted VST passes validation, there is no guarante
 without modification. (For example, there are a few tweakable configuration settings and vendor-specific VST extensions
 that may affect the outcome of the validation.)
 
- First, put your AU component in `Library/Audio/Plug-Ins/Components` either in the root (system-wide) or your home dir
+ First, put your AU component in `Library/Audio/Plug-Ins/Components/` either in the root (system-wide) or your home dir
 (local). Next, open up the terminal application and type `auval -a`. Look for your unique AU signature (the one you
 chose for your `.r` file). If you cannot see it, you may need to restart the computer for the OS to discover the new AU.
 If this still fails, something has gone seriously wrong with your wrapping. Start over from square 1 and try a different
@@ -406,7 +406,7 @@ Copyrights and Trademarks
  Symbiosis is released under the "New Simplified BSD License".
  http://www.opensource.org/licenses/bsd-license.php
 
- Copyright (c) 2009, NuEdge Development / Magnus Lidström
+ Copyright (c) 2010, NuEdge Development / Magnus Lidström
  All rights reserved.
 
  *)  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
