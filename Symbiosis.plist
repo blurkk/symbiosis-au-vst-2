@@ -9,25 +9,34 @@
 	<key>SYConfig</key>
 	<dict>
 		<!---
-				Set to true if you wish Symbiosis to check the global and local preset folders (Library/Audio/Presets)
-				for ".fxb" or ".fxp" files and automatically convert discovered presets to ".aupreset" files.
+				Set "AutoConvertPresets" to true if you wish Symbiosis to check the global and local preset folders
+				(Library/Audio/Presets) for ".fxb" or ".fxp" files and automatically convert discovered presets to
+				".aupreset" files.
 		--->
 		<key>AutoConvertPresets</key>
 		<false/>
 		
 		<!---
-				Set to true if the AU preset (i.e. the "total recall state") must be represented by a VST program bank
-				(an ".fxb") as opposed to a single program only (an ".fxp").
+				Set "PresetIsFXB" to true if the AU preset (i.e. the "total recall state") must be represented by a VST
+				program bank (an ".fxb") as opposed to a single program only (an ".fxp").
 		--->
 		<key>PresetIsFXB</key>
 		<false/>
 
 		<!---
-				Set to true if you wish to disable support for loading a multi-channel plug-in (with more than 2 inputs
-				and / or outputs) into a stereo configuration.
+				Set "DisableStereoSupport" to true if you wish to disable support for loading a multi-channel plug-in
+				(with more than 2 inputs and / or outputs) into a stereo configuration.
 		--->
 		<key>DisableStereoSupport</key>
 		<false/>
+
+		<!---
+				Set "UpdateNameOnLoad" to false if you do not wish Symbiosis to rename VST programs when AU presets are
+				loaded. (This doesn't always make sense if "PresetIsFXB" is true, i.e. when the AU preset represents an
+				entire .fxb program bank.)
+		--->
+		<key>UpdateNameOnLoad</key>
+		<true/>
 	</dict>
 
 	<!---------------------------------------------------------------------------------------------------------------->

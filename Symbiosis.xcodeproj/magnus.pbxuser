@@ -9,7 +9,6 @@
 		);
 		breakpoints = (
 		);
-		breakpointsGroup = F7F56C1A10CDE80B00D586A6 /* XCBreakpointsBucket */;
 		codeSenseManager = F7D698390909427700040FB7 /* Code sense */;
 		executables = (
 			F7D3E4EE091BE7B900501C1B /* AUVal */,
@@ -159,10 +158,18 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 291991179;
-			PBXWorkspaceStateSaveDate = 291991179;
+			PBXPerProjectTemplateStateSaveDate = 318107528;
+			PBXWorkspaceStateSaveDate = 318107528;
 		};
 		perUserProjectItems = {
+			F721D3D712F5EF8F006BA722 /* PBXTextBookmark */ = F721D3D712F5EF8F006BA722 /* PBXTextBookmark */;
+			F721D3EF12F5F3CF006BA722 /* PBXTextBookmark */ = F721D3EF12F5F3CF006BA722 /* PBXTextBookmark */;
+			F721D41312F62BC5006BA722 /* PBXTextBookmark */ = F721D41312F62BC5006BA722 /* PBXTextBookmark */;
+			F721D41512F62BC5006BA722 /* PBXTextBookmark */ = F721D41512F62BC5006BA722 /* PBXTextBookmark */;
+			F721D41712F63080006BA722 /* PBXTextBookmark */ = F721D41712F63080006BA722 /* PBXTextBookmark */;
+			F721D43012F63D6A006BA722 /* PBXTextBookmark */ = F721D43012F63D6A006BA722 /* PBXTextBookmark */;
+			F721D43112F63D6A006BA722 /* PBXTextBookmark */ = F721D43112F63D6A006BA722 /* PBXTextBookmark */;
+			F721D43212F63D6A006BA722 /* PBXTextBookmark */ = F721D43212F63D6A006BA722 /* PBXTextBookmark */;
 			F7742ED111676CA300D3E68D = F7742ED111676CA300D3E68D /* PBXTextBookmark */;
 			F7742ED611676CA300D3E68D = F7742ED611676CA300D3E68D /* PBXTextBookmark */;
 			F7742ED711676CA300D3E68D = F7742ED711676CA300D3E68D /* PBXTextBookmark */;
@@ -192,6 +199,105 @@
 	8D01CCC60486CAD60068D4B7 /* Symbiosis */ = {
 		activeExec = 0;
 	};
+	F721D3D712F5EF8F006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
+		name = "Symbiosis.cpp: 2941";
+		rLen = 0;
+		rLoc = 2316;
+		rType = 0;
+		vrLen = 2207;
+		vrLoc = 127362;
+	};
+	F721D3EF12F5F3CF006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
+		name = "Symbiosis.cpp: 4868";
+		rLen = 0;
+		rLoc = 208737;
+		rType = 0;
+		vrLen = 2066;
+		vrLoc = 206670;
+	};
+	F721D41312F62BC5006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F721D41412F62BC5006BA722 /* stdlib.pika */;
+		name = "stdlib.pika: 254";
+		rLen = 1370;
+		rLoc = 10671;
+		rType = 0;
+		vrLen = 2381;
+		vrLoc = 9670;
+	};
+	F721D41412F62BC5006BA722 /* stdlib.pika */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = text;
+		name = stdlib.pika;
+		path = /Users/magnus/projects/PikaScript/src/stdlib.pika;
+		sourceTree = "<absolute>";
+	};
+	F721D41512F62BC5006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F721D41612F62BC5006BA722 /* stdlib.pika */;
+		name = "stdlib.pika: 254";
+		rLen = 1370;
+		rLoc = 10671;
+		rType = 0;
+		vrLen = 2371;
+		vrLoc = 9670;
+	};
+	F721D41612F62BC5006BA722 /* stdlib.pika */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = text;
+		name = stdlib.pika;
+		path = /Users/magnus/projects/PikaScript/src/stdlib.pika;
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1038, 3562}}";
+			sepNavSelRange = "{10778, 0}";
+			sepNavVisRange = "{9670, 2371}";
+		};
+	};
+	F721D41712F63080006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F721D41612F62BC5006BA722 /* stdlib.pika */;
+		name = "stdlib.pika: 256";
+		rLen = 0;
+		rLoc = 10778;
+		rType = 0;
+		vrLen = 2371;
+		vrLoc = 9670;
+	};
+	F721D43012F63D6A006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F721D41612F62BC5006BA722 /* stdlib.pika */;
+		name = "stdlib.pika: 256";
+		rLen = 0;
+		rLoc = 10778;
+		rType = 0;
+		vrLen = 2371;
+		vrLoc = 9670;
+	};
+	F721D43112F63D6A006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
+		name = "Symbiosis.cpp: 2265";
+		rLen = 0;
+		rLoc = 100059;
+		rType = 0;
+		vrLen = 2049;
+		vrLoc = 121164;
+	};
+	F721D43212F63D6A006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
+		name = "Symbiosis.cpp: 8";
+		rLen = 0;
+		rLoc = 110;
+		rType = 0;
+		vrLen = 2069;
+		vrLoc = 0;
+	};
 	F7742ED111676CA300D3E68D /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = F7742ED211676CA300D3E68D /* Symbiosis Documentation.txt */;
@@ -214,7 +320,7 @@
 		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
 		name = "Symbiosis.cpp: 4538";
 		rLen = 0;
-		rLoc = 195990;
+		rLoc = 197153;
 		rType = 0;
 		vrLen = 1393;
 		vrLoc = 195387;
@@ -241,7 +347,7 @@
 		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
 		name = "Symbiosis.cpp: 14";
 		rLen = 0;
-		rLoc = 264;
+		rLoc = 265;
 		rType = 0;
 		vrLen = 1698;
 		vrLoc = 0;
@@ -271,7 +377,7 @@
 		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
 		name = "Symbiosis.cpp: 2946";
 		rLen = 0;
-		rLoc = 128639;
+		rLoc = 2316;
 		rType = 0;
 		vrLen = 1694;
 		vrLoc = 127724;
@@ -301,7 +407,7 @@
 		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
 		name = "Symbiosis.cpp: 2946";
 		rLen = 0;
-		rLoc = 128639;
+		rLoc = 2316;
 		rType = 0;
 		vrLen = 1694;
 		vrLoc = 127724;
@@ -342,7 +448,6 @@
 	};
 	F7D3E4EE091BE7B900501C1B /* AUVal */ = {
 		isa = PBXExecutable;
-		activeArgIndex = 0;
 		activeArgIndices = (
 			YES,
 		);
@@ -350,6 +455,7 @@
 			"-v aufx ???? ????",
 		);
 		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
 		configStateDict = {
 			"PBXLSLaunchAction-0" = {
 				PBXLSLaunchAction = 0;
@@ -368,6 +474,9 @@
 			};
 		};
 		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
 		debuggerPlugin = GDBDebugging;
 		disassemblyDisplayState = 0;
 		dylibVariantSuffix = "";
@@ -381,6 +490,7 @@
 		name = AUVal;
 		savedGlobals = {
 		};
+		showTypeColumn = 0;
 		sourceDirectories = (
 		);
 		variableFormatDictionary = {
@@ -400,6 +510,9 @@
 		scmConfiguration = {
 			SubversionToolPath = /usr/local/bin/svn;
 			repositoryName = "";
+			repositoryNamesForRoots = {
+				"" = svn;
+			};
 		};
 		scmType = scm.subversion;
 	};
@@ -409,8 +522,9 @@
 	};
 	F7D698480909601200040FB7 /* Symbiosis.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {5324, 91941}}";
-			sepNavSelRange = "{128447, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {1038, 63102}}";
+			sepNavSelRange = "{110, 0}";
+			sepNavVisRange = "{0, 2069}";
 			sepNavVisRect = "{{0, 55651}, {1046, 645}}";
 			sepNavWindowFrame = "{{19, -5}, {1230, 778}}";
 		};
@@ -423,12 +537,6 @@
 			sepNavVisRect = "{{0, 0}, {1046, 645}}";
 			sepNavWindowFrame = "{{19, -5}, {1230, 778}}";
 		};
-	};
-	F7F56C1A10CDE80B00D586A6 /* XCBreakpointsBucket */ = {
-		isa = XCBreakpointsBucket;
-		name = Symbiosis;
-		objects = (
-		);
 	};
 	F7FA8F2E10EC1E5300FA9980 /* CompileSymbiosisRsrc.command */ = {
 		uiCtxt = {

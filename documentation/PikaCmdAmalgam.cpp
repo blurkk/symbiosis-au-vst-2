@@ -206,7 +206,7 @@ template<class S> class STLValue : public S {
 	public:		bool operator>(const STLValue& r) const { return r < (*this); }											///< Greater than comparison operator. \details Notice that numbers are compared numerically and a number is always considered less than any non-number string.
 	public:		bool operator<=(const STLValue& r) const { return !(r < (*this)); }										///< Less than or equal to comparison operator. \details Notice that numbers are compared numerically and a number is always considered less than any non-number string.
 	public:		bool operator>=(const STLValue& r) const { return !((*this) < r); }										///< Greater than or equal to comparison operator. \details Notice that numbers are compared numerically and a number is always considered less than any non-number string.
-	public:		STLValue operator[](const STLValue& i) const;															///< The subscript operator returns the concatenation of the value with the dot (.) separator (if necessary) and the value \p i. \details Use it on a reference value to create a reference to a subscript element of that reference.
+	public:		const STLValue operator[](const STLValue& i) const;														///< The subscript operator returns the concatenation of the value with the dot (.) separator (if necessary) and the value \p i. \details Use it on a reference value to create a reference to a subscript element of that reference.
 	//@}
 	/// \name Classification methods.
 	//@{
@@ -220,7 +220,7 @@ template<class S> class STLValue : public S {
 	public:		template<class T> bool operator>(const T& r) const { return operator>(STLValue(r)); }
 	public:		template<class T> bool operator<=(const T& r) const { return operator<=(STLValue(r)); }
 	public:		template<class T> bool operator>=(const T& r) const { return operator>=(STLValue(r)); }
-	public:		template<class T> STLValue operator[](const T& i) const { return operator[](STLValue(i)); }
+	public:		template<class T> const STLValue operator[](const T& i) const { return operator[](STLValue(i)); }
 	//@}
 };
 
@@ -806,10 +806,10 @@ template<class S> S escape(const S& s) {
 	static const CHAR ESCAPE_CHARS[ESCAPE_CODE_COUNT] = { '\\', '\"', '\'',  'a',  'b',  'f',  'n',  'r',  't',  'v' };
 	static const CHAR ESCAPE_CODES[ESCAPE_CODE_COUNT] = { '\\', '\"', '\'', '\a', '\b', '\f', '\n', '\r', '\t', '\v' };
 	typename S::const_iterator b = s.begin(), e = s.end();
-	bool needToBackup = false;
-	for (; b < e && *b >= 32 && *b <= 126 && *b != '\''; ++b) needToBackup = needToBackup || (*b == '\\' || *b == '\"');
+	bool needToBackUp = false;																								// If we need to re-escape with " " and string contained " or \ we need to start over from the beginning.
+	for (; b < e && *b >= 32 && *b <= 126 && *b != '\''; ++b) needToBackUp = needToBackUp || (*b == '\\' || *b == '\"');
 	if (b >= e) return ((S(STR("'")) += s) += '\'');
-	if (needToBackup) b = s.begin();
+	if (needToBackUp) b = s.begin();
 	typename S::const_iterator l = s.begin();
 	S d = S(STR("\""));
 	while (true) {
@@ -858,7 +858,7 @@ template<class S> bool STLValue<S>::operator==(const STLValue& r) const {
 	return (lnum == rnum && (lnum ? lv == rv : (const S&)(*this) == (const S&)(r)));
 }
 
-template<class S> STLValue<S> STLValue<S>::operator[](const STLValue& i) const {
+template<class S> const STLValue<S> STLValue<S>::operator[](const STLValue& i) const {
 	typename S::const_iterator b = S::begin(), p = S::end();
 	if (p > b) switch (*(p - 1)) {
 		case '$':	if (--p == b) break; /* else continue */
@@ -2299,6 +2299,10 @@ void unitTest() {
 
 }
 const char* BUILT_IN_DEBUG =
+	"::modules.debug = true;\n"
+	"\n"
+	"if (!exists(@::modules.stdlib)) run('stdlib.pika');\n"
+	"\n"
 	"CONSOLE_COLS = 120;\n"
 	"CONSOLE_ROWS = 30;\n"
 	"\n"
@@ -2320,6 +2324,7 @@ const char* BUILT_IN_DEBUG =
 	"\t( void )\n"
 	"};\n"
 	"\n"
+	"// FIX : shouldn't be required... we should build the \"more\" facility into interactive.pika.\n"
 	"more = function {\n"
 	"\targs(@s);\n"
 	"\tlineOut => if (!silent) {\n"
@@ -2335,12 +2340,13 @@ const char* BUILT_IN_DEBUG =
 	"\t( void )\n"
 	"};\n"
 	"\n"
-	"show = function {\n"
-	"\targs(@var);\n"
-	"\tmore(var # if (classify(var) === 'reference' && (s = sourceFor(var, ' ')) !== '')\n"
-	"\t\t\t(LF # repeat('=', 8) # LF # s # repeat('=', 8)));\n"
-	"\t( void )\n"
-	"};\n"
+	"// FIX : overlaps with dump, and I don't like the name, too generic\n"
+	"//show = function {\n"
+	"//\targs(@var);\n"
+	"//\tmore(var # if (classify(var) === 'reference' && (s = sourceFor(var, ' ')) !== '')\n"
+	"//\t\t\t(LF # repeat('=', 8) # LF # s # repeat('=', 8)));\n"
+	"//\t( void )\n"
+	"//};\n"
 	"\n"
 	"describeCall = function {\n"
 	"\ts = (if (exists(@[$0].$callee)) [$0].$callee else '(unknown)') # '(';\n"
@@ -2550,6 +2556,8 @@ const char* BUILT_IN_DEBUG =
 	"void;\n";
 
 const char* BUILT_IN_HELP =
+	"::modules.help = true;\n"
+	"\n"
 	"prune(@help);\n"
 	"\n"
 	"describe = function {\n"
@@ -2611,25 +2619,30 @@ const char* BUILT_IN_HELP =
 	"\t\tif (found == 0) print(\"No page contained the search string\");\n"
 	"\t} else if (exists(@::help[page])) print(repeat('=', 20) # LF # help[page] # LF # repeat('=', 20))\n"
 	"\telse print('No help page called ' # escape(page) # \". Type help('#pages') to list all available pages.\");\n"
+	"\t( void )\n"
 	"};\n"
 	"\n"
 	"help = function { /****    Type help() to get started.    ****/        invoke('help._lookup', , @$) };\n"
 	"\t\n"
 	"describe('#containers', 'ascend',\t\"@parent = ascend(@child)\",\t\t\t\t\t\t\"Returns a reference to the \\\"parent container\\\" of @child (i.e. the variable or element that contains the sub-element referred to by @child). If @child is a top-level variable, void is returned.\", \"ascend(@x['3']) === @x\\nascend(@x.y.z) === @x.y\\nascend(@x) === void\");\n"
 	"describe('#containers', 'clone',\t\"@target = clone(@source, @target)\",\t\t\t\"Makes a \\\"deep copy\\\" of the container @source to @target, meaning that all elements under the source and any sub-elements that they may have (and so on) will be copied to the target. The returned value is the input @target reference.\\n\\nNotice that this function does not erase any existing elements under @target. You may want to consider calling prune() on @target first.\", \"clone(@myCarbonCopy, @originalData)\", 'copy, prune');\n"
-	"describe('#containers', 'foreach',\t\"foreach(@map, >doThis)\",\t\t\t\t\t\t\"Traverses all elements under @map (and any sub-elements that they may have and so on) and calls >doThis once for every encountered element. (An alternative description of foreach() is that it calls >doThis for every found variable that begins with the value of @map # '.') Three arguments will be passed to >doThis:\\n\\n$0 will be the full reference to the found element (e.g. \\\"::zoo.elephant\\\")\\n$1 will be the name of the element (e.g. \\\"elephant\\\")\\n$2 will be the value of the element.\\n\\nThe order with which elements are processed is undefined and depends on the implementation of PikaScript. Any modifications to @map while running foreach will not be reflected in the calls to >doThis. Notice that you normally would not use foreach() on arrays since it would also include the 'n' element (the element count).\", \"foreach(@a, >print($1 # '=' # $2))\");\n"
+	"describe('#containers', 'foreach',\t\"foreach(@map, >doThis)\",\t\t\t\t\t\t\"Traverses all elements under @map (and any sub-elements that they may have and so on) and calls >doThis once for every encountered element. (An alternative description of foreach() is that it calls >doThis for every found variable that begins with the value of @map # '.') Three arguments will be passed to >doThis:\\n\\n$0 will be the full reference to the found element (e.g. \\\"::zoo.elephant\\\")\\n$1 will be the name of the element (e.g. \\\"elephant\\\")\\n$2 will be the value of the element.\\n\\nThe order with which elements are processed is undefined and depends on the implementation of PikaScript. Any modifications to @map while running foreach() will not be reflected in the calls to >doThis. Notice that you normally would not use foreach() on arrays since it would also include the 'n' element (the element count). Use iterate() or a simple for-loop instead.\", \"foreach(map(@a, 'Asia', 4157, 'Africa', 1030, 'Americas', 929, 'Europe', 739, 'Oceania', 35), >print($1 # '=' # $2))\", 'iterate');\n"
 	"describe('#containers', 'map',\t\t\"@map = map(@map, ['keys', <values>, ...])\",\t\"Creates a \\\"map\\\" under @map by assigning sub-elements to @map for each key / value pair passed to the function. The returned value is the input @map reference.\\n\\nNotice that this function does not erase any existing elements under @map so you may call this function repeatedly to incrementally build a map. Use prune on @map to delete it.\\n\\nA creative use of this function is to create efficient \\\"switch statements\\\" something that is otherwise missing in PikaScript by mapping keys to functions / lambda expressions. You could then execute the switch like this: mySwitch[theKey].\", \"map(@userInfo['magnus'], 'fullName','Magnus Lidstroem' , 'birthDate','31 march 1972' , 'favoriteColor','#3333FF')\\nmap(@actions, 'hi',>print('Good day sir!') , 'spin',>{ for (i = 0; i < 360; ++i) print('Spun ' # i # ' degrees') } , 'quit',>doQuit = true)\\n[map(@temp, 'zero',0 , 'one',1 , 'two',2 , 'three',3)]['two'] == 2\", 'foreach, prune, set');\n"
-	"describe('#containers', 'prune',\t\"prune(@reference)\",\t\t\t\t\t\t\t\"Deletes the variable referenced to by @reference as well as all its sub-elements. Use prune() to delete an entire \\\"plain old data\\\" container (e.g. an \\\"array\\\" or \\\"map\\\"). Use destruct() instead for deleting an \\\"object\\\" to have its destructor called before it is deleted.\", \"prune(@myArray)\", 'delete, destruct');\n"
+	"describe('#containers', 'prune',\t\"+count = prune(@reference)\",\t\t\t\t\t\t\t\"Deletes the variable referenced to by @reference as well as all its sub-elements. Use prune() to delete an entire \\\"plain old data\\\" container (e.g. an \\\"array\\\" or \\\"map\\\"). Use destruct() instead for deleting an \\\"object\\\" to have its destructor called before it is deleted. prune() returns the number of variables that were deleted.\", \"prune(@myArray)\", 'delete, destruct');\n"
+	"describe('#containers', 'redotify',\t\"'yesdots' = redotify('nodots')\",\t\t\t\t\"Decodes an \\\"undotified\\\" string as returned from undotify(). See help for \\\"undotify\\\" for further explanation and examples.\", \"redotify('nearly 50%25 use google%2ecom daily') === 'nearly 50% use google.com daily'\", 'undotify');\n"
 	"describe('#containers', 'set',\t\t\"@set = set(@set, ['keys', ...])\",\t\t\t\t\"Creates a \\\"set\\\" under @set by assigning sub-elements with the value true for each key. The returned value is the input @set reference.\\n\\nNotice that this function does not erase any existing elements under @set so you may call this function repeatedly to incrementally build a set. Use prune() on @set to delete it.\\n\\nOne practical use for sets is to efficiently check if a value belongs to a group of values. Initially you create the group of values with this function and later you can call exists(@set[key]).\", \"set(@validColors, 'red', 'green', 'blue', 'yellow')\\nexists(@[set(@smallPrimes, 2, 3, 5, 7, 11, 13, 17, 19)][13])\", 'foreach, map, prune');\n"
+	"describe('#containers', 'undotify',\t\"'nodots' = undotify('yesdots')\",\t\t\t\t\"Simply returns a copy of 'source' where all '.' have been replaced with '%2e' and all '%' have been replaced with '%25'. The purpose of this function is to allow arbitrary strings to work as keys in multi-dimensional arrays / deep containers. Without \\\"undotifying\\\" keys, any '.' in the keys would be interpreted as separators. E.g. \\\"files['name.ext'].size\\\" is the same as \\\"files.name.ext.size\\\", which is probably not what you want. Instead use \\\"files[undotify('name.ext')].size\\\". To return the original key from an \\\"undotified\\\" key, use redotify().\", \"undotify('nearly 50% use google.com daily') === 'nearly 50%25 use google%2ecom daily'\\nredotify(undotify('a.b.c%d.e.f')) === 'a.b.c%d.e.f'\", 'redotify');\n"
 	"\n"
 	"describe('#arrays', 'append',\t\"@array = append(@array, [<elements>, ...])\",\t\t\"Appends <elements> to @array. If [@array].n does not exist it will be initialized to 0 and this routine will in practice work like compose(). Unlike compose() however, all element argument must be present. The returned value is the input @array reference.\\n\\nNotice that calling this function on a \\\"double-ended queue\\\" also works.\", \"append(@myArray, 5, 6, 7, 8)\\nequal(append(compose(@temp1, 'a', 'b', 'c'), 'd', 'e', 'f'), compose(@temp2, 'a', 'b', 'c', 'd', 'e', 'f')) == true\", 'compose, insert');\n"
 	"describe('#arrays', 'compose',\t\"@array = compose(@array, [<elements>, ...])\",\t\t\"Creates an array of indexed elements under @array initialized with the values of the remaining arguments (<element>). The first element will have an index of zero (e.g. \\\"array[0]\\\"). The special element 'n' (e.g. \\\"array.n\\\") will contain the number of indexed elements in the array. If an element argument is omitted the corresponding element will not be initialized, possibly making the array \\\"non-contiguous\\\". The returned value is the input @array reference.\\n\\nNotice that this function does not erase any existing elements under @array. You may want to consider calling prune() on @array before composing a new array.\", \"compose(@myArray, 1, 2, 3, 4)\\ncompose(@holy, 'nextIsEmpty', , 'previousWasEmpty')\\n[compose(@temp, 'zero', 'one', 'two', 'three')][2] === 'two'\", 'append, decompose, map, prune');\n"
 	"describe('#arrays', 'copy',\t\t\"@target = copy(@source, +offset, +count, @target, +index)\", \"Copies +count elements from the @source array beginning at +offset into @target at +index, replacing any already existing elements at the target indices. The element count of the @target array (i.e. [@target].n) may be incremented to fit the new elements.\\n\\nThe @source array must be contiguous. If the output +index is greater than [@target].n (or (+index) + (+count) < 0), the resulting array will become non-contiguous.\\n\\nOnly direct elements under the arrays will be affected. Any sub-elements that they in turn may have are ignored. @source and @target may reference the same array. The returned value is the input @target reference.\", \"copy(@myArray, 10, 5, @myArray, 13)\\nequal(copy(compose(@temp1, 'a', 'b', 'c', 'd'), 1, 2, compose(@temp2, 'e', 'f', 'g', 'h'), 3), compose(@temp3, 'e', 'f', 'g', 'b', 'c')) == true\", 'clone, inject, remove');\n"
 	"describe('#arrays', 'decompose',\"decompose(@array, [@variables, ...])\",\t\t\t\t\"Decomposes an array by storing the indexed elements under @array one by one into the given references. If an argument is left empty, the corresponding element index will be skipped.\", \"decompose(@breakMe, @first, @second, @third, , @noFourthButFifth)\", 'compose');\n"
-	"describe('#arrays', 'equal',\t\"?same = equal(@arrayA, @arrayB)\",\t\t\t\t\t\"Returns true if the arrays @arrayA and @arrayB are the same size and all their\telements are identical. Both arrays must be contiguous (i.e. all their elements must be defined). Only direct elements under the arrays will be tested. Any sub-elements that they in turn may have are silently ignored.\", \"equal(@firstArray, @secondArray)\\nequal(compose(@temp1, 1, 10, 100, 'one thousand'), compose(@temp2, 1, 10, 100, 'one thousand')) == true\");\n"
-	"describe('#arrays', 'inject',\t\"@target = inject(@source, +offset, +count, @target, +index)\", \"Inserts +count elements from the @source array beginning at +offset into @target at +index, relocating any elements at and after +index to make room for the inserted elements. Both arrays must be contiguous and the target +index must be between 0 and [@target].n. Only direct elements under the arrays will be affected. Any sub-elements that they in turn may have are ignored. @source and @target should not reference the same array. The returned value is the input @target reference.\", \"inject(@myArray, 10, 5, @myArray, 13)\\nequal(inject(compose(@temp1, 'a', 'b', 'c', 'd'), 1, 2, compose(@temp2, 'e', 'f', 'g', 'h'), 3), compose(@temp3, 'e', 'f', 'g', 'b', 'c', 'h')) == true\", 'copy, insert, remove');\n"
+	"describe('#arrays', 'equal',\t\"?same = equal(@arrayA, @arrayB)\",\t\t\t\t\t\"Returns true if the arrays @arrayA and @arrayB are the same size and all their elements are identical. Both arrays must be contiguous (i.e. all their elements must be defined). Only direct elements under the arrays will be tested. Any sub-elements that they in turn may have are silently ignored.\", \"equal(@firstArray, @secondArray)\\nequal(compose(@temp1, 1, 10, 100, 'one thousand'), compose(@temp2, 1, 10, 100, 'one thousand')) == true\");\n"
+	"describe('#arrays', 'fill',\t\t\"@array = fill(@array, +offset, +count, <value>)\",\t\"Fills a range of +count elements in @array with <value> starting at +offset, replacing any existing elements. If the target @array does not exist (i.e. [@array].n is not defined) it is created. The element count (i.e. [@array].n) may be incremented to fit the new elements.\\n\\nOnly direct elements under the arrays will be affected. The returned value is the input @array reference.\", \"equal(fill(@a, 0, 5, 'x'), compose(@b, 'x', 'x', 'x', 'x', 'x'))\", 'copy, inject, insert, remove');\n"
+	"describe('#arrays', 'inject',\t\"@target = inject(@source, +offset, +count, @target, +index)\", \"Inserts +count elements from the @source array beginning at +offset into @target at +index, relocating any elements at and after +index to make room for the inserted elements. Both arrays must be contiguous and the target +index must be between 0 and [@target].n. Only direct elements under the arrays will be affected. Any sub-elements that they in turn may have are ignored. @source and @target should not reference the same array. The returned value is the input @target reference.\", \"inject(@myArray, 10, 5, @myArray, 13)\\nequal(inject(compose(@temp1, 'a', 'b', 'c', 'd'), 1, 2, compose(@temp2, 'e', 'f', 'g', 'h'), 3), compose(@temp3, 'e', 'f', 'g', 'b', 'c', 'h')) == true\", 'copy, fill, insert, remove');\n"
+	"describe('#arrays', 'iterate',\t\"iterate(@array, >doThis)\",\t\t\t\t\t\t\"Iterates all elements in @array (as determined by [@array].n) and calls >doThis once for every encountered element in ascending index order. Three arguments will be passed to >doThis:\\n\\n$0 will be the full reference to the found element (e.g. \\\"::highscores.3\\\")\\n$1 will be the element index (e.g. 3)\\n$2 will be the value of the element.\\n\\niterate() is the equivalent to foreach() for arrays. Any change to [@array].n while running iterate() will not be accounted for. The array must be contiguous. Only direct elements under the array will be iterated.\", \"iterate(compose(@a, 0, 'one', 2, true), >print($1 # '=' # $2))\", 'foreach');\n"
 	"describe('#arrays', 'insert',\t\"@array = insert(@array, +offset, [<elements>, ...])\",\t\"Inserts one or more elements into @array before the index +offset. The array must be contiguous. Only direct elements under the array will be moved to make room for the new elements. Any sub-elements that they in turn may have remain unaffected. +offset must be between 0 and the element count of @array (or an exception will be thrown). [@array].n must be defined prior to calling this routine. The returned value is the input @array reference.\", \"insert(@myArray, 10, 'insert', 'three', 'strings')\\nequal(insert(compose(@temp1, 'a', 'b', 'f'), 2, 'c', 'd', 'e'), compose(@temp2, 'a', 'b', 'c', 'd', 'e', 'f')) == true\", 'inject, remove');\n"
-	"describe('#arrays', 'remove',\t\"@array = remove(@array, +offset, [+count = 1])\",\t\"Removes +count number of elements from @array beginning at +offset, relocating any elements after the removed elements so that the array remains contiguous. (Only direct elements under the array are moved. Any sub-elements under these elements will be left untouched.)\\n\\nIf +offset and / or +count are negative, this function still yields predictable results (e.g. an +offset of -3 and +count of 6 will remove the three first elements). Likewise, it is allowed to remove elements beyond the end of the array (but naturally it will have no effect). The returned value is the input @array reference.\", \"remove(@removeNumberThree, 3)\\nremove(@drop1and2, 1, 2)\\nequal(remove(compose(@temp1, 'a', 'b', 'c', 'd', 'e'), 1, 3), compose(@temp2, 'a', 'e')) == true\", 'copy, inject, insert, prune');\n"
+	"describe('#arrays', 'remove',\t\"@array = remove(@array, +offset, [+count = 1])\",\t\"Removes +count number of elements from @array beginning at +offset, relocating any elements after the removed elements so that the array remains contiguous. (Only direct elements under the array are moved. Any sub-elements under these elements will be left untouched.)\\n\\nIf +offset and / or +count are negative, this function still yields predictable results (e.g. an +offset of -3 and +count of 6 will remove the three first elements). Likewise, it is allowed to remove elements beyond the end of the array (but naturally it will have no effect). The returned value is the input @array reference.\", \"remove(@removeNumberThree, 3)\\nremove(@drop1and2, 1, 2)\\nequal(remove(compose(@temp1, 'a', 'b', 'c', 'd', 'e'), 1, 3), compose(@temp2, 'a', 'e')) == true\", 'copy, fill, inject, insert, prune');\n"
 	"describe('#arrays', 'rsort',\t\"@array = rsort(@array)\",\t\t\t\t\t\t\t\"Sorts the elements of @array in descending order. The returned value is the input @array reference. To sort in ascending order, use sort(). If you need greater control over the sorting (e.g. how elements are compared), use the lower level function qsort() instead.\", \"rsort(@myArray)\\nequal(rsort(compose(@temp1, 1.1, -5, 1.5, 17, 0x10, 'xyz', 'a', 'def', 'a')), compose(@temp2, 'xyz', 'def', 'a', 'a', 17, 0x10, 1.5, 1.1, -5)) == true\", 'qsort, sort');\n"
 	"describe('#arrays', 'qsort',\t\"qsort(+from, +to, >compare, >swap)\",\t\t\t\t\"This is an abstract implementation of the quicksort algorithm. qsort() handles the logic of the sorting algorithm (the bones) while you provide the functions >compare and >swap that carries out the concrete operations on the data being sorted (the meat).\\n\\n+from and +to defines the sorting range (+to is non-inclusive).\\n\\n>compare is called with two sorting indices and you should return a negative value if the data for the first index ($0) should be placed before the data for the second index ($1). Return a positive non-zero value for the opposite and return zero if the data is identical. (You can use the global ::compare function to easily implement this.)\\n\\n>swap is also called with two indices in $0 and $1 ($0 is always less than $1). The function should swap the data for the two indices. (You can use the global ::swap function to easily implement this.)\\n\\nThe functions sort() and rsort() use this function to implement sorting of entire arrays (ascending and descending respectively).  \", \"qsort(0, myArray.n, >myArray[$0] - myArray[$1], >swap(@myArray[$0], @myArray[$1]))\\nqsort(0, scrambleMe.n, >random(2) - 1, >swap(@scrambleMe[$0], @scrambleMe[$1]))\", 'compare, rsort, sort');\n"
 	"describe('#arrays', 'sort',\t\t\"@array = sort(@array)\",\t\t\t\t\t\t\t\"Sorts the elements of @array in ascending order. The returned value is the input @array reference. To sort in descending order, use rsort(). If you need greater control over the sorting (e.g. how elements are compared), use the lower level function qsort() instead.\", \"sort(@myArray)\\nequal(sort(compose(@temp1, 1.1, -5, 1.5, 17, 0x10, 'xyz', 'a', 'def', 'a')), compose(@temp2, -5, 1.1, 1.5, 0x10, 17, 'a', 'a', 'def', 'xyz')) == true\", 'qsort, rsort');\n"
@@ -2652,26 +2665,39 @@ const char* BUILT_IN_HELP =
 	"describe('#math', 'asin',\t'+y = asin(+x)',\t\t\t\"Returns the arcsine of +x (which should be in the range -1 to 1 or the result will be undefined). The returned value is in the range -PI / 2 to PI / 2.\\n\\nInverse: sin().\", \"asin(0.0) == 0.0\\nasin(0.68163876002334) == 0.75\\nasin(sin(0.5)) == 0.5\", 'acos, atan, sin');\n"
 	"describe('#math', 'atan',\t'+y = atan(+x)',\t\t\t\"Returns the arctangent of +x. The returned value is in the range -PI / 2 to PI / 2.\\n\\nInverse: tan().\", \"atan(0.0) == 0.0\\natan(0.93159645994407) == 0.75\\natan(tan(0.5)) == 0.5\", 'acos, asin, atan2, tan');\n"
 	"describe('#math', 'atan2',\t'+z = atan2(+y, +x)',\t\t'Returns the arctangent of +y/+x with proper handling of quadrants. The returned value is in the range -PI to PI.', \"atan2(0.0, 1.0) == 0.0\\natan2(1.0, 0.0) == PI / 2\\natan2(sin(0.5), cos(0.5)) == 0.5\", 'atan');\n"
+	"describe('#math', 'cbrt',\t'+y = cbrt(+x)',\t\t\t\"Returns the cube root of +x.\\n\\nInverse: cube(+y).\", \"cbrt(0.0) == 0.0\\ncbrt(0.421875) == 0.75\\ncbrt(cube(-0.7)) == -0.7\", 'sqr');\n"
 	"describe('#math', 'ceil',\t'+y = ceil(+x)',\t\t\t'Returns the ceiling of value +x. Ceil() rounds both positive and negative values upwards.', \"ceil(0.0) == 0.0\\nceil(-0.99999) == 0.0\\nceil(1000.00001) == 1001.0\", 'floor, round, trunc');\n"
 	"describe('#math', 'cos',\t'+y = cos(+x)',\t\t\t\t\"Returns the cosine of +x. The returned value is in the range -1 to 1.\\n\\nInverse: acos().\", \"cos(0.0) == 1.0\\ncos(0.72273424781342) == 0.75\\ncos(acos(0.5)) == 0.5\", 'acos, sin, tan');\n"
 	"describe('#math', 'cosh',\t'+y = cosh(+x)',\t\t\t'Returns the hyperbolic cosine of +x.', \"cosh(0.0) == 1.0\\ncosh(0.9624236501192069) == 1.5\", 'sinh, tanh');\n"
+	"describe('#math', 'cube',\t'+y = cube(+x)',\t\t\t\"Returns the cube of +x.\\n\\nInverse: cbrt(+y).\", \"cube(0.0) == 0.0\\ncube(0.90856029641607) == 0.75\\ncube(cbrt(-0.7)) == -0.7\", 'cbrt, sqr');\n"
 	"describe('#math', 'exp',\t'+y = exp(+x)',\t\t\t\t\"Returns the exponential of +x. I.e, the result is e to the power +x.\\n\\nInverse: log().\", \"exp(0.0) == 1.0\\nexp(1.0) == 2.718281828459\\nexp(-0.28768207245178) == 0.75\\nexp(log(0.6)) == 0.6\", 'log, log2, log10, pow');\n"
+	"describe('#math', 'factorial',\t'+y = factorial(+x)',\t'Returns the factorial of value +x. +x should be an integer in the range of 1 to 170.', \"factorial(10) == 3628800\");\n"
 	"describe('#math', 'floor',\t'+y = floor(+x)',\t\t\t'Returns the floor of value +x. Floor() rounds both positive and negative values downwards.', \"floor(0.0) == 0.0\\nfloor(-0.99999) == -1.0\\nfloor(1000.00001) == 1000.0\", 'ceil, round, trunc');\n"
-	"describe('#math', 'log',\t'+y = log(+x)',\t\t\t\t\"Returns the natural logarithm of +x (i.e. the logarithm with base e). +x should be positive or the result will be undefined.\\n\\nInverse: exp().\", \"log(0.0) == -infinity\\nlog(1.0) == 0.0\\nlog(2.7182818284593) == 1.0\\nlog(exp(0.6)) == 0.6\", 'exp, log2, log10, logb, pow');\n"
-	"describe('#math', 'log2',\t'+y = log2(+x)',\t\t\t\"Returns the base-2 logarithm of +x. +x should be positive or the result will be undefined.\\n\\nInverse: pow(2, +y).\", \"log2(0.0) == -infinity\\nlog2(1.0) == 0.0\\nlog2(65536.0) == 16.0\\nlog2(pow(2, 1.2)) == 1.2\", 'exp, log, log10, logb, pow');\n"
-	"describe('#math', 'log10',\t'+y = log10(+x)',\t\t\t\"Returns the base-10 logarithm of +x. +x should be positive or the result will be undefined.\\n\\nInverse: pow(10, +y).\", \"log10(0.0) == -infinity\\nlog10(1.0) == 0.0\\nlog10(10000.0) == 4.0\\nlog10(pow(10, 0.6)) == 0.6\", 'exp, log, log2, logb, pow');\n"
-	"describe('#math', 'logb',\t'+y = logb(+b, +x)',\t\t\"Returns the logarithm of +x with base +b. +x should be positive or the result will be undefined. Equivalent to log(+x) / log(+b).\\n\\nInverses: +x = pow(+b, +y), +b = nroot(+y, +x).\", \"logb(20, 1.0) == 0.0\\nlogb(20, 8000) == 3\", 'exp, log, log2, log10, pow');\n"
-	"describe('#math', 'pow',\t'+z = pow(+x, +y)',\t\t\t\"Returns +x raised to the power of +y.\\n\\nInverses: +y = log(+z) / log(+x) or logb(+x, +z), +x = pow(+z, 1.0 / +y) or nroot(+y, +z).\", \"pow(0.0, 0.0) == 1.0\\npow(10.0, 4.0) == 10000.0\\npow(10.0, log10(0.7)) == 0.7\\npow(pow(2.7, 9.6), 1.0 / 9.6) == 2.7\", 'exp, log, log2, logb, log10');\n"
+	"describe('#math', 'log',\t'+y = log(+x)',\t\t\t\t\"Returns the natural logarithm of +x (i.e. the logarithm with base e). +x should be positive or the result will be undefined.\\n\\nInverse: exp().\", \"log(0.0) == -infinity\\nlog(1.0) == 0.0\\nlog(2.7182818284593) == 1.0\\nlog(exp(0.6)) == 0.6\", 'exp, log2, log10, logb, nroot, pow');\n"
+	"describe('#math', 'log2',\t'+y = log2(+x)',\t\t\t\"Returns the base-2 logarithm of +x. +x should be positive or the result will be undefined.\\n\\nInverse: pow(2, +y).\", \"log2(0.0) == -infinity\\nlog2(1.0) == 0.0\\nlog2(65536.0) == 16.0\\nlog2(pow(2, 1.2)) == 1.2\", 'exp, log, log10, logb, nroot, pow');\n"
+	"describe('#math', 'log10',\t'+y = log10(+x)',\t\t\t\"Returns the base-10 logarithm of +x. +x should be positive or the result will be undefined.\\n\\nInverse: pow(10, +y).\", \"log10(0.0) == -infinity\\nlog10(1.0) == 0.0\\nlog10(10000.0) == 4.0\\nlog10(pow(10, 0.6)) == 0.6\", 'exp, log, log2, logb, nroot, pow');\n"
+	"describe('#math', 'logb',\t'+y = logb(+b, +x)',\t\t\"Returns the logarithm of +x with base +b. +x should be positive or the result will be undefined. Equivalent to log(+x) / log(+b).\\n\\nInverses: +x = pow(+b, +y), +b = nroot(+y, +x).\", \"logb(20, 1.0) == 0.0\\nlogb(20, 8000) == 3\", 'exp, log, log2, log10, nroot, pow');\n"
+	"describe('#math', 'nroot',\t'+x = nroot(+y, +z)',\t\t\"Returns the nth (+y) root of +z.\\n\\nInverse: +z = pow(+x, +y).\", \"nroot(11, pow(17, 11)) == 17\", 'exp, log, log2, logb, log10, pow');\n"
+	"describe('#math', 'pow',\t'+z = pow(+x, +y)',\t\t\t\"Returns +x raised to the power of +y.\\n\\nInverses: +y = log(+z) / log(+x) or logb(+x, +z), +x = pow(+z, 1.0 / +y) or nroot(+y, +z).\", \"pow(0.0, 0.0) == 1.0\\npow(10.0, 4.0) == 10000.0\\npow(10.0, log10(0.7)) == 0.7\\npow(pow(2.7, 9.6), 1.0 / 9.6) == 2.7\", 'exp, log, log2, logb, log10, nroot');\n"
 	"describe('#math', 'random',\t'+y = random(+x)',\t\t\t'Returns a pseudo-random number between 0 and +x.', 'random(100.0)');\n"
 	"describe('#math', 'round',\t'+y = round(+x)',\t\t\t'Rounds the value of +x to the nearest integer. If the decimal part of +x is exactly 0.5, the rounding will be upwards (e.g. -3.5 rounds to 3.0).', \"round(1.23456) == 1\\nround(-1.6789) == -2\\nround(3.5) == 4.0\\nround(-3.5) == -3.0\\nround(1000.499999) == 1000.0\", 'ceil, floor, trunc');\n"
 	"describe('#math', 'sign',\t'+y = sign(+x)',\t\t\t\"Returns -1 if +x is negative, +1 if +x is positive or 0 if +x is zero.\", \"sign(0.0) == 0.0\\nsign(12.34) == 1\\nsign(-infinity) == -1\", 'abs');\n"
 	"describe('#math', 'sin',\t'+y = sin(+x)',\t\t\t\t\"Returns the sine of +x. The returned value is in the range -1 to 1.\\n\\nInverse: asin().\", \"sin(0.0) == 0.0\\nsin(0.84806207898148) == 0.75\\nsin(asin(0.5)) == 0.5\", 'asin, cos, tan');\n"
 	"describe('#math', 'sinh',\t'+y = sinh(+x)',\t\t\t'Returns the hyperbolic sine of +x.', \"sinh(0.0) == 0.0\\nsinh(0.6931471805599453) == 0.75\", 'cosh, tanh');\n"
-	"describe('#math', 'sqr',\t'+y = sqr(+x)',\t\t\t\t\"Returns the square of +x.\\n\\nInverse: sqrt(+y).\", \"sqr(0.0) == 0.0\\nsqr(0.86602540378444) == 0.75\\nsqr(sqrt(0.7)) == 0.7\", 'sqrt');\n"
+	"describe('#math', 'sqr',\t'+y = sqr(+x)',\t\t\t\t\"Returns the square of +x.\\n\\nInverse: sqrt(+y).\", \"sqr(0.0) == 0.0\\nsqr(0.86602540378444) == 0.75\\nsqr(sqrt(0.7)) == 0.7\", 'cube, sqrt');\n"
 	"describe('#math', 'sqrt',\t'+y = sqrt(+x)',\t\t\t\"Returns the square root of +x. +x should be positive or the result will be undefined.\\n\\nInverse: sqr(+y).\", \"sqrt(0.0) == 0.0\\nsqrt(0.5625) == 0.75\\nsqrt(sqr(0.7)) == 0.7\", 'sqr');\n"
 	"describe('#math', 'tan',\t'+y = tan(+x)',\t\t\t\t\"Returns the tangent of +x.\\n\\nInverse: atan(+y).\", \"tan(0.0) == 0.0\\ntan(0.64350110879329) == 0.75\\ntan(atan(0.3)) == 0.3\", 'atan, cos, sin');\n"
 	"describe('#math', 'tanh',\t'+y = tanh(+x)',\t\t\t'Returns the hyperbolic tangent of +x.', \"tanh(0.0) == 0.0\\ntanh(0.9729550745276566) == 0.75\", 'cosh, sinh');\n"
 	"describe('#math', 'trunc',\t'+y = trunc(+x, [+n = 0])',\t'Truncates the value of +x leaving up to +n decimal places intact. If +n is omitted, all decimals are truncated. Truncation rounds positive values downwards and negative values upwards.', \"trunc(1.23456) == 1\\ntrunc(-1.23456) == -1\\ntrunc(1.23456, 2) == 1.23\\ntrunc(1.5, 10) == 1.5\", 'ceil, floor, precision, round');\n"
+	"\n"
+	"describe('#objects', 'construct',\t\"@object = construct(@object, >constructor, [<arguments>, ...])\",\t\t\t\t\t\"Constructs\", \"\", 'destruct, new, newLocal, this');\n"
+	"describe('#objects', 'destruct',\t\"+count = destruct(@object)\",\t\t\t\t\t\"Destructs\", \"\", 'construct, delete, prune');\n"
+	"describe('#objects', 'gc',\t\"+count = gc()\",\t\t\t\t\t\"Garbage collect.\", \"\", 'new, newLocal');\n"
+	"describe('#objects', 'invokeMethod',\t\"<result> = invokeMethod(@object, 'method', @args, [+offset = 0], [+count])\",\t\t\t\t\t\"Like invoke() but for methods.\", \"\", 'invoke');\n"
+	"describe('#objects', 'method',\t\"'method' = method()\",\t\t\t\t\t\"Method called.\", \"\", 'this');\n"
+	"describe('#objects', 'new',\t\"@object = new(>constructor, [<arguments>, ...])\",\t\t\t\t\t\"Allocates and constructs.\", \"\", 'construct, gc, newLocal');\n"
+	"describe('#objects', 'newLocal',\t\"@object = newLocal(>constructor, [<arguments>, ...])\",\t\t\t\t\t\"Allocates and constructs on local heap.\", \"\", 'construct, gc, new');\n"
+	"describe('#objects', 'this',\t\"@object = this()\",\t\t\t\t\t\"Object called.\", \"\", 'method');\n"
 	"\n"
 	"describe('#strings', 'char',\t\t\"'character' = char(+code)\",\t\t\t\t\t\t\"Returns the character represented by +code as a string. +code is either an ASCII or Unicode value (depending on how PikaScript is configured). If +code is not a valid character code the exception 'Illegal character code: {code}' will be thrown.\\n\\nInverse: ordinal('character').\", \"char(65) === 'A'\\nchar(ordinal('\xe5')) === '\xe5'\", 'ordinal');\n"
 	"describe('#strings', 'chop',\t\t\"'chopped' = chop('string', +count)\",\t\t\t\t\"Removes the last +count number of characters from 'string'. This function is equivalent to 'string'{:length('string') - +count}. If +count is zero or negative, the entire 'string' is returned. If +count is greater than the length of 'string', the empty string is returned. (There is no function for removing characters from the beginning of the string because you can easily use 'string'{+count:}.)\", \"chop('abcdefgh', 3) === 'abcde'\\nchop('abcdefgh', 42) === ''\", 'length, right, trim');\n"
@@ -2704,13 +2730,12 @@ const char* BUILT_IN_HELP =
 	"describe('#utils', 'classify',\t\"'class' = classify(<value>)\",\t\t\t\t\t\t\"Examines <value> and tries to determine what \\\"value class\\\" it belongs to:\\n\\n- 'void' (empty string)\\n- 'boolean' ('true' or 'false')\\n- 'number' (starts with a digit, '+' or '-' and is convertible to a number)\\n- 'reference' (starting with ':' and containing at least one more ':')\\n- 'function' (enclosed in '{ }' or begins with '>:' and contains one more ':')\\n- 'native' (enclosed in '< >')\\n- 'string' (if no other match)\", \"classify(void) === 'void'\\nclassify('false') === 'boolean'\\nclassify(123.456) === 'number'\\nclassify(@localvar) === 'reference'\\nclassify(function { }) === 'function'\\nclassify(>lambda) === 'function'\\nclassify('<print>') === 'native'\\nclassify('tumbleweed') === 'string'\");\n"
 	"describe('#utils', 'coalesce',\t'<value> = coalesce(<values> | @variables, ...)',\t\"Returns the first <value> in the argument list that is non-void, or the contents of the first @variables that exists (whichever comes first). void is returned if everything else fails.\\n\\nA word of warning here, if a string value happens to look like a reference (e.g. '::') it will be interpreted as a such which may yield unexpected results. E.g. coalesce('::uhuh', 'oops') will not return 'oops' if a global variable named 'uhuh' exists.\", \"coalesce(@gimmeVoidIfNotDefined)\\ncoalesce(maybeVoid, perhapsThisAintVoid, 'nowIAmDefinitelyNotVoid')\", 'defaults, exists');\n"
 	"describe('#utils', 'compare',\t'<diff> = compare(<a>, <b>)',\t\t\t\t\t\t'Returns 0 if <a> equals <b>, -1 if <a> is less than <b> and 1 if <a> is greater than <b>. This function is useful in sorting algorithms.', \"compare('abc', 'def') < 0\\ncompare('def', 'abc') > 0\\ncompare('abc', 'abc') == 0\", 'qsort, swap');\n"
-	"// FIX : defaults\n"
-	"describe('#utils', 'default',\t'default(@variable, <value>)',\t\t\t\t\t\t'Assigns <value> to @variable if @variable does not exist. If it does already exist, this function does nothing. Use this function for example to initialize optional arguments.', \"default(@name, 'Smith')\", 'coalesce');\n"
+	"describe('#utils', 'defaults',\t'defaults([@variable, <value>, ...])',\t\t\t\t'Assigns each <value> to each @variable if it does not exist. This function is useful for initializing global variables and optional function arguments.', \"defaults(@name, 'Smith')\\ndefaults(@first, 'a', @last, 'z')\", 'coalesce');\n"
 	"describe('#utils', 'delete',\t\"?deleted = delete(@variable)\",\t\t\t\t\t\t\"Deletes the variable referenced to by @variable and returns true if the variable existed and was successfully deleted.\\n\\nNotice that this function can only delete a single variable at a time. This means only a single \\\"element\\\" in a \\\"container\\\" as well. Use prune() to delete an entire \\\"plain old data\\\" container and destruct() to delete an object.\", \"delete(@begone)\\ndelete(@hurray[1972])\", 'destruct, exists, prune');\n"
 	"describe('#utils', 'evaluate',\t\"<result> = evaluate('code', [@frame])\",\t\t\t\"Evaluates 'code' and returns the result. You can decide which frame should execute the code by supplying a reference in @frame. Without @frame, code is executed in its own frame just as if you would call a function. Only the \\\"frame identifier\\\" of @frame is used.\\n\\nYou may for example pass @$ to execute in the current frame, or @^$ to execute in the caller's frame (the '$' is there to reference the correct frame even if it is a lambda expression).\", \"evaluate('3 + 3') == 6\\nevaluate('x = random(1)', @x)\", 'bake, invoke, parse, run, sourceFor, toSource');\n"
 	"describe('#utils', 'exists',\t\"?found = exists(@variable)\",\t\t\t\t\t\t\"Returns true if the variable referenced to by @variable is defined.\", \"exists(@::aglobal)\\nexists(@users['magnus lidstrom'])\", 'coalesce, defaults, delete');\n"
 	"describe('#utils', 'input',\t\t\"'answer' = input('question')\",\t\t\t\t\t\t\"Prints 'question' and returns a line read from the standard input stream (excluding any terminating line feed characters). May throw 'Unexpected end of input file' or 'Input file error'.\", \"name = input(\\\"What's your name? \\\")\", 'print');\n"
-	"describe('#utils', 'invoke',\t\"<result> = invoke(['callee'], [>body], @args, [+offset = 0], [+count])\",\t\"Calls 'callee' (or >body) with the argument list @args. The difference between using 'callee' or >body is that the former should be a string with a function name, while the latter should be an actual function body. If both arguments are present, >body will be executed, but the called function's $callee variable will be set to 'callee'. For debugging purposes it is recommended that you use the 'callee' argument.\\n\\n+offset can be used to adjust the element index for the first argument. +count is the number of arguments. If it is omitted, [@args].n is used to determine the count.\", \"invoke('max', , @values)\\ninvoke('(callback)', $0, @$, 1, 4)\", \"evaluate, run\");\n"
+	"describe('#utils', 'invoke',\t\"<result> = invoke(['callee'], [>body], @args, [+offset = 0], [+count])\",\t\"Calls 'callee' (or >body) with the argument list @args. The difference between using 'callee' or >body is that the former should be a string with a function name, while the latter should be an actual function body. If both arguments are present, >body will be executed, but the called function's $callee variable will be set to 'callee'. For debugging purposes it is recommended that you use the 'callee' argument.\\n\\n+offset can be used to adjust the element index for the first argument. +count is the number of arguments. If it is omitted, [@args].n is used to determine the count.\", \"invoke('max', , @values)\\ninvoke('(callback)', $0, @$, 1, 4)\", \"evaluate, invokeMethod, run\");\n"
 	"describe('#utils', 'load',\t\t\"'contents' = load('filePath')\",\t\t\t\t\t\"Loads a file from disk and returns it as a string. The standard implementation uses the file I/O of the standard C++ library, which takes care of line ending conversion etc. It can normally only handle ASCII text files. May throw 'Cannot open file for reading: {filePath}' or 'Error reading from file: {filePath}'.\", \"data = load('myfolder/myfile.txt')\", 'save');\n"
 	"describe('#utils', 'max',\t\t'<m> = max(<x>, <y>, [<z>, ...])',\t\t\t\t\t'Returns the largest value of all the arguments.', \"max(5, 3, 7, 1, 4) == 7\\nmax('Sleepy', 'Grumpy', 'Happy', 'Bashful', 'Dopey', 'Sneezy', 'Doc') === 'Sneezy'\\nmax('Zero', '10', '5') === 'Zero'\", 'min');\n"
 	"describe('#utils', 'min',\t\t'<m> = min(<x>, <y>, [<z>, ...])',\t\t\t\t\t'Returns the smallest value of all the arguments.', \"min(5, 3, 7, 1, 4) == 1\\nmin('Sleepy', 'Grumpy', 'Happy', 'Bashful', 'Dopey', 'Sneezy', 'Doc') === 'Bashful'\\nmin('Zero', '10', '5') === '5'\", 'max');\n"
@@ -2766,6 +2791,12 @@ const char* BUILT_IN_INTERACTIVE =
 	"\targs(@prompt, @where);\n"
 	"\t::_ = void;\n"
 	"\toneLine = function { limitLength(singleLine($0), CONSOLE_COLS - 7) };\n"
+	"\tshow = function {\n"
+	"\t\targs(@var);\n"
+	"\t\tmore(var # if (classify(var) === 'reference' && (s = sourceFor(var, ' ')) !== '')\n"
+	"\t\t\t\t(LF # repeat('=', 8) # LF # s # repeat('=', 8)));\n"
+	"\t\t( void )\n"
+	"\t};\n"
 	"\tfor (; {\n"
 	"\t\tif ((s = input(prompt)) === 'exit') ( false )\n"
 	"\t\telse {\n"
@@ -2808,13 +2839,15 @@ const char* BUILT_IN_INTERACTIVE =
 	"};\n"
 	"\n"
 	"if (exists(@$1) && $1 == 'go') {\n"
-	"\trun('stdlib.pika');\n"
-	"\trun('debug.pika');\n"
+	"\tif (!exists(@::modules.stdlib)) run('stdlib.pika');\n"
+	"\tif (!exists(@::modules.debug)) run('debug.pika');\n"
 	"\tprint(\"Type '?' for help.\");\n"
 	"\tinteract('Pika> ', @::);\n"
 	"};\n";
 
 const char* BUILT_IN_STDLIB =
+	"::modules.stdlib = true;\n"
+	"\n"
 	"// --- Utils ---\n"
 	"\n"
 	"args = function {\n"
@@ -2977,7 +3010,7 @@ const char* BUILT_IN_STDLIB =
 	"\n"
 	"E = 2.71828182845904523536;\n"
 	"PI = 3.14159265358979323846;\n"
-	"cbrt = function { pow($0, 1 / 3) };\n"
+	"cbrt = function { pow(abs($0), 1 / 3) * sign($0) };\n"
 	"cube = function { $0 * $0 * $0 };\n"
 	"factorial = function { if (~~$0 > 170) ( +infinity ) else { v = 1; for (i = 2; i <= $0; ++i) v *= i } };\n"
 	"log2 = function { log($0) * 1.44269504088896340736 };\n"

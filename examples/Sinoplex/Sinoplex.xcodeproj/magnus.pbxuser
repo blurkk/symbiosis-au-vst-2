@@ -122,8 +122,8 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					200,
-					592,
+					732,
+					60,
 					20,
 					48,
 					43,
@@ -139,19 +139,21 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 284246163;
-			PBXWorkspaceStateSaveDate = 284246163;
+			PBXPerProjectTemplateStateSaveDate = 318127413;
+			PBXWorkspaceStateSaveDate = 318127413;
 		};
 		perUserProjectItems = {
-			F743802810F1327B00D42A1D /* PBXTextBookmark */ = F743802810F1327B00D42A1D /* PBXTextBookmark */;
-			F743802B10F1327B00D42A1D /* PBXTextBookmark */ = F743802B10F1327B00D42A1D /* PBXTextBookmark */;
-			F743807610F135BC00D42A1D /* PBXTextBookmark */ = F743807610F135BC00D42A1D /* PBXTextBookmark */;
-			F74380A810F1413200D42A1D /* PBXTextBookmark */ = F74380A810F1413200D42A1D /* PBXTextBookmark */;
-			F7BACB5810ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5810ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */ = F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */;
+			F721D42A12F63D41006BA722 /* PBXTextBookmark */ = F721D42A12F63D41006BA722 /* PBXTextBookmark */;
+			F721D43312F63D6A006BA722 /* PBXTextBookmark */ = F721D43312F63D6A006BA722 /* PBXTextBookmark */;
+			F743802810F1327B00D42A1D = F743802810F1327B00D42A1D /* PBXTextBookmark */;
+			F743802B10F1327B00D42A1D = F743802B10F1327B00D42A1D /* PBXTextBookmark */;
+			F743807610F135BC00D42A1D = F743807610F135BC00D42A1D /* PBXTextBookmark */;
+			F74380A810F1413200D42A1D = F74380A810F1413200D42A1D /* PBXTextBookmark */;
+			F7BACB5810ECD346005AB7FA = F7BACB5810ECD346005AB7FA /* PBXTextBookmark */;
+			F7BACB5B10ECD346005AB7FA = F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */;
+			F7BACB5C10ECD346005AB7FA = F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */;
+			F7BACB5E10ECD346005AB7FA = F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */;
+			F7BACB5F10ECD346005AB7FA = F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7A920640903D3A3009996D9 /* Source Control */;
 		userBuildSettings = {
@@ -174,13 +176,16 @@
 		);
 		breakpointStyle = 0;
 		continueAfterActions = 0;
+		countType = 0;
 		delayBeforeContinue = 0;
 		fileReference = F74921A10C87BC160057A327 /* Symbiosis.cpp */;
 		functionName = "SymbiosisComponent::render()";
 		hitCount = 1;
+		ignoreCount = 0;
 		lineNumber = 3674;
 		location = Sinoplex;
 		modificationTime = 258590553.953041;
+		originalNumberOfMultipleMatches = 0;
 		state = 2;
 	};
 	F706ECF70F69C77900649088 /* Symbiosis.cpp:4118 */ = {
@@ -189,18 +194,40 @@
 		);
 		breakpointStyle = 0;
 		continueAfterActions = 0;
+		countType = 0;
 		delayBeforeContinue = 0;
 		fileReference = F74921A10C87BC160057A327 /* Symbiosis.cpp */;
 		functionName = "SymbiosisComponent::setProperty()";
 		hitCount = 0;
+		ignoreCount = 0;
 		lineNumber = 4118;
 		location = Symbiosis;
 		modificationTime = 258590593.619584;
+		originalNumberOfMultipleMatches = 0;
 		state = 1;
+	};
+	F721D42A12F63D41006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
+		name = "Sinoplex.cpp: 14";
+		rLen = 0;
+		rLoc = 319;
+		rType = 0;
+		vrLen = 1753;
+		vrLoc = 0;
+	};
+	F721D43312F63D6A006BA722 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
+		name = "Sinoplex.cpp: 14";
+		rLen = 0;
+		rLoc = 319;
+		rType = 0;
+		vrLen = 1753;
+		vrLoc = 0;
 	};
 	F72B1CCF0C8B732900D1B794 /* AUVal */ = {
 		isa = PBXExecutable;
-		activeArgIndex = 0;
 		activeArgIndices = (
 			YES,
 			NO,
@@ -210,6 +237,7 @@
 			"-v aumu SiPx NuEd",
 		);
 		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
 		configStateDict = {
 			"PBXLSLaunchAction-0" = {
 				PBXLSLaunchAction = 0;
@@ -228,6 +256,9 @@
 			};
 		};
 		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
 		debuggerPlugin = GDBDebugging;
 		disassemblyDisplayState = 0;
 		dylibVariantSuffix = "";
@@ -241,6 +272,7 @@
 		name = AUVal;
 		savedGlobals = {
 		};
+		showTypeColumn = 0;
 		sourceDirectories = (
 		);
 		variableFormatDictionary = {
@@ -260,13 +292,16 @@
 		);
 		breakpointStyle = 0;
 		continueAfterActions = 0;
+		countType = 0;
 		delayBeforeContinue = 0;
 		fileReference = F74921A10C87BC160057A327 /* Symbiosis.cpp */;
 		functionName = "SymbiosisComponent::getPropertyInfo()";
 		hitCount = 1;
+		ignoreCount = 0;
 		lineNumber = 3173;
 		location = Symbiosis;
 		modificationTime = 258590594.83089;
+		originalNumberOfMultipleMatches = 0;
 		state = 1;
 	};
 	F743802810F1327B00D42A1D /* PBXTextBookmark */ = {
@@ -318,6 +353,7 @@
 	};
 	F74380A910F1413200D42A1D /* SinoplexExports */ = {
 		isa = PBXFileReference;
+		lastKnownFileType = text;
 		name = SinoplexExports;
 		path = /Users/Magnus/projects/Symbiosis/trunk/examples/Sinoplex/SinoplexExports;
 		sourceTree = "<absolute>";
@@ -352,15 +388,18 @@
 	};
 	F74921280C87B54B0057A327 /* VSTLord */ = {
 		isa = PBXExecutable;
-		activeArgIndex = 2147483647;
 		activeArgIndices = (
 		);
 		argumentStrings = (
 		);
 		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
 		configStateDict = {
 		};
 		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
 		debuggerPlugin = GDBDebugging;
 		disassemblyDisplayState = 0;
 		dylibVariantSuffix = "";
@@ -374,6 +413,7 @@
 		name = VSTLord;
 		savedGlobals = {
 		};
+		showTypeColumn = 0;
 		sourceDirectories = (
 		);
 		variableFormatDictionary = {
@@ -442,6 +482,9 @@
 		isSCMEnabled = 0;
 		scmConfiguration = {
 			repositoryName = "";
+			repositoryNamesForRoots = {
+				"" = svn;
+			};
 		};
 		scmType = scm.subversion;
 	};
@@ -451,9 +494,9 @@
 	};
 	F7A920930903D63C009996D9 /* Sinoplex.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {3100, 19057}}";
-			sepNavSelRange = "{2931, 0}";
-			sepNavVisRange = "{1947, 1486}";
+			sepNavIntBoundsRect = "{{0, 0}, {962, 13065}}";
+			sepNavSelRange = "{319, 0}";
+			sepNavVisRange = "{0, 1753}";
 			sepNavVisRect = "{{0, 1121}, {970, 442}}";
 			sepNavWindowFrame = "{{15, 4}, {1076, 769}}";
 		};
@@ -510,15 +553,18 @@
 	};
 	F7FBB3470C888B470018C690 /* AULab */ = {
 		isa = PBXExecutable;
-		activeArgIndex = 2147483647;
 		activeArgIndices = (
 		);
 		argumentStrings = (
 		);
 		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
 		configStateDict = {
 		};
 		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
 		debuggerPlugin = GDBDebugging;
 		disassemblyDisplayState = 0;
 		dylibVariantSuffix = "";
@@ -532,6 +578,7 @@
 		name = AULab;
 		savedGlobals = {
 		};
+		showTypeColumn = 0;
 		sourceDirectories = (
 		);
 		variableFormatDictionary = {
