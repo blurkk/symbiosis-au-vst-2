@@ -216,7 +216,8 @@ script file from a shell prompt). Now look for `Symbiosis.rsrc`. Found it? Excel
 
  Finally, you also need to edit the OS X `Info.plist` and fill out the standard bundle version info plus choose a few
 Symbiosis specific configuration options. `Info.plist` is located inside your wrapper bundle under `Contents/`. It
-contains comments with further instructions.
+contains comments with further instructions. (You may need to open `Info.plist` with a text-editor like `TextEdit` to
+see the comments.)
 
  Move on to Running Your AU for the First Time.
 
@@ -239,7 +240,8 @@ such phase, create one by choosing "New Build Phase -> New Build ResourceManager
 
  Edit your copy of `Symbiosis.r` according to the instructions inside. Next, add the Symbiosis specific configuration
 options found in `Symbiosis.plist` to the `Info.plist` file that should already exist for your VST project (you may have
-called it something else though). You will find more instructions in the `Symbiosis.plist` file.
+called it something else though). You will find more instructions in the `Symbiosis.plist` file. (You may need to open
+`Symbiosis.plist` with a text-editor like `TextEdit` to see the comments.)
 
  If you have a custom "exported symbols file" for your project, you need to add these two entries to it:
 
@@ -301,10 +303,10 @@ this file.
 
  Column         Description
  ------         -----------
- vst param #    The VST parameter number (zero based), which is also the unique identifier for the parameter.
- name           The parameter name as shown to the end user.*
- min            The minimum parameter value.**
- max            The maximum parameter value.**
+ vst param #    The VST parameter number (zero based), which is also the unique identifier for the parameter.*
+ name           The parameter name as shown to the end user.**
+ min            The minimum parameter value.***
+ max            The maximum parameter value.***
  display        A string that defines how the parameter is displayed to the end user. Use one of the following:
                 `=` for linear scaling (within the `min` to `max` range).
                 `b` for boolean switch (0 is off, 1 is on)
@@ -313,9 +315,12 @@ this file.
  unit           The parameter suffix / unit.
  default        The initial default setting.
 
- * You may wish to edit this column as AU can handle longer parameter names than VST.
+ * If changes to this parameter will automatically modify other parameters you need to suffix this column with `+`. This
+information is important for AU hosts.
 
- ** VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are
+ ** You may wish to edit this column as AU can handle longer parameter names than VST.
+
+ *** VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are
 used to scale and normalize the AU parameter range from / to the 0 and 1 range.
 
 SYFactoryPresets.txt
@@ -406,7 +411,7 @@ Copyrights and Trademarks
  Symbiosis is released under the "New Simplified BSD License".
  http://www.opensource.org/licenses/bsd-license.php
 
- Copyright (c) 2010, NuEdge Development / Magnus Lidström
+ Copyright (c) 2011, NuEdge Development / Magnus Lidström
  All rights reserved.
 
  *)  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -429,7 +434,7 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSE
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- The HTML version of this document was created with PikaScript, (c) 2009 NuEdge Development.
+ The HTML version of this document was created with PikaScript, (c) 2011 NuEdge Development.
  
  Apple, Audio Units and OS X are trademarks of Apple Inc., registered in the U.S. and other countries. VST is a
 trademark of Steinberg Media Technologies GmbH. All other trademarks and brand identities are used for descriptive

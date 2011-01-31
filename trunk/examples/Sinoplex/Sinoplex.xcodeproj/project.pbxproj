@@ -38,7 +38,7 @@
 		F74920C50C87B0380057A327 /* audioeffectx.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = audioeffectx.cpp; path = public.sdk/source/vst2.x/audioeffectx.cpp; sourceTree = "<group>"; };
 		F74920C60C87B0380057A327 /* audioeffectx.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = audioeffectx.h; path = public.sdk/source/vst2.x/audioeffectx.h; sourceTree = "<group>"; };
 		F74921790C87BB340057A327 /* Sinoplex.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; path = Sinoplex.r; sourceTree = "<group>"; };
-		F74921990C87BBC80057A327 /* Sinoplex.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; path = Sinoplex.plist; sourceTree = "<group>"; };
+		F74921990C87BBC80057A327 /* Sinoplex.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; path = Sinoplex.plist; sourceTree = "<group>"; };
 		F74921A10C87BC160057A327 /* Symbiosis.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Symbiosis.cpp; path = ../../Symbiosis.cpp; sourceTree = SOURCE_ROOT; };
 		F74921C50C87BC270057A327 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F74921C60C87BC270057A327 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
@@ -158,7 +158,14 @@
 			isa = PBXProject;
 			buildConfigurationList = F7A920600903D3A3009996D9 /* Build configuration list for PBXProject "Sinoplex" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 089C166AFE841209C02AAC07 /* Sinoplex */;
 			projectDirPath = "";
 			projectRoot = "";

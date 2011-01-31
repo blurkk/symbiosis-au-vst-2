@@ -5,13 +5,13 @@
 	
 	\version
 
-	Version 1.2
+	Version 1.21
 
 	\page Copyright
 
 	Symbiosis is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2010, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -50,7 +50,7 @@
 #if !defined(SY_USE_VST_VERSION)	// See Symbiosis_Prefix.pch for information on this define.
 	#if defined(kVstVersion)		// If the VST SDK is in precompiled header, use kVstVersion defined in aeffect.h
 		#define SY_USE_VST_VERSION kVstVersion
-	#else
+	#elif !defined(kVstVersion)
 		#define SY_USE_VST_VERSION 2400
 	#endif
 #endif
@@ -77,10 +77,10 @@
 /* --- Configuration macros --- */
 
 #if !defined(SY_DO_TRACE)
-	#define SY_DO_TRACE (!NDEBUG)
+	#define SY_DO_TRACE (!defined(NDEBUG))
 #endif
 #if !defined(SY_DO_ASSERT)
-	#define SY_DO_ASSERT (!NDEBUG)
+	#define SY_DO_ASSERT (!defined(NDEBUG))
 #endif
 
 #if !defined(SY_STD_TRACE)
@@ -91,6 +91,7 @@
 #endif
 
 #if (SY_DO_TRACE)
+
 	#if !defined(SY_TRACE_MISC)
 		#define SY_TRACE_MISC 1
 	#endif
@@ -115,7 +116,9 @@
 		#define SY_TRACE5(c, s, a1, a2, a3, a4, a5) { if (c) fprintf(stderr, "[%s](%x) " s "\n", gTraceIdentifierString, reinterpret_cast<int>(::pthread_self()), (a1), (a2), (a3), (a4), (a5)); }
 		#define SY_TRACE_STOP
 	#endif
-#else
+
+#elif (!SY_DO_TRACE)
+
 	#define SY_TRACE(c, s)
 	#define SY_TRACE1(c, s, a1)
 	#define SY_TRACE2(c, s, a1, a2)
@@ -123,6 +126,7 @@
 	#define SY_TRACE4(c, s, a1, a2, a3, a4)
 	#define SY_TRACE5(c, s, a1, a2, a3, a4, a5)
 	#define SY_TRACE_STOP
+	
 #endif
 
 #if (SY_DO_ASSERT)
@@ -135,7 +139,7 @@
 	#define SY_ASSERT3(x, d, a1, a2, a3) { if (!(x)) { SY_TRACE3(1, d, a1, a2, a3); } SY_ASSERT(x); }
 	#define SY_ASSERT4(x, d, a1, a2, a3, a4) { if (!(x)) { SY_TRACE4(1, d, a1, a2, a3, a4); } SY_ASSERT(x); }
 	#define SY_ASSERT5(x, d, a1, a2, a3, a4, a5) { if (!(x)) { SY_TRACE5(1, d, a1, a2, a3, a4); } SY_ASSERT(x); }
-#else
+#elif (!SY_DO_ASSERT)
 	#define SY_ASSERT(x)
 	#define SY_ASSERT0(x, d)
 	#define SY_ASSERT1(x, d, a1)
@@ -205,7 +209,7 @@ static const int kSymbiosisThngResourceId = 10000;
 static const int kSymbiosisAUViewThngResourceId = 10001;
 #if defined(__POWERPC__)
 	static const int kBigEndianPCMFlag = kLinearPCMFormatFlagIsBigEndian;
-#else
+#elif !defined(__POWERPC__)
 	static const int kBigEndianPCMFlag = 0;
 #endif
 
@@ -340,7 +344,7 @@ static unsigned char* writeBigInt32(unsigned char* p, int x) throw() {
 	#if defined(__POWERPC__)
 		*reinterpret_cast<int*>(p) = x;
 		return p + 4;
-	#else
+	#elif !defined(__POWERPC__)
 		*p++ = static_cast<unsigned char>((x >> 24) & 0xFF);
 		*p++ = static_cast<unsigned char>((x >> 16) & 0xFF);
 		*p++ = static_cast<unsigned char>((x >> 8) & 0xFF);
@@ -367,7 +371,7 @@ static const unsigned char* readBigInt32(const unsigned char* p, const unsigned 
 	}
 	#if defined(__POWERPC__)
 		(*x) = *reinterpret_cast<const int*>(p);
-	#else
+	#elif !defined(__POWERPC__)
 		(*x) = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 	#endif
 	return p + 4;
@@ -844,6 +848,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	::ControlRef viewControl;
 	protected:	bool presetIsFXB;
 	protected:	bool autoConvertPresets;
+	protected:	bool updateNameOnLoad;
 	protected:	VSTPlugIn* vst;
 	protected:	SymbiosisVstEvents vstMidiEvents;
 	protected:	VstTimeInfo vstTimeInfo;
@@ -884,7 +889,7 @@ void VSTPlugIn::closeEditor() { SY_ASSERT(editorOpenFlag); dispatch(effEditClose
 int VSTPlugIn::myAudioMasterCallback(int opcode, int index, int value, void *ptr, float opt) {
 	switch (opcode) {
 		case audioMasterAutomate:
-			SY_TRACE2(SY_TRACE_VST, "VST audioMasterAutomate: %d=%f", index, opt);
+			SY_TRACE2(SY_TRACE_FREQUENT, "VST audioMasterAutomate: %d=%f", index, opt);
 			host.automate(*this, index, opt);
 			break;
 		
@@ -1642,6 +1647,12 @@ int SymbiosisComponent::getVersion(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn == vst
 SymbiosisComponent::~SymbiosisComponent() { uninit(); }
 
 void SymbiosisComponent::uninit() {
+	if (viewComponentInstance != 0) {
+		::SetComponentInstanceStorage(reinterpret_cast< ::ComponentInstance >(viewComponentInstance), 0);
+		dropView(viewComponentInstance);
+		assert(viewComponentInstance == 0);
+	}
+
 	if (idleTimerRef != 0) {
 		throwOnOSError(::RemoveEventLoopTimer(idleTimerRef));
 		idleTimerRef = 0;
@@ -1697,6 +1708,8 @@ void SymbiosisComponent::loadConfiguration() {
 			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("AutoConvertPresets"), ::CFBooleanGetTypeID())));
 	presetIsFXB = ::CFBooleanGetValue(reinterpret_cast< ::CFBooleanRef >
 			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("PresetIsFXB"), ::CFBooleanGetTypeID())));
+	updateNameOnLoad = ::CFBooleanGetValue(reinterpret_cast< ::CFBooleanRef >
+			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("UpdateNameOnLoad"), ::CFBooleanGetTypeID())));
 }
 
 void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
@@ -2243,17 +2256,28 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 				continue;
 			}
 			
-			int vstParameterIndex = 0;
+			char indexAndFlags[32 + 1] = "";
 			char auName[255 + 1] = "";
 			float auMin = 0.0f;
 			float auMax = 0.0f;
 			float auDefault = 0.0f;
 			char auUnit[255 + 1] = "";
 			char auDisplayOption[1023 + 1] = "";
-			int items = sscanf(lp, "%i%*[\t]%255[^\t]%*[\t]%f%*[\t]%f%*[\t]%1023[^\t]%*[\t]%255[^\t]%*[\t]%f"
-					, &vstParameterIndex, auName, &auMin, &auMax, auDisplayOption, auUnit, &auDefault);
+			int items = sscanf(lp, "%32s%*[\t]%255[^\t]%*[\t]%f%*[\t]%f%*[\t]%1023[^\t]%*[\t]%255[^\t]%*[\t]%f"
+					, indexAndFlags, auName, &auMin, &auMax, auDisplayOption, auUnit, &auDefault);
 			const char* auDisplayOptionPointer = eatSpace(auDisplayOption);
 
+			bool isMeta = false;
+			int vstParameterIndex = 0;
+			int indexAndFlagsLength = strlen(indexAndFlags);
+			if (indexAndFlagsLength > 0) {
+				if (indexAndFlags[indexAndFlagsLength - 1] == '+') {
+					indexAndFlags[indexAndFlagsLength - 1] = 0;
+					isMeta = true;
+				}
+				vstParameterIndex = atoi(indexAndFlags);
+			}
+			
 			bool isValid = true;
 			if (items != 7) {
 				isValid = false;
@@ -2314,6 +2338,9 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 				info.minValue = auMin;
 				info.maxValue = auMax;
 				info.defaultValue = auDefault;
+				if (isMeta) {
+					info.flags |= kAudioUnitParameterFlag_IsGlobalMeta;
+				}
 				if (parameterCount >= kMaxMappedParameters) {
 					throw SymbiosisException("Too many mapped parameters");
 				}
@@ -2518,8 +2545,8 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		, propertyListenersCount(0), factoryPresetsArray(0), parameterCount(0), parameterInfos(0)
 		, parameterValueStrings(0), idleTimerRef(0), viewComponentInstance(0), viewEventListener(0)
 		, viewEventListenerUserData(0), viewWindowRef(0), viewControl(0), presetIsFXB(false), autoConvertPresets(false)
-		, vst(0), vstGotSymbiosisExtensions(false), vstSupportsTail(false), initialDelayTime(0.0), tailTime(0.0)
-		, vstSupportsBypass(false), isBypassing(false), supportNumChannelsProperty(true), inputBusCount(0)
+		, updateNameOnLoad(false), vst(0), vstGotSymbiosisExtensions(false), vstSupportsTail(false), initialDelayTime(0.0)
+		, tailTime(0.0), vstSupportsBypass(false), isBypassing(false), supportNumChannelsProperty(true), inputBusCount(0)
 		, outputBusCount(0), hostApplication(undetermined) {
 	SY_ASSERT(auComponentInstance != 0);
 	
@@ -2912,11 +2939,11 @@ void SymbiosisComponent::automate(VSTPlugIn& plugIn, int parameterIndex, float /
 	myEvent.mArgument.mParameter.mElement = 0;
 
 	// Old style
-	SY_TRACE1(SY_TRACE_MISC, "Calling AUParameterListenerNotify for parameter %d", parameterIndex);
+	SY_TRACE1(SY_TRACE_FREQUENT, "Calling AUParameterListenerNotify for parameter %d", parameterIndex);
 	throwOnOSError(::AUParameterListenerNotify(0, 0, &myEvent.mArgument.mParameter));
 
 	// New style
-	SY_TRACE1(SY_TRACE_MISC, "Notifying kAudioUnitEvent_ParameterValueChange on parameter %d", parameterIndex);
+	SY_TRACE1(SY_TRACE_FREQUENT, "Notifying kAudioUnitEvent_ParameterValueChange on parameter %d", parameterIndex);
 	myEvent.mEventType = kAudioUnitEvent_ParameterValueChange;
 	::AUEventListenerNotify(0, 0, &myEvent);
 }
@@ -3037,7 +3064,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		, bool* isReadable, bool* isWritable, int* minDataSize, int* normalDataSize) {
 	switch (id) {
 		case kAudioUnitProperty_ClassInfo:
-			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_ClassInfo (scope: %d, element: %d)"
+			SY_TRACE2(SY_TRACE_FREQUENT, "AU GetPropertyInfo: kAudioUnitProperty_ClassInfo (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
 			if (scope != kAudioUnitScope_Global) {
 				throw MacOSException(kAudioUnitErr_InvalidScope);
@@ -3238,7 +3265,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			break;
 
 		case kAudioUnitProperty_ParameterStringFromValue:
-			SY_TRACE2(SY_TRACE_AU
+			SY_TRACE2(SY_TRACE_FREQUENT
 					, "AU GetPropertyInfo: kAudioUnitProperty_ParameterStringFromValue (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
 			if (scope != kAudioUnitScope_Global) {
@@ -3518,7 +3545,7 @@ bool SymbiosisComponent::collectInputAudio(int frameCount, float** inputPointers
 	}
 	SY_ASSERT(ioChannelIndex == vst->getInputCount());
 	
-	#if (!NDEBUG)
+	#if (!defined(NDEBUG))
 		if (inputIsSilent) {
 			bool gotSignal = false;
 			for (int i = 0; i < vst->getInputCount() && !gotSignal; ++i) {
@@ -3543,7 +3570,7 @@ void SymbiosisComponent::renderOutput(int frameCount, float** inputPointers, boo
 	}
 	vst->processReplacing(inputPointers, ioBuffers, frameCount);
 	if (vstGotSymbiosisExtensions) {
-		#if (!NDEBUG)
+		#if (!defined(NDEBUG))
 			bool reallyGotSignal = false;
 			for (int i = 0; i < vst->getOutputCount() && !reallyGotSignal; ++i) {
 				for (int j = 0; j < static_cast<int>(frameCount) && !reallyGotSignal; ++j) {
@@ -3557,7 +3584,7 @@ void SymbiosisComponent::renderOutput(int frameCount, float** inputPointers, boo
 					, "SY vendor-specific callback 'sO00' returned true (output silent) when output was not silent");
 		} else {
 			silentOutput = false;
-			#if (!NDEBUG)
+			#if (!defined(NDEBUG))
 				if (!reallyGotSignal) {
 					SY_TRACE(SY_TRACE_FREQUENT
 							, "SY vendor-specific callback 'sO00' returned false (not silent) when output was silent");
@@ -3956,8 +3983,6 @@ void SymbiosisComponent::updateFormat(::AudioUnitScope scope, int busNumber
 
 void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::AudioUnitElement inElement
 		, ::AudioUnitScope inScope, ::AudioUnitPropertyID inID) {
-	SY_ASSERT(inData != 0);
-	
 	bool readable = false;
 	bool writable = false;
 	int minDataSize = 0;
@@ -3992,6 +4017,7 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 				checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
 				
 				{
+					::SInt32 useProgramNumber = 0;
 					::CFNumberRef numberRef = reinterpret_cast< ::CFNumberRef >(::CFDictionaryGetValue(dictionary
 							, CFSTR("ProgramNumber")));
 					if (numberRef != 0) {
@@ -4002,9 +4028,10 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 						::CFNumberGetValue(numberRef, kCFNumberSInt32Type, &programNumber);
 						SY_TRACE1(SY_TRACE_MISC, "Requested program number: %ld", programNumber);
 						if (0 <= programNumber && programNumber < vst->getProgramCount()) {
-							vst->setCurrentProgram(programNumber);
+							useProgramNumber = programNumber;
 						}
 					}
+					vst->setCurrentProgram(useProgramNumber);
 				}
 				::CFStringRef nameRef = reinterpret_cast< ::CFStringRef >(getValueOfKeyInDictionary(dictionary
 						, CFSTR(kAUPresetNameKey), ::CFStringGetTypeID()));
@@ -4017,7 +4044,9 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 					SY_TRACE(SY_TRACE_MISC, "Warning, FXP / FXB may not have loaded perfectly");
 				}
 				
-				updateCurrentVSTProgramName(nameRef);
+				if (updateNameOnLoad) {
+					updateCurrentVSTProgramName(nameRef);
+				}
 				updateCurrentAUPreset();
 				currentAUPreset.presetNumber = -1;
 				propertyChanged(kAudioUnitProperty_CurrentPreset, kAudioUnitScope_Global, 0);
@@ -4184,7 +4213,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			break;
 		
 		case kAudioUnitGetPropertyInfoSelect: {
-			SY_TRACE(SY_TRACE_AU, "AU kAudioUnitGetPropertyInfoSelect");
+			SY_TRACE(SY_TRACE_FREQUENT, "AU kAudioUnitGetPropertyInfoSelect");
 			struct AudioUnitGetPropertyInfoGluePB {
 				unsigned char componentFlags;
 				unsigned char componentParamSize;
@@ -4218,7 +4247,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		}
 		
 		case kAudioUnitGetPropertySelect: {
-			SY_TRACE(SY_TRACE_AU, "AU kAudioUnitGetPropertySelect");
+			SY_TRACE(SY_TRACE_FREQUENT, "AU kAudioUnitGetPropertySelect");
 			struct AudioUnitGetPropertyGluePB {
 				unsigned char componentFlags;
 				unsigned char componentParamSize;
@@ -4237,7 +4266,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		}
 		
 		case kAudioUnitSetPropertySelect: {
-			SY_TRACE(SY_TRACE_AU, "AU kAudioUnitSetPropertySelect");
+			SY_TRACE(SY_TRACE_FREQUENT, "AU kAudioUnitSetPropertySelect");
 			struct AudioUnitSetPropertyGluePB {
 				unsigned char componentFlags;
 				unsigned char componentParamSize;

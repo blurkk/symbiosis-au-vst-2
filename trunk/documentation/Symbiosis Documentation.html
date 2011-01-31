@@ -144,7 +144,7 @@
 <p>Rename your chosen wrapper (to whatever you wish to call your plug-in) and add an alias (or copy) your VST plug-in to the bundle. The VST file or alias should be put under <tt>Contents/Resources/</tt> in the wrapper bundle.</p>
 <p>Audio Units are based on the component API (as used by QuickTime) and components are identified by the operating system using classic Mac resources. Therefore, the next step is to edit and recompile these resources for your AU. Open the sample <tt>.rez`-file (`Symbiosis.r</tt>) that is included in the distribution under <tt>Contents/Resources/</tt> and modify it according to the instructions inside (don't rename the file!).</p>
 <p>You then need to compile <tt>Symbiosis.r</tt> into <tt>Symbiosis.rsrc</tt> by using the "Rez" tool. There is a script included in the distribution called <tt>CompileSymbiosisRsrc.command</tt> that helps you with this step. Locate the script next to your modified <tt>Symbiosis.r</tt> file and double-click it (if you can't run the script you may need to perform a <tt>chmod +x</tt> on the script file from a shell prompt). Now look for <tt>Symbiosis.rsrc</tt>. Found it? Excellent!</p>
-<p>Finally, you also need to edit the OS X <tt>Info.plist</tt> and fill out the standard bundle version info plus choose a few Symbiosis specific configuration options. <tt>Info.plist</tt> is located inside your wrapper bundle under <tt>Contents/</tt>. It contains comments with further instructions.</p>
+<p>Finally, you also need to edit the OS X <tt>Info.plist</tt> and fill out the standard bundle version info plus choose a few Symbiosis specific configuration options. <tt>Info.plist</tt> is located inside your wrapper bundle under <tt>Contents/</tt>. It contains comments with further instructions. (You may need to open <tt>Info.plist</tt> with a text-editor like <tt>TextEdit</tt> to see the comments.)</p>
 <p>Move on to <a href="#Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a>.</p>
 <p><small><a name="fn0001"><sup>*</sup> Notice that the standard assertion handling in C++ simply terminates the entire application if something fails. If the application terminates during beta testing, always check <tt>console.log</tt> for the reason. If you build your own wrapper you may want to use a custom assertion mechanism. See <a href="#Preprocessor_Defines">Preprocessor Defines</a> for more info.</a></small></p>
 <h3><a name="Wrapping_the_VST_Using_Alternatives_3,_4_or_5">Wrapping the VST Using Alternatives 3, 4 or 5</a></h3>
@@ -156,7 +156,7 @@
 <li>AudioUnit.framework (from <tt>/System/Library/Frameworks/</tt>)<br></li>
 <li>AudioToolbox.framework (from <tt>/System/Library/Frameworks/</tt>)</li>
 </ul>
-<p>Edit your copy of <tt>Symbiosis.r</tt> according to the instructions inside. Next, add the Symbiosis specific configuration options found in <tt>Symbiosis.plist</tt> to the <tt>Info.plist</tt> file that should already exist for your VST project (you may have called it something else though). You will find more instructions in the <tt>Symbiosis.plist</tt> file.</p>
+<p>Edit your copy of <tt>Symbiosis.r</tt> according to the instructions inside. Next, add the Symbiosis specific configuration options found in <tt>Symbiosis.plist</tt> to the <tt>Info.plist</tt> file that should already exist for your VST project (you may have called it something else though). You will find more instructions in the <tt>Symbiosis.plist</tt> file. (You may need to open <tt>Symbiosis.plist</tt> with a text-editor like <tt>TextEdit</tt> to see the comments.)</p>
 <p>If you have a custom "exported symbols file" for your project, you need to add these two entries to it:</p>
 
 <ul>
@@ -181,16 +181,16 @@
 <th>Column</th><th>Description</th>
 </tr>
 <tr>
-<td>vst param #</td><td>The VST parameter number (zero based), which is also the unique identifier for the parameter.</td>
+<td>vst param #</td><td>The VST parameter number (zero based), which is also the unique identifier for the parameter.<a href="#fn0002"><sup>*</sup></a></td>
 </tr>
 <tr>
-<td>name</td><td>The parameter name as shown to the end user.<a href="#fn0002"><sup>*</sup></a></td>
+<td>name</td><td>The parameter name as shown to the end user.<a href="#fn0003"><sup>**</sup></a></td>
 </tr>
 <tr>
-<td>min</td><td>The minimum parameter value.<a href="#fn0003"><sup>**</sup></a></td>
+<td>min</td><td>The minimum parameter value.<a href="#fn0004"><sup>***</sup></a></td>
 </tr>
 <tr>
-<td>max</td><td>The maximum parameter value.<a href="#fn0003"><sup>**</sup></a></td>
+<td>max</td><td>The maximum parameter value.<a href="#fn0004"><sup>***</sup></a></td>
 </tr>
 <tr>
 <td>display</td><td>A string that defines how the parameter is displayed to the end user. Use one of the following:</td>
@@ -214,8 +214,9 @@
 <td>default</td><td>The initial default setting.</td>
 </tr>
 </table>
-<p><small><a name="fn0002"><sup>*</sup> You may wish to edit this column as AU can handle longer parameter names than VST.</a></small></p>
-<p><small><a name="fn0003"><sup>**</sup> VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are used to scale and normalize the AU parameter range from / to the 0 and 1 range.</a></small></p>
+<p><small><a name="fn0002"><sup>*</sup> If changes to this parameter will automatically modify other parameters you need to suffix this column with <tt>+</tt>. This information is important for AU hosts.</a></small></p>
+<p><small><a name="fn0003"><sup>**</sup> You may wish to edit this column as AU can handle longer parameter names than VST.</a></small></p>
+<p><small><a name="fn0004"><sup>***</sup> VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are used to scale and normalize the AU parameter range from / to the 0 and 1 range.</a></small></p>
 <h3><a name="SYFactoryPresets.txt">SYFactoryPresets.txt</a></h3>
 <p>This file simply contains a list of factory preset files (one file name per row). You can edit this file to remove or add factory presets. Symbiosis expects to find the factory preset files under <tt>Contents/Resources/</tt> (as always).</p>
 <h3><a name="Vendor-Specific_Extensions">Vendor-Specific Extensions</a></h3>
@@ -228,20 +229,20 @@
 <td><tt>'sHi!'</tt></td><td>Do you support these extensions?</td><td>&nbsp;</td><td>&nbsp;</td><td>1</td>
 </tr>
 <tr>
-<td><tt>'sI00'</tt></td><td>Is input for the next processing call silent or not (all zeroes).<a href="#fn0004"><sup>*</sup></a></td><td>1 if silent</td><td>&nbsp;</td><td>1</td>
+<td><tt>'sI00'</tt></td><td>Is input for the next processing call silent or not (all zeroes).<a href="#fn0005"><sup>*</sup></a></td><td>1 if silent</td><td>&nbsp;</td><td>1</td>
 </tr>
 <tr>
-<td><tt>'sO00'</tt></td><td>Is your output from the last processing call silent (all zeroes)?<a href="#fn0004"><sup>*</sup></a></td><td>&nbsp;</td><td>&nbsp;</td><td>1 if silent</td>
+<td><tt>'sO00'</tt></td><td>Is your output from the last processing call silent (all zeroes)?<a href="#fn0005"><sup>*</sup></a></td><td>&nbsp;</td><td>&nbsp;</td><td>1 if silent</td>
 </tr>
 <tr>
-<td><tt>'sV2S'</tt></td><td>Convert parameter value to string.</td><td>VST param #</td><td>float &amp; string pointer<a href="#fn0005"><sup>**</sup></a></td><td>1</td>
+<td><tt>'sV2S'</tt></td><td>Convert parameter value to string.</td><td>VST param #</td><td>float &amp; string pointer<a href="#fn0006"><sup>**</sup></a></td><td>1</td>
 </tr>
 <tr>
-<td><tt>'sS2V'</tt></td><td>Convert parameter string to value.</td><td>VST param #</td><td>string &amp; float pointer<a href="#fn0005"><sup>**</sup></a></td><td>1</td>
+<td><tt>'sS2V'</tt></td><td>Convert parameter string to value.</td><td>VST param #</td><td>string &amp; float pointer<a href="#fn0006"><sup>**</sup></a></td><td>1</td>
 </tr>
 </table>
-<p><small><a name="fn0004"><sup>*</sup> The silent flags should be considered as hints only. The input and output data is expected to be fully zeroed if the flag is set.</a></small></p>
-<p><small><a name="fn0005"><sup>**</sup> <tt>ptrArg</tt> will point to a buffer of a sufficiently large size to store both input and output of the conversion. On value to string conversion, <tt>ptrArg</tt> will point to a floating point value on input and expects you to copy a zero- terminated string to this pointer on output (and vice versa for string to value conversion).</a></small></p>
+<p><small><a name="fn0005"><sup>*</sup> The silent flags should be considered as hints only. The input and output data is expected to be fully zeroed if the flag is set.</a></small></p>
+<p><small><a name="fn0006"><sup>**</sup> <tt>ptrArg</tt> will point to a buffer of a sufficiently large size to store both input and output of the conversion. On value to string conversion, <tt>ptrArg</tt> will point to a floating point value on input and expects you to copy a zero- terminated string to this pointer on output (and vice versa for string to value conversion).</a></small></p>
 <p>As always, the best explanation is an example. This is from the example plug-in "Sinoplex" that is provided with Symbiosis.</p>
 <pre>VstIntPtr Sinoplex::vendorSpecific(VstInt32 lArg1, VstIntPtr lArg2, void* ptrArg, float floatArg) {<br>    switch (lArg1) {<br>        case 'sHi!': return 1;                                                                                      // Can we speak Symbiosian?<br>        case 'sI00': inputIsSilent = (lArg2 != 0); return 1;                                                        // Is input silent?<br>        case 'sO00': return outputIsSilent;                                                                         // Is output silent?<br>        <br>        case 'sV2S': {                                                                                              // Parameter value to string conversion.<br>            float value = *reinterpret_cast&lt;float*&gt;(ptrArg);<br>            SinoplexProgram::Parameter param = static_cast&lt;SinoplexProgram::Parameter&gt;(lArg2);<br>            currentProgram-&gt;convertParameterValueToString(param, value, reinterpret_cast&lt;char*&gt;(ptrArg));<br>            return 1;<br>        }<br>        <br>        case 'sS2V': {                                                                                              // String to parameter value conversion.<br>            SinoplexProgram::Parameter param = static_cast&lt;SinoplexProgram::Parameter&gt;(lArg2);<br>            float value = currentProgram-&gt;convertParameterStringToValue(param, reinterpret_cast&lt;char*&gt;(ptrArg));<br>            *reinterpret_cast&lt;float*&gt;(ptrArg) = value;<br>            return 1;<br>        }<br>    <br>        default: return AudioEffectX::hostVendorSpecific(lArg1, lArg2, ptrArg, floatArg);<br>    }<br>}<br></pre>
 <h2><a name="Preprocessor_Defines">Preprocessor Defines</a></h2>
@@ -297,7 +298,7 @@
 <h2><a name="Copyrights_and_Trademarks">Copyrights and Trademarks</a></h2>
 <p>Symbiosis is released under the "New Simplified BSD License". <br>
 <a href="http://www.opensource.org/licenses/bsd-license.php">http://www.opensource.org/licenses/bsd-license.php</a></p>
-<p>Copyright (c) 2010, NuEdge Development / Magnus Lidstr&ouml;m <br>
+<p>Copyright (c) 2011, NuEdge Development / Magnus Lidstr&ouml;m <br>
 All rights reserved.</p>
 
 <ul>
@@ -320,7 +321,7 @@ All rights reserved.</p>
 </li>
 </ul>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<p>The HTML version of this document was created with PikaScript, (c) 2009 NuEdge Development. <br>
+<p>The HTML version of this document was created with PikaScript, (c) 2011 NuEdge Development. <br>
  <br>
 Apple, Audio Units and OS X are trademarks of Apple Inc., registered in the U.S. and other countries. VST is a trademark of Steinberg Media Technologies GmbH. All other trademarks and brand identities are used for descriptive purposes only and remain the property of their respective owners.</p>
 
