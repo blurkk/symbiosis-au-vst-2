@@ -1,22 +1,23 @@
 // !$*UTF8*$!
 {
 	089C1669FE841209C02AAC07 /* Project object */ = {
+		activeArchitecturePreference = i386;
 		activeBuildConfigurationName = Deployment;
-		activeExecutable = F72B1CCF0C8B732900D1B794 /* AUVal */;
+		activeExecutable = F7FBB3470C888B470018C690 /* AULab */;
 		activeTarget = 8D01CCC60486CAD60068D4B7 /* Sinoplex */;
 		addToTargets = (
 			8D01CCC60486CAD60068D4B7 /* Sinoplex */,
 		);
 		breakpoints = (
-			F73549720CA745F900BDB9CA /* Symbiosis.cpp:3173 */,
-			F706ECED0F69C5C800649088 /* Symbiosis.cpp:3674 */,
-			F706ECF70F69C77900649088 /* Symbiosis.cpp:4118 */,
+			F73549720CA745F900BDB9CA /* Symbiosis.cpp:111 */,
+			F706ECED0F69C5C800649088 /* Symbiosis.cpp:111 */,
+			F706ECF70F69C77900649088 /* Symbiosis.cpp:111 */,
 		);
 		codeSenseManager = F7A920650903D3A3009996D9 /* Code sense */;
 		executables = (
 			F74921280C87B54B0057A327 /* VSTLord */,
 			F7FBB3470C888B470018C690 /* AULab */,
-			F72B1CCF0C8B732900D1B794 /* AUVal */,
+			F7CD858B12FB76E300FFB05C /* AUVal */,
 		);
 		perUserDictionary = {
 			"PBXConfiguration.PBXBreakpointsDataSource.v1:1CA1AED706398EBD00589147" = {
@@ -139,21 +140,13 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 318127413;
-			PBXWorkspaceStateSaveDate = 318127413;
+			PBXPerProjectTemplateStateSaveDate = 318460570;
+			PBXWorkspaceStateSaveDate = 318460570;
 		};
 		perUserProjectItems = {
-			F721D42A12F63D41006BA722 /* PBXTextBookmark */ = F721D42A12F63D41006BA722 /* PBXTextBookmark */;
-			F721D43312F63D6A006BA722 /* PBXTextBookmark */ = F721D43312F63D6A006BA722 /* PBXTextBookmark */;
-			F743802810F1327B00D42A1D = F743802810F1327B00D42A1D /* PBXTextBookmark */;
-			F743802B10F1327B00D42A1D = F743802B10F1327B00D42A1D /* PBXTextBookmark */;
-			F743807610F135BC00D42A1D = F743807610F135BC00D42A1D /* PBXTextBookmark */;
-			F74380A810F1413200D42A1D = F74380A810F1413200D42A1D /* PBXTextBookmark */;
-			F7BACB5810ECD346005AB7FA = F7BACB5810ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5B10ECD346005AB7FA = F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5C10ECD346005AB7FA = F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5E10ECD346005AB7FA = F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */;
-			F7BACB5F10ECD346005AB7FA = F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */;
+			F7CD86CC12FB8A2700FFB05C /* PBXTextBookmark */ = F7CD86CC12FB8A2700FFB05C /* PBXTextBookmark */;
+			F7CD871212FB8B6500FFB05C /* PBXTextBookmark */ = F7CD871212FB8B6500FFB05C /* PBXTextBookmark */;
+			F7CD871412FB8B6F00FFB05C /* PBXTextBookmark */ = F7CD871412FB8B6F00FFB05C /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7A920640903D3A3009996D9 /* Source Control */;
 		userBuildSettings = {
@@ -170,7 +163,7 @@
 	8D01CCC60486CAD60068D4B7 /* Sinoplex */ = {
 		activeExec = 0;
 	};
-	F706ECED0F69C5C800649088 /* Symbiosis.cpp:3674 */ = {
+	F706ECED0F69C5C800649088 /* Symbiosis.cpp:111 */ = {
 		isa = PBXFileBreakpoint;
 		actions = (
 		);
@@ -180,15 +173,15 @@
 		delayBeforeContinue = 0;
 		fileReference = F74921A10C87BC160057A327 /* Symbiosis.cpp */;
 		functionName = "SymbiosisComponent::render()";
-		hitCount = 1;
+		hitCount = 0;
 		ignoreCount = 0;
-		lineNumber = 3674;
+		lineNumber = 111;
 		location = Sinoplex;
-		modificationTime = 258590553.953041;
+		modificationTime = 318473172.361325;
 		originalNumberOfMultipleMatches = 0;
 		state = 2;
 	};
-	F706ECF70F69C77900649088 /* Symbiosis.cpp:4118 */ = {
+	F706ECF70F69C77900649088 /* Symbiosis.cpp:111 */ = {
 		isa = PBXFileBreakpoint;
 		actions = (
 		);
@@ -200,93 +193,13 @@
 		functionName = "SymbiosisComponent::setProperty()";
 		hitCount = 0;
 		ignoreCount = 0;
-		lineNumber = 4118;
-		location = Symbiosis;
-		modificationTime = 258590593.619584;
-		originalNumberOfMultipleMatches = 0;
+		lineNumber = 111;
+		location = Sinoplex;
+		modificationTime = 318473172.361511;
+		originalNumberOfMultipleMatches = 1;
 		state = 1;
 	};
-	F721D42A12F63D41006BA722 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 14";
-		rLen = 0;
-		rLoc = 319;
-		rType = 0;
-		vrLen = 1753;
-		vrLoc = 0;
-	};
-	F721D43312F63D6A006BA722 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 14";
-		rLen = 0;
-		rLoc = 319;
-		rType = 0;
-		vrLen = 1753;
-		vrLoc = 0;
-	};
-	F72B1CCF0C8B732900D1B794 /* AUVal */ = {
-		isa = PBXExecutable;
-		activeArgIndices = (
-			YES,
-			NO,
-		);
-		argumentStrings = (
-			"-v aumf SiPx NuEd",
-			"-v aumu SiPx NuEd",
-		);
-		autoAttachOnCrash = 1;
-		breakpointsEnabled = 0;
-		configStateDict = {
-			"PBXLSLaunchAction-0" = {
-				PBXLSLaunchAction = 0;
-				PBXLSLaunchStartAction = 1;
-				PBXLSLaunchStdioStyle = 2;
-				PBXLSLaunchStyle = 0;
-				class = PBXLSRunLaunchConfig;
-				commandLineArgs = (
-				);
-				displayName = "Executable Runner";
-				environment = {
-				};
-				identifier = com.apple.Xcode.launch.runConfig;
-				remoteHostInfo = "";
-				startActionInfo = "";
-			};
-		};
-		customDataFormattersEnabled = 1;
-		dataTipCustomDataFormattersEnabled = 1;
-		dataTipShowTypeColumn = 1;
-		dataTipSortType = 0;
-		debuggerPlugin = GDBDebugging;
-		disassemblyDisplayState = 0;
-		dylibVariantSuffix = "";
-		enableDebugStr = 1;
-		environmentEntries = (
-		);
-		executableSystemSymbolLevel = 0;
-		executableUserSymbolLevel = 0;
-		launchableReference = F72B1CD00C8B732900D1B794 /* auval */;
-		libgmallocEnabled = 0;
-		name = AUVal;
-		savedGlobals = {
-		};
-		showTypeColumn = 0;
-		sourceDirectories = (
-		);
-		variableFormatDictionary = {
-			"type-OSType-SymbiosisComponent::SymbiosisComponent" = 5;
-		};
-	};
-	F72B1CD00C8B732900D1B794 /* auval */ = {
-		isa = PBXFileReference;
-		explicitFileType = "compiled.mach-o.executable";
-		name = auval;
-		path = /usr/bin/auval;
-		sourceTree = "<absolute>";
-	};
-	F73549720CA745F900BDB9CA /* Symbiosis.cpp:3173 */ = {
+	F73549720CA745F900BDB9CA /* Symbiosis.cpp:111 */ = {
 		isa = PBXFileBreakpoint;
 		actions = (
 		);
@@ -296,67 +209,13 @@
 		delayBeforeContinue = 0;
 		fileReference = F74921A10C87BC160057A327 /* Symbiosis.cpp */;
 		functionName = "SymbiosisComponent::getPropertyInfo()";
-		hitCount = 1;
+		hitCount = 0;
 		ignoreCount = 0;
-		lineNumber = 3173;
-		location = Symbiosis;
-		modificationTime = 258590594.83089;
-		originalNumberOfMultipleMatches = 0;
+		lineNumber = 111;
+		location = Sinoplex;
+		modificationTime = 318473172.360973;
+		originalNumberOfMultipleMatches = 1;
 		state = 1;
-	};
-	F743802810F1327B00D42A1D /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 72";
-		rLen = 0;
-		rLoc = 2931;
-		rType = 0;
-		vrLen = 627;
-		vrLoc = 2501;
-	};
-	F743802B10F1327B00D42A1D /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 72";
-		rLen = 0;
-		rLoc = 2931;
-		rType = 0;
-		vrLen = 627;
-		vrLoc = 2501;
-	};
-	F743807610F135BC00D42A1D /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F743807710F135BC00D42A1D /* SinoplexExports */;
-		name = "(null): 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 63;
-		vrLoc = 0;
-	};
-	F743807710F135BC00D42A1D /* SinoplexExports */ = {
-		isa = PBXFileReference;
-		lastKnownFileType = text;
-		name = SinoplexExports;
-		path = /Users/Magnus/projects/Symbiosis/trunk/examples/Sinoplex/SinoplexExports;
-		sourceTree = "<absolute>";
-	};
-	F74380A810F1413200D42A1D /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74380A910F1413200D42A1D /* SinoplexExports */;
-		name = "(null): 5";
-		rLen = 0;
-		rLoc = 63;
-		rType = 0;
-		vrLen = 63;
-		vrLoc = 0;
-	};
-	F74380A910F1413200D42A1D /* SinoplexExports */ = {
-		isa = PBXFileReference;
-		lastKnownFileType = text;
-		name = SinoplexExports;
-		path = /Users/Magnus/projects/Symbiosis/trunk/examples/Sinoplex/SinoplexExports;
-		sourceTree = "<absolute>";
 	};
 	F74920C30C87B0380057A327 /* audioeffect.cpp */ = {
 		uiCtxt = {
@@ -374,8 +233,9 @@
 	};
 	F74920C50C87B0380057A327 /* audioeffectx.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1497, 24416}}";
-			sepNavSelRange = "{31756, 21}";
+			sepNavIntBoundsRect = "{{0, 0}, {1489, 19916}}";
+			sepNavSelRange = "{10235, 0}";
+			sepNavVisRange = "{9531, 1404}";
 			sepNavVisRect = "{{0, 13576}, {1031, 641}}";
 		};
 	};
@@ -395,6 +255,21 @@
 		autoAttachOnCrash = 1;
 		breakpointsEnabled = 0;
 		configStateDict = {
+			"PBXLSLaunchAction-0" = {
+				PBXLSLaunchAction = 0;
+				PBXLSLaunchStartAction = 1;
+				PBXLSLaunchStdioStyle = 2;
+				PBXLSLaunchStyle = 0;
+				class = PBXLSRunLaunchConfig;
+				commandLineArgs = (
+				);
+				displayName = "Executable Runner";
+				environment = {
+				};
+				identifier = com.apple.Xcode.launch.runConfig;
+				remoteHostInfo = "";
+				startActionInfo = "";
+			};
 		};
 		customDataFormattersEnabled = 1;
 		dataTipCustomDataFormattersEnabled = 1;
@@ -428,9 +303,11 @@
 	};
 	F74921790C87BB340057A327 /* Sinoplex.r */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1556, 2185}}";
-			sepNavSelRange = "{108, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {962, 2028}}";
+			sepNavSelRange = "{2684, 0}";
+			sepNavVisRange = "{2155, 1166}";
 			sepNavVisRect = "{{0, 0}, {970, 645}}";
+			sepNavWindowFrame = "{{19, 0}, {1002, 778}}";
 		};
 	};
 	F74921990C87BBC80057A327 /* Sinoplex.plist */ = {
@@ -442,16 +319,18 @@
 	};
 	F74921A10C87BC160057A327 /* Symbiosis.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {5324, 91941}}";
-			sepNavSelRange = "{203670, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {1300, 62868}}";
+			sepNavSelRange = "{7565, 0}";
+			sepNavVisRange = "{6936, 2491}";
 			sepNavVisRect = "{{0, 89786}, {970, 645}}";
-			sepNavWindowFrame = "{{15, 3}, {1002, 774}}";
+			sepNavWindowFrame = "{{183, 0}, {1002, 778}}";
 		};
 	};
 	F74922B80C87C03B0057A327 /* 3Molo.aupreset */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1031, 439}}";
-			sepNavSelRange = "{0, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {962, 382}}";
+			sepNavSelRange = "{235, 0}";
+			sepNavVisRange = "{0, 618}";
 			sepNavVisRect = "{{0, 0}, {1031, 439}}";
 		};
 	};
@@ -494,62 +373,102 @@
 	};
 	F7A920930903D63C009996D9 /* Sinoplex.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {962, 13065}}";
-			sepNavSelRange = "{319, 0}";
-			sepNavVisRange = "{0, 1753}";
+			sepNavIntBoundsRect = "{{0, 0}, {1006, 13299}}";
+			sepNavSelRange = "{713, 0}";
+			sepNavVisRange = "{3556, 1346}";
 			sepNavVisRect = "{{0, 1121}, {970, 442}}";
 			sepNavWindowFrame = "{{15, 4}, {1076, 769}}";
 		};
 	};
-	F7BACB5810ECD346005AB7FA /* PBXTextBookmark */ = {
+	F7CD858B12FB76E300FFB05C /* AUVal */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 1;
+		configStateDict = {
+			"PBXLSLaunchAction-0" = {
+				PBXLSLaunchAction = 0;
+				PBXLSLaunchStartAction = 1;
+				PBXLSLaunchStdioStyle = 2;
+				PBXLSLaunchStyle = 0;
+				class = PBXLSRunLaunchConfig;
+				commandLineArgs = (
+				);
+				displayName = "Executable Runner";
+				environment = {
+				};
+				identifier = com.apple.Xcode.launch.runConfig;
+				remoteHostInfo = "";
+				startActionInfo = "";
+			};
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		launchableReference = F7CD858C12FB76E300FFB05C /* auval */;
+		libgmallocEnabled = 0;
+		name = AUVal;
+		savedGlobals = {
+		};
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+		startupPath = "<<ProductDirectory>>";
+	};
+	F7CD858C12FB76E300FFB05C /* auval */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = text.script.sh;
+		name = auval;
+		path = /usr/bin/auval;
+		sourceTree = "<absolute>";
+	};
+	F7CD86CC12FB8A2700FFB05C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7CD86CD12FB8A2700FFB05C /* CarbonEvents.h */;
+		name = "CarbonEvents.h: 309";
+		rLen = 54;
+		rLoc = 15560;
+		rType = 0;
+		vrLen = 1913;
+		vrLoc = 14151;
+	};
+	F7CD86CD12FB8A2700FFB05C /* CarbonEvents.h */ = {
+		isa = PBXFileReference;
+		name = CarbonEvents.h;
+		path = /Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/CarbonEvents.h;
+		sourceTree = "<absolute>";
+	};
+	F7CD871212FB8B6500FFB05C /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = F74921790C87BB340057A327 /* Sinoplex.r */;
-		name = "Sinoplex.r: 1";
+		name = "Sinoplex.r: 149";
 		rLen = 0;
-		rLoc = 0;
+		rLoc = 4275;
 		rType = 0;
-		vrLen = 1189;
-		vrLoc = 1403;
+		vrLen = 1019;
+		vrLoc = 3343;
 	};
-	F7BACB5B10ECD346005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 32BAE0B30371A71500C91783 /* Sinoplex_Prefix.pch */;
-		name = "Sinoplex_Prefix.pch: 5";
-		rLen = 0;
-		rLoc = 101;
-		rType = 0;
-		vrLen = 525;
-		vrLoc = 0;
-	};
-	F7BACB5C10ECD346005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74921990C87BBC80057A327 /* Sinoplex.plist */;
-		name = "Sinoplex.plist: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 1041;
-		vrLoc = 2192;
-	};
-	F7BACB5E10ECD346005AB7FA /* PBXTextBookmark */ = {
+	F7CD871412FB8B6F00FFB05C /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = F74921790C87BB340057A327 /* Sinoplex.r */;
-		name = "Sinoplex.r: 1";
+		name = "Sinoplex.r: 67";
 		rLen = 0;
-		rLoc = 0;
+		rLoc = 2684;
 		rType = 0;
-		vrLen = 1189;
-		vrLoc = 1403;
-	};
-	F7BACB5F10ECD346005AB7FA /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74921990C87BBC80057A327 /* Sinoplex.plist */;
-		name = "Sinoplex.plist: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 1041;
-		vrLoc = 2192;
+		vrLen = 1166;
+		vrLoc = 2155;
 	};
 	F7FBB3470C888B470018C690 /* AULab */ = {
 		isa = PBXExecutable;
@@ -560,6 +479,21 @@
 		autoAttachOnCrash = 1;
 		breakpointsEnabled = 0;
 		configStateDict = {
+			"PBXLSLaunchAction-0" = {
+				PBXLSLaunchAction = 0;
+				PBXLSLaunchStartAction = 1;
+				PBXLSLaunchStdioStyle = 2;
+				PBXLSLaunchStyle = 0;
+				class = PBXLSRunLaunchConfig;
+				commandLineArgs = (
+				);
+				displayName = "Executable Runner";
+				environment = {
+				};
+				identifier = com.apple.Xcode.launch.runConfig;
+				remoteHostInfo = "";
+				startActionInfo = "";
+			};
 		};
 		customDataFormattersEnabled = 1;
 		dataTipCustomDataFormattersEnabled = 1;
@@ -578,10 +512,11 @@
 		name = AULab;
 		savedGlobals = {
 		};
-		showTypeColumn = 0;
+		showTypeColumn = 1;
 		sourceDirectories = (
 		);
 		variableFormatDictionary = {
+			"inElement-long int-SymbiosisComponent::dispatch" = 1;
 		};
 	};
 	F7FBB3480C888B470018C690 /* AU Lab.app */ = {

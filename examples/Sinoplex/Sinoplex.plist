@@ -7,11 +7,11 @@
 	<key>CFBundleExecutable</key>
 	<string>Sinoplex</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Copyright 2009 NuEdge Development</string>
+	<string>Copyright 2011 NuEdge Development</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>com.soniccharge.sinoplex</string>
+	<string>net.nuedge.sinoplex</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -34,6 +34,8 @@
 		<false/>
 		<key>PresetIsFXB</key>
 		<false/>
+		<key>UpdateNameOnLoad</key>
+		<true/>
 	</dict>
 	<key>VSTWindowCompositing</key>
 	<true/>

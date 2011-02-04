@@ -9,13 +9,16 @@
 /*****																											 *****/
 /*********************************************************************************************************************/
 
-// IMPORTANT : You should define i386_YES (for Intel), ppc_YES (for PPC) or both (for "universal binary"), otherwise
-// the Audio Unit may not be found during scanning. To make this selection depend on the architectures settings in
-// XCode, add the following definition for OTHER_REZFLAGS to the project configuration: -d ppc_$ppc -d i386_$i386
+// IMPORTANT : You should define i386_YES (for Intel 32-bit), x86_64_YES (for Intel 64-bit), ppc_YES (for PPC) or a
+// combination of these (for "universal binary"). Otherwise the Audio Unit may not be found during scanning. To make
+// this selection depend on the architectures settings in XCode, add the following definition for OTHER_REZFLAGS to the
+// project configuration: -d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)
 //
-#ifndef ppc_YES || i386_YES
+
+#ifndef ppc_YES || i386_YES || x86_64_YES
 	#define ppc_YES
 	#define i386_YES
+	#define x86_64_NO
 #endif
 
 // AudioUnit name in "company: product" format. This is typically the name that is presented to the user by the host
@@ -89,6 +92,14 @@ resource 'thng' (10000, NAME) {
 			0x10000000, 
 			'dlle', 10004,
 			platformIA32NativeEntryPoint
+			#ifdef x86_64_YES
+				,
+			#endif
+		#endif
+		#ifdef x86_64_YES
+			0x10000000, 
+			'dlle', 10004,
+			8
 		#endif
 	}
 };
@@ -129,6 +140,14 @@ resource 'thng' (10001, NAME " AUView") {
 			0x10000000, 
 			'dlle', 10007,
 			platformIA32NativeEntryPoint
+			#ifdef x86_64_YES
+				,
+			#endif
+		#endif
+		#ifdef x86_64_YES
+			0x10000000, 
+			'dlle', 10007,
+			8
 		#endif
 	}
 };
