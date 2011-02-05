@@ -11,7 +11,7 @@
 
 	Sinoplex is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2011, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2010-2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -89,9 +89,9 @@ const int kOutputCount = 2; // Valid values are 1 or 2 for mono and stereo or 4 
 const int kProgramCount = 10;
 const int kParameterCount = 12;
 const int kSyncedLFODivsCount = 20;
-const double kSyncedLFODivs[kSyncedLFODivsCount] = {
-	4/1.0, 3/1.0, 8/3.0, 2/1.0, 3/2.0, 4/3.0, 1/1.0, 3/4.0, 2/3.0, 1/2.0, 3/8.0, 2/6.0, 1/4.0, 3/16.0, 2/12.0, 1/8.0
-	, 2/24.0, 1/16.0, 2/48.0, 1/32.0
+const float kSyncedLFODivs[kSyncedLFODivsCount] = {
+	4/1.0f, 3/1.0f, 8/3.0f, 2/1.0f, 3/2.0f, 4/3.0f, 1/1.0f, 3/4.0f, 2/3.0f, 1/2.0f, 3/8.0f, 2/6.0f, 1/4.0f, 3/16.0f
+	, 2/12.0f, 1/8.0f, 2/24.0f, 1/16.0f, 2/48.0f, 1/32.0f
 };
 const char* kSyncedLFODivsStrings[kSyncedLFODivsCount] = {
 	"4/1", "3/1 (2/1.)", "4/1T", "2/1", "3/2 (1/1.)", "2/1T", "1/1", "3/4 (1/2.)", "1/1T", "1/2", "3/8 (1/4.)", "1/2T",
@@ -112,12 +112,12 @@ static inline float cubef(float x) { return x * x * x; }
 
 static inline float cbrtf(float x) { return (x < 0) ? -powf(-x, 0.3333333333333334f) : powf(x, 0.3333333333333334f); }
 static inline int strcmpNoCase(const char* a, const char* b) { return _stricmp(a, b); }
-static inline int strncmpNoCase(const char* a, const char* b, int l) { return _strnicmp(a, b, l); }
+static inline int strncmpNoCase(const char* a, const char* b, size_t l) { return _strnicmp(a, b, l); }
 
 #else
 
 static inline int strcmpNoCase(const char* a, const char* b) { return strcasecmp(a, b); }
-static inline int strncmpNoCase(const char* a, const char* b, int l) { return strncasecmp(a, b, l); }
+static inline int strncmpNoCase(const char* a, const char* b, size_t l) { return strncasecmp(a, b, l); }
 
 #endif
 
@@ -186,9 +186,9 @@ struct SinoplexProgram {
 	static int convertLFORateParamToSyncedIndex(float x) { return static_cast<int>(x * (kSyncedLFODivsCount - 1) + 0.5f); }
 	static float convertLFORateSyncedIndexToParam(int x) { return x / static_cast<float>(kSyncedLFODivsCount - 1); }
 	static float convertFreqParamToHz(float x) { return 20.0f * expf(kLn10f * 3.0f * x); }
-	static float convertFreqHzToParam(float x) { return (x <= 0) ? 0.0f : (log(x / 20.0f) / (kLn10f * 3.0f)); }
+	static float convertFreqHzToParam(float x) { return (x <= 0) ? 0.0f : (logf(x / 20.0f) / (kLn10f * 3.0f)); }
 	static float convertLFOParamToHz(float x) { return 0.1f * expf(kLn10f * 4.0f * x); }
-	static float convertLFOHzToParam(float x) { return (x <= 0) ? 0.0f : (log(x / 0.1f) / (kLn10f * 4.0f)); }
+	static float convertLFOHzToParam(float x) { return (x <= 0) ? 0.0f : (logf(x / 0.1f) / (kLn10f * 4.0f)); }
 	static float convertModParamToOcts(float x) { return squaref(x) * 4.0f; }
 	static float convertModOctsToParam(float x) { return (x < 0) ? 0.0f : sqrtf(x / 4.0f); }
 	static float convertAttackParamToSecs(float x) { return cubef(x) * 2.0f; }
@@ -430,18 +430,18 @@ void SinoplexProgram::convertParameterValueToString(Parameter parameter, float v
 float SinoplexProgram::convertParameterStringToValue(Parameter parameter, const char* string) const volatile {
 	float value = 0.0f;
 	switch (parameter) {
-		case kFreq: value = convertFreqHzToParam(atof(string)); break;
+		case kFreq: value = convertFreqHzToParam(static_cast<float>(atof(string))); break;
 		case kLFOAmount:
-		case kEnvAmount: value = convertModOctsToParam(atof(string) / 12.0f); break;
-		case kEnvAttack: value = convertAttackSecsToParam(atof(string) / 1000.0f); break;
-		case kEnvDecay: value = convertDecaySecsToParam(atof(string) / 1000.0f); break;
+		case kEnvAmount: value = convertModOctsToParam(static_cast<float>(atof(string)) / 12.0f); break;
+		case kEnvAttack: value = convertAttackSecsToParam(static_cast<float>(atof(string)) / 1000.0f); break;
+		case kEnvDecay: value = convertDecaySecsToParam(static_cast<float>(atof(string)) / 1000.0f); break;
 		case kEnvInvert:
 		case kLFOSync:
 		case kMidi:
 		case kAM: value = (strcmpNoCase(string, "on") == 0) ? 1.0f : 0.0f; break;
-		case kMix: value = atof(string) / 100.0f; break;
+		case kMix: value = static_cast<float>(atof(string)) / 100.0f; break;
 		case kLFOWaveform: {
-			int l = strlen(string);
+			size_t l = strlen(string);
 			for (int i = 0; i < 4; ++i) {
 				if (strncmpNoCase(string, kLFOWaveformStrings[i], l) == 0) {
 					value = convertLFOWaveformToParam(static_cast<LFOWaveform>(i));
@@ -453,7 +453,7 @@ float SinoplexProgram::convertParameterStringToValue(Parameter parameter, const 
 		
 		case kLFORate:
 			if (lfoSync) {
-				int l = strlen(string);
+				size_t l = strlen(string);
 				for (int i = 0; i < kSyncedLFODivsCount; ++i) {
 					if (strncmpNoCase(string, kSyncedLFODivsStrings[i], l) == 0) {
 						value = convertLFORateSyncedIndexToParam(i);
@@ -461,7 +461,7 @@ float SinoplexProgram::convertParameterStringToValue(Parameter parameter, const 
 					}
 				}
 			} else {
-				value = convertLFOHzToParam(atof(string));
+				value = convertLFOHzToParam(static_cast<float>(atof(string)));
 			}
 			break;
 			
@@ -534,7 +534,7 @@ float AREnvelope::render() {
 		case kAttack:
 			current += ar;
 			if (current >= 1.0f) {
-				current = 1.0;
+				current = 1.0f;
 				stage = kSustain;
 			}
 			break;
@@ -712,14 +712,14 @@ void Sinoplex::processBegin(const SinoplexProgram& p) {
 		// Collect sync info from host (notice that this code only works perfectly without cycling, I know it kind of sucks, but hey...)
 		float syncTempo = 120.0f;
 		bool syncRunning = false;
-		double syncPosition = 0.0;
+		float syncPosition = 0.0f;
 		VstTimeInfo* timeInfo = getTimeInfo(kVstTransportPlaying | kVstTransportCycleActive | kVstPpqPosValid | kVstTempoValid | kVstCyclePosValid);
 		if (timeInfo != 0) {
 			if ((timeInfo->flags & kVstTempoValid) != 0) {
-				syncTempo = timeInfo->tempo;
+				syncTempo = static_cast<float>(timeInfo->tempo);
 				if ((timeInfo->flags & kVstPpqPosValid) != 0) {
 					syncRunning = ((timeInfo->flags & kVstTransportPlaying) != 0);
-					syncPosition = timeInfo->ppqPos;
+					syncPosition = static_cast<float>(timeInfo->ppqPos);
 				}
 			}
 		}
@@ -772,16 +772,16 @@ float Sinoplex::processOne(const SinoplexProgram& p, float mono, float& env) {
 
 void Sinoplex::applyAM(const SinoplexProgram& p, float osc, float env, float inLeft, float inRight, float& outLeft
 		, float& outRight) {
-	float x = p.mix * (p.midi ? env : 1.0);
-	float y = 1.0 + x * (osc - 1.0);
+	float x = p.mix * (p.midi ? env : 1.0f);
+	float y = 1.0f + x * (osc - 1.0f);
 	outLeft = inLeft * y;
 	outRight = inRight * y;
 }
 
 void Sinoplex::applyMix(const SinoplexProgram& p, float osc, float env, float inLeft, float inRight, float& outLeft
 		, float& outRight) {
-	float x = 1.0 - (p.midi ? env : p.mix);
-	float y = osc * p.mix * env * 0.5;
+	float x = 1.0f - (p.midi ? env : p.mix);
+	float y = osc * p.mix * env * 0.5f;
 	outLeft = inLeft * x + y;
 	outRight = inRight * x + y;
 }

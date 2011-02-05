@@ -76,7 +76,7 @@ resource 'thng' (10000, NAME) {
 	{
 		#ifndef ppc_YES
 			#ifndef i386_YES
-				#printf("***** You must define ppc_YES, i386_YES or both, see comment in .r for more info. *****\n")
+				#printf("***** You must define ppc_YES, i386_YES, x86_64_YES or a combination of these, see comment in .r for more info. *****\n")
 				#error
 			#endif
 		#endif
@@ -124,7 +124,7 @@ resource 'thng' (10001, NAME " AUView") {
 	{
 		#ifndef ppc_YES
 			#ifndef i386_YES
-				#printf("***** You must define ppc_YES, i386_YES or both, see comment in .r for more info. *****\n")
+				#printf("***** You must define ppc_YES, i386_YES, x86_64_YES or a combination of these, see comment in .r for more info. *****\n")
 				#error
 			#endif
 		#endif
