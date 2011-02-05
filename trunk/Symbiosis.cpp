@@ -11,7 +11,7 @@
 
 	Symbiosis is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2011, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2010-2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -68,8 +68,8 @@
 	#include "VST2300/source/common/AEffEditor.hpp"
 	#define DECLARE_VST_DEPRECATED(x) x
 	typedef short VstInt16;
-	typedef long VstInt32;
-	typedef VstInt32 VstIntPtr;
+	typedef int VstInt32;
+	typedef long VstIntPtr;
 #else
 	#error Unsupported VST SDK version!
 #endif
@@ -260,7 +260,7 @@ class MacOSException : public std::exception {
     public:		virtual const char* what() const throw()
 				{
 					if (errorString[0] == '\0') {
-						sprintf(errorString, "Mac OS error code %d", errorCode);
+						sprintf(errorString, "Mac OS error code %d", static_cast<int>(errorCode));
 					}
 					return errorString;
 				}
@@ -461,7 +461,7 @@ static inline const char* eatSpace(const char* p) throw() {
 	}
 #endif
 
-static void descendOrCreateFolder(const ::FSRef* parentFSRef, int nameLength, const char* name, ::FSRef* folderFSRef)
+static void descendOrCreateFolder(const ::FSRef* parentFSRef, size_t nameLength, const char* name, ::FSRef* folderFSRef)
 		throw(MacOSException) {
 	SY_ASSERT(parentFSRef != 0);
 	SY_ASSERT(nameLength > 0);
@@ -469,7 +469,7 @@ static void descendOrCreateFolder(const ::FSRef* parentFSRef, int nameLength, co
 	SY_ASSERT(folderFSRef != 0);
 	
 	::UniChar uniName[1024];
-	for (int i = 0; i < nameLength; ++i) {
+	for (size_t i = 0; i < nameLength; ++i) {
 		SY_ASSERT1((name[i] >= ' ' && name[i] < 127), "Folder name contained invalid character (ascii %d)", name[i]);
 		uniName[i] = name[i];
 	}
@@ -482,9 +482,8 @@ static void descendOrCreateFolder(const ::FSRef* parentFSRef, int nameLength, co
 	}
 }
 
-static unsigned char* loadFromFile(const ::FSRef* fsRef, int* size) throw(MacOSException, SymbiosisException) {
+static unsigned char* loadFromFile(const ::FSRef* fsRef, size_t& size) throw(MacOSException, SymbiosisException) {
 	SY_ASSERT(fsRef != 0);
-	SY_ASSERT(size != 0);
 	
 	unsigned char* bytes = 0;
 	::FSIORefNum fileFork = 0;
@@ -497,14 +496,14 @@ static unsigned char* loadFromFile(const ::FSRef* fsRef, int* size) throw(MacOSE
 		isForkOpen = true;
 		::SInt64 forkSize;
 		throwOnOSError(::FSGetForkSize(fileFork, &forkSize));
-		if (static_cast<int>(forkSize) != forkSize) {
+		if (static_cast< ::ByteCount >(forkSize) != static_cast< ::UInt64 >(forkSize)) {
 			throw SymbiosisException("File size too large");
 		}
-		(*size) = static_cast<int>(forkSize);
-		bytes = new unsigned char[(*size)];
+		size = static_cast<size_t>(forkSize);
+		bytes = new unsigned char[size];
 		::ByteCount actualCount;
-		throwOnOSError(::FSReadFork(fileFork, fsFromStart, 0, forkSize, bytes, &actualCount));
-		SY_ASSERT(actualCount == forkSize);
+		throwOnOSError(::FSReadFork(fileFork, fsFromStart, 0, static_cast< ::ByteCount >(forkSize), bytes, &actualCount));
+		SY_ASSERT(actualCount == static_cast< ::ByteCount >(forkSize));
 		::OSErr err = ::FSCloseFork(fileFork);
 		SY_ASSERT(err == noErr);
 		isForkOpen = false;
@@ -522,9 +521,8 @@ static unsigned char* loadFromFile(const ::FSRef* fsRef, int* size) throw(MacOSE
 	return bytes;
 }
 
-static void saveToFile(const ::FSRef* fsRef, int size, const unsigned char bytes[]) throw(MacOSException) {
+static void saveToFile(const ::FSRef* fsRef, size_t size, const unsigned char bytes[]) throw(MacOSException) {
 	SY_ASSERT(fsRef != 0);
-	SY_ASSERT(size >= 0);
 	SY_ASSERT(size == 0 || bytes != 0);
 
 	::FSIORefNum fileFork = 0;
@@ -538,7 +536,7 @@ static void saveToFile(const ::FSRef* fsRef, int size, const unsigned char bytes
 		if (size > 0) {
 			::ByteCount actualCount;
 			throwOnOSError(::FSWriteFork(fileFork, fsFromStart, 0, size, bytes, &actualCount));
-			SY_ASSERT(static_cast<int>(actualCount) == size);
+			SY_ASSERT(actualCount == size);
 		}
 		::OSErr err = ::FSCloseFork(fileFork);
 		SY_ASSERT(err == noErr);
@@ -562,8 +560,8 @@ static ::CFPropertyListRef loadProperties(const ::FSRef* fsRef) throw(SymbiosisE
 	::CFPropertyListRef properties = 0;
 	unsigned char* bytes = 0;
 	try {
-		int size = 0;
-		bytes = loadFromFile(fsRef, &size);
+		size_t size = 0;
+		bytes = loadFromFile(fsRef, size);
 		data = ::CFDataCreateMutable(0, size);
 		SY_ASSERT(data != 0);
 		::CFDataAppendBytes(data, bytes, size);
@@ -674,16 +672,16 @@ class VSTPlugIn;
 class VSTHost {
 	public:		virtual void getVendor(VSTPlugIn& plugIn, char vendor[63 + 1]) = 0;										///< Fill \p vendor with unique vendor name of up to 63 characters for this host.
 	public:		virtual void getProduct(VSTPlugIn& plugIn, char product[63 + 1]) = 0;									///< Fill \p product with unique product name of up to 63 characters for this host.
-	public:		virtual int getVersion(VSTPlugIn& plugIn) = 0;															///< Return the version of the host as an integer.
+	public:		virtual VstInt32 getVersion(VSTPlugIn& plugIn) = 0;														///< Return the version of the host as an integer.
 	public:		virtual bool canDo(VSTPlugIn& plugIn, const char string[]) = 0;											///< Return true if the host supports the feature specified in \p string. 
-	public:		virtual VstTimeInfo* getTimeInfo(VSTPlugIn& plugIn, int flags) = 0;										///< Fill out a valid (and static) VstTimeInfo struct (according to \p flags) and return a pointer to this struct. Return 0 if timing info cannot be provided at all.
-	public:		virtual void beginEdit(VSTPlugIn& plugIn, int parameterIndex) = 0;										///< Indicates that the user is starting to edit parameter \p parameterIndex (for instance, by clicking the mouse button in a controller).
-	public:		virtual void automate(VSTPlugIn& plugIn, int parameterIndex, float value) = 0;							///< Parameter \p parameterIndex is being changed to \p value by the plug-in (you may record this change for automation).
-	public:		virtual void endEdit(VSTPlugIn& plugIn, int parameterIndex) = 0;										///< Indicates that the user has stopped editing parameter \p parameterIndex (for instance, by releasing the mouse button in a controller).
-	public:		virtual bool isIOPinConnected(VSTPlugIn& plugIn, bool checkOutputPin, int pinIndex) = 0;				///< If \p checkOutputPin is true, return true if plug-in output of index \p pinIndex is connected and used by the host. If \p checkOutputPin is false, return true if plug-in input is connected. 
+	public:		virtual VstTimeInfo* getTimeInfo(VSTPlugIn& plugIn, VstInt32 flags) = 0;								///< Fill out a valid (and static) VstTimeInfo struct (according to \p flags) and return a pointer to this struct. Return 0 if timing info cannot be provided at all.
+	public:		virtual void beginEdit(VSTPlugIn& plugIn, VstInt32 parameterIndex) = 0;									///< Indicates that the user is starting to edit parameter \p parameterIndex (for instance, by clicking the mouse button in a controller).
+	public:		virtual void automate(VSTPlugIn& plugIn, VstInt32 parameterIndex, float value) = 0;						///< Parameter \p parameterIndex is being changed to \p value by the plug-in (you may record this change for automation).
+	public:		virtual void endEdit(VSTPlugIn& plugIn, VstInt32 parameterIndex) = 0;									///< Indicates that the user has stopped editing parameter \p parameterIndex (for instance, by releasing the mouse button in a controller).
+	public:		virtual bool isIOPinConnected(VSTPlugIn& plugIn, bool checkOutputPin, VstInt32 pinIndex) = 0;			///< If \p checkOutputPin is true, return true if plug-in output of index \p pinIndex is connected and used by the host. If \p checkOutputPin is false, return true if plug-in input is connected. 
 	public:		virtual void idle(VSTPlugIn& plugIn) = 0;																///< The plug-in may issue this callback when it's GUI is busy, preventing the standard event loop from driving idling.
 	public:		virtual void updateDisplay(VSTPlugIn& plugIn) = 0;														///< Some fact about the plug-in has changed and this should be reflected in the GUI host. Most frequently used to indicate that a program name has changed.
-	public:		virtual void resizeWindow(VSTPlugIn& plugIn, int width, int height) = 0;								///< Plug-in is requesting that it's window should be resized.
+	public:		virtual void resizeWindow(VSTPlugIn& plugIn, VstInt32 width, VstInt32 height) = 0;						///< Plug-in is requesting that it's window should be resized.
 	public:		virtual ~VSTHost() { };
 };
 
@@ -693,7 +691,7 @@ class VSTHost {
 	VSTPlugin encapsulates a single instance of a VST plug-in.
 */
 class VSTPlugIn {
-	public:		VSTPlugIn(VSTHost& host, ::CFBundleRef vstBundleRef, float sampleRate = 44100.0f, int blockSize = 0);	///< Construct a VST plug-in instance from the bundle referred to by \p vstBundleRef. Notice that the instance isn't usable until a successful call to open() has been made. \p host is your implementation of the host-interface with all the callbacks that the plug-in may use. \p sampleRate and \p blockSize are initial settings, you may set new rate and block-size with setSampleRate() and setBlockSize().
+	public:		VSTPlugIn(VSTHost& host, ::CFBundleRef bundleRef, float sampleRate = 44100.0f, VstInt32 blockSize = 0);	///< Construct a VST plug-in instance from the bundle referred to by \p bundleRef. Notice that the instance isn't usable until a successful call to open() has been made. \p host is your implementation of the host-interface with all the callbacks that the plug-in may use. \p sampleRate and \p blockSize are initial settings, you may set new rate and block-size with setSampleRate() and setBlockSize().
 	public:		bool isOpen() const;																					///< Returns true if the plug-in instance has been successfully opened. (May be called before open().)
 	public:		bool isEditorOpen() const;																				///< Returns true if the plug-in custom editor is currently open. (May be called before open().)
 	public:		bool isResumed() const;																					///< Returns true if the plug-in is currently in resumed / running state (i.e. not suspended). (May be called before open().)
@@ -701,53 +699,53 @@ class VSTPlugIn {
 	public:		bool canProcessReplacing() const;																		///< Returns true if the processReplacing() function is supported. (May be called before open().)
 	public:		bool hasProgramChunks() const;																			///< Returns true if the plug-in wants to perform its own serialization of programs (and banks) as opposed to the host just storing program names and parameters. (May be called before open().)
 	public:		bool dontProcessSilence() const;																		///< Returns true if passing digital silence to the plug-in effect means that the output will also always be silent. (May be called before open().)
-	public:		int getProgramCount() const;																			///< Returns the number of programs in a bank. You can expect the number of programs to stay constant during the life-time of the plug-in. (May be called before open().)
-	public:		int getParameterCount() const;																			///< Returns the number of parameters. You can expect the number of parameters to stay constant during the life-time of the plug-in. (May be called before open().)
-	public:		int getInputCount() const;																				///< Returns the number of input channels. You can expect the number of input channels to stay constant during the life-time of the plug-in. (May be called before open().)
-	public:		int getOutputCount() const;																				///< Returns the number of output channels. You can expect the number of output channels to stay constant during the life-time of the plug-in. (May be called before open().)
-	public:		int getInitialDelay() const;																			///< Returns the latency of the plug-in in samples. You need to "preroll" audio and MIDI data for the plug-in by this many samples. (May be called before open().)
+	public:		VstInt32 getProgramCount() const;																		///< Returns the number of programs in a bank. You can expect the number of programs to stay constant during the life-time of the plug-in. (May be called before open().)
+	public:		VstInt32 getParameterCount() const;																		///< Returns the number of parameters. You can expect the number of parameters to stay constant during the life-time of the plug-in. (May be called before open().)
+	public:		VstInt32 getInputCount() const;																			///< Returns the number of input channels. You can expect the number of input channels to stay constant during the life-time of the plug-in. (May be called before open().)
+	public:		VstInt32 getOutputCount() const;																		///< Returns the number of output channels. You can expect the number of output channels to stay constant during the life-time of the plug-in. (May be called before open().)
+	public:		VstInt32 getInitialDelay() const;																		///< Returns the latency of the plug-in in samples. You need to "preroll" audio and MIDI data for the plug-in by this many samples. (May be called before open().)
 	public:		void setSampleRate(float sampleRate);																	///< Updates the audio sample-rate. May be called at any time during processing (and even before calling open()), but it is a "polite behaviour" to surround this call with a pair of suspend() and resume() calls.
-	public:		void setBlockSize(int blockSize);																		///< Updates the block-size (i.e. the number of samples that you want to process with each process-call). Setting this before processing may improve plug-in performance, but if set you should always use the same number of samples. A block-size of 0 may be used if you don't know the block-size beforehand and need to process a variable number of samples with each process-call.
+	public:		void setBlockSize(VstInt32 blockSize);																	///< Updates the block-size (i.e. the number of samples that you want to process with each process-call). Setting this before processing may improve plug-in performance, but if set you should always use the same number of samples. A block-size of 0 may be used if you don't know the block-size beforehand and need to process a variable number of samples with each process-call.
 	public:		void open();																							///< Opens and initializes the plug-in. This is the method that actually loads the plug-in binary into memory (if this is the first instance) and makes the necessary initialization calls to the plug-in. Expect to receive callbacks to your VSTHost interface. The plug-in will be started in suspended state, so a call to resume() is necessary before processing. It is illegal to call open() more than once for a plug-in instance.
-	public:		int getVersion();																						///< Obtains the version number of the plug-in.
-	public:		void setCurrentProgram(int program);																	///< Change current program selection in the plug-in to \p program (zero-based). \p program must be less than the value returned by getProgramCount(). Notice that the plug-in may also change the program selection at will.
-	public:		int getCurrentProgram();																				///< Obtains the current program selection (zero-based).
+	public:		VstInt32 getVersion();																					///< Obtains the version number of the plug-in.
+	public:		void setCurrentProgram(VstInt32 program);																///< Change current program selection in the plug-in to \p program (zero-based). \p program must be less than the value returned by getProgramCount(). Notice that the plug-in may also change the program selection at will.
+	public:		VstInt32 getCurrentProgram();																			///< Obtains the current program selection (zero-based).
 	public:		void getCurrentProgramName(char programName[24 + 1]);													///< Obtains the name of the current program. The string is truncated to max 24 characters.
 	public:		void setCurrentProgramName(const char programName[24 + 1]);												///< Update the current program name to \p programName. Make sure the string is max 24 characters and null-terminated.
-	public:		bool getProgramName(int programIndex, char programName[24 + 1]);										///< Obtains the name program name of a specific zero-based program index (without changing the current program selection). If false is returned, this method is not supported by the plug-in and you need to resort to using getCurrentProgram().
-	public:		float getParameter(int parameterIndex);																	///< Obtains the current parameter value of the zero-based parameter index. All VST parameter values are floating point between 0.0 and 1.0. \p parameterIndex must be less than the value returned by getParameterCount().
-	public:		void setParameter(int parameterIndex, float value);														///< Updates the parameter \p parameterIndex to \p value. Notice that some plug-ins quantizes or limits parameter values, so a call to getParameter() after setting the parameter can be used to retrieve the actual parameter value set.
-	public:		void getParameterName(int parameterIndex, char parameterName[24 + 1]);									///< Obtains the name of parameter \p parameterIndex. You can expect the names of parameters to stay constant during the life-time of the plug-in. The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
-	public:		void getParameterDisplay(int parameterIndex, char parameterDisplay[24 + 1]);							///< Obtains the current parameter value of \p parameterIndex as a human-readable string. The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
-	public:		void getParameterLabel(int parameterIndex, char parameterLabel[24 + 1]);								///< Obtains the label of \p parameterIndex. The label should be used as a suffix when presenting the parameter value to the user. You can expect the label to stay constant during the life-time of the plug-in. The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
-	public:		bool setParameterFromString(int parameterIndex, const char* string);									///< Tries to update the value of parameter \p to the value represented as an ascii string in \p string. The function is not mandatory, and false will be returned if the plug-in could not convert the string for one reason or another.
+	public:		bool getProgramName(VstInt32 programIndex, char programName[24 + 1]);									///< Obtains the name program name of a specific zero-based program index (without changing the current program selection). If false is returned, this method is not supported by the plug-in and you need to resort to using getCurrentProgram().
+	public:		float getParameter(VstInt32 parameterIndex);															///< Obtains the current parameter value of the zero-based parameter index. All VST parameter values are floating point between 0.0 and 1.0. \p parameterIndex must be less than the value returned by getParameterCount().
+	public:		void setParameter(VstInt32 parameterIndex, float value);												///< Updates the parameter \p parameterIndex to \p value. Notice that some plug-ins quantizes or limits parameter values, so a call to getParameter() after setting the parameter can be used to retrieve the actual parameter value set.
+	public:		void getParameterName(VstInt32 parameterIndex, char parameterName[24 + 1]);								///< Obtains the name of parameter \p parameterIndex. You can expect the names of parameters to stay constant during the life-time of the plug-in. The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
+	public:		void getParameterDisplay(VstInt32 parameterIndex, char parameterDisplay[24 + 1]);						///< Obtains the current parameter value of \p parameterIndex as a human-readable string. The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
+	public:		void getParameterLabel(VstInt32 parameterIndex, char parameterLabel[24 + 1]);							///< Obtains the label of \p parameterIndex. The label should be used as a suffix when presenting the parameter value to the user. You can expect the label to stay constant during the life-time of the plug-in. The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
+	public:		bool setParameterFromString(VstInt32 parameterIndex, const char* string);								///< Tries to update the value of parameter \p to the value represented as an ascii string in \p string. The function is not mandatory, and false will be returned if the plug-in could not convert the string for one reason or another.
 	public:		void resume();																							///< Resumes the plug-in. You must call this method before performing any processing. It is illegal to call this method if the plug-in is already in resumed state. (I.e. each call to resume() should be balanced with a call to suspend().)
 	public:		void suspend();																							///< Suspends the plug-in. Calling this method allows the plug-in to release any resources necessary for processing (and if necessary update it's gui accordingly). It is illegal to call any of the processing methods when the plug-in is in suspended state. It is also illegal to call suspend more than once without a call to resume() in between. 
 	public:		bool wantsMidi() const;																					///< Returns true if the plug-in has flagged that it is interested in receiving MIDI data.
-	public:		void processAccumulating(const float* const* inBuffers, float* const* outBuffers, int sampleCount);		///< Processes samples from \p inBuffers and accumulates result in \p outBuffers. This is a legacy method for performing audio processing. processReplacing() is preferred. See processReplacing() for further documentation.
+	public:		void processAccumulating(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount);///< Processes samples from \p inBuffers and accumulates result in \p outBuffers. This is a legacy method for performing audio processing. processReplacing() is preferred. See processReplacing() for further documentation.
 	public:		void processEvents(const VstEvents& events);															///< Processes the VST events in \p events (typically MIDI events). The events should be sorted in time (see deltaFrames in the VstEvent struct). Call this method before processReplacing(), and never more than once. The VstEvents struct only contains room for 2 events, so you would normally need to allocate your own VstEvents struct on the heap, or alternatively use a customized "hacked" VstEvents struct with more than 2 elements. See the VstEvents and VstEvent structs in the VST SDK documentation for more info. 
-	public:		void processReplacing(const float* const* inBuffers, float* const* outBuffers, int sampleCount);		///< Processes samples from \p inBuffers and places result in \p outBuffers. \p inBuffers and \p outBuffers are arrays with pointers to floating-point buffers for the sample data. You need to allocate and setup pointers to at least getInputCount() number of input buffers and getOutputCount() number of output buffers. Each input buffer should contain \p sampleCount number of samples, and each output buffer should contain space for at least as many samples. It is legal to use the input buffers as output buffers (for "in place processing").
-	public:		int vendorSpecific(int intA, int intB, void* pointer, float floating);									///< Perform any vendor-specific call to the plug-in. Used in Symbiosis for some AU-specific features. See Symbiosis documentation for more info.
-	public:		int getTailSize();																						///< Returns the "tail" of the effect plug-in. The "tail" is the number of samples that will need processing after the input has turned entirely silent, for example the tail of a decaying reverb. There are two special return values that you should pay attention to. 0 is returned if tail length is variable / unknown / not supported and 1 is returned if the plug-in has no tail at all.
+	public:		void processReplacing(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount);	///< Processes samples from \p inBuffers and places result in \p outBuffers. \p inBuffers and \p outBuffers are arrays with pointers to floating-point buffers for the sample data. You need to allocate and setup pointers to at least getInputCount() number of input buffers and getOutputCount() number of output buffers. Each input buffer should contain \p sampleCount number of samples, and each output buffer should contain space for at least as many samples. It is legal to use the input buffers as output buffers (for "in place processing").
+	public:		VstIntPtr vendorSpecific(VstInt32 intA, VstIntPtr intB, void* pointer, float floating);					///< Perform any vendor-specific call to the plug-in. Used in Symbiosis for some AU-specific features. See Symbiosis documentation for more info.
+	public:		VstInt32 getTailSize();																					///< Returns the "tail" of the effect plug-in. The "tail" is the number of samples that will need processing after the input has turned entirely silent, for example the tail of a decaying reverb. There are two special return values that you should pay attention to. 0 is returned if tail length is variable / unknown / not supported and 1 is returned if the plug-in has no tail at all.
 	public:		bool setBypass(bool bypass);																			///< Starts or stops soft bypassing of the plug-in (according to \p bypass). Some plug-ins need processing calls even when bypassed, so you should still call the processing functions, but you can expect the output of the plug-in to be completely dry (although it doesn't need to be entirely identical to the input signal, see the VST SDK documentation on soft bypassing for more info). If setBypass returns false, the plug-in does not support soft bypassing, and you need not call any processing when bypassing the plug-in.
-	public:		bool getInputProperties(int inputPinIndex, VstPinProperties& properties);								///< Returns properties of input pin passed in \p inputPinIndex. Returns false if not supported. See VstPinProperties in the VST SDK documentation for more info.
-	public:		bool getOutputProperties(int inputPinIndex, VstPinProperties& properties);								///< Returns properties of output pin passed in \p inputPinIndex. Returns false if not supported. See VstPinProperties in the VST SDK documentation for more info.
-	public:		void connectInputPin(int inputPinIndex, bool connect);													///< Connects or disconnects an input (according to \p connect). A disconnected input is expected to be entirely silent during processing. The plug-in can use this information to optimize performance.
-	public:		void connectOutputPin(int outputPinIndex, bool connect);												///< Connects or disconnects an output (according to \p connect). A disconnected output will not contain valid output samples after processing. The plug-in can use this information to optimize performance.
-	public:		unsigned char* createFXP(int* size);																	///< Creates an FXP file of the currently selected program in memory. You own the returned pointer and you are expected to delete it (with delete []) when you are done with it. \p size will contain the number of bytes of returned data.
-	public:		unsigned char* createFXB(int* size);																	///< Creates an FXB file of the current plug-in state in memory. An FXB file is the entire state of a plug-in, including all currently loaded programs. You own the returned pointer and you are expected to delete it (with delete []) when you are done with it. \p size will contain the number of bytes of returned data.
-	public:		bool loadFXPOrFXB(int size, const unsigned char bytes[]);												///< Loads an FXB or FXP file from memory. \p bytes should point to valid FXB or FXP data and \p size is the number of bytes for the data.
+	public:		bool getInputProperties(VstInt32 inputPinIndex, VstPinProperties& properties);							///< Returns properties of input pin passed in \p inputPinIndex. Returns false if not supported. See VstPinProperties in the VST SDK documentation for more info.
+	public:		bool getOutputProperties(VstInt32 inputPinIndex, VstPinProperties& properties);							///< Returns properties of output pin passed in \p inputPinIndex. Returns false if not supported. See VstPinProperties in the VST SDK documentation for more info.
+	public:		void connectInputPin(VstInt32 inputPinIndex, bool connect);												///< Connects or disconnects an input (according to \p connect). A disconnected input is expected to be entirely silent during processing. The plug-in can use this information to optimize performance.
+	public:		void connectOutputPin(VstInt32 outputPinIndex, bool connect);											///< Connects or disconnects an output (according to \p connect). A disconnected output will not contain valid output samples after processing. The plug-in can use this information to optimize performance.
+	public:		unsigned char* createFXP(size_t& size);																	///< Creates an FXP file of the currently selected program in memory. You own the returned pointer and you are expected to delete it (with delete []) when you are done with it. \p size will contain the number of bytes of returned data.
+	public:		unsigned char* createFXB(size_t& size);																	///< Creates an FXB file of the current plug-in state in memory. An FXB file is the entire state of a plug-in, including all currently loaded programs. You own the returned pointer and you are expected to delete it (with delete []) when you are done with it. \p size will contain the number of bytes of returned data.
+	public:		bool loadFXPOrFXB(size_t size, const unsigned char bytes[]);											///< Loads an FXB or FXP file from memory. \p bytes should point to valid FXB or FXP data and \p size is the number of bytes for the data.
 	public:		void idle();																							///< Call as often as possible from your main event loop. Many older plug-ins need idling both when editor is opened and not to perform low priority background tasks. Always call this method from the "GUI thread", *never* call it from the real-time audio thread.
-	public:		void getEditorDimensions(int& width, int& height);														///< Returns the (initial) pixel dimensions of the plug-in GUI in \p width and \p height. It is illegal to call this method if hasEditor() has returned false.
+	public:		void getEditorDimensions(VstInt32& width, VstInt32& height);											///< Returns the (initial) pixel dimensions of the plug-in GUI in \p width and \p height. It is illegal to call this method if hasEditor() has returned false.
 	public:		void openEditor(::WindowRef inWindow);																	///< Opens the plug-in editor in the window referred to by \p inWindow. The plug-in will add it's user-pane control / HIView to this window and possibly hook other required event handlers to the window itself. It is important that you call closeEditor() before disposing the window. It is illegal to call this method if hasEditor() has returned false. It is also illegal to call this method more than once before a call to closeEditor().
 	public:		void closeEditor();																						///< Closes the plug-in editor and disposes any views / event handles and other resources required by the GUI. It is important to call this method before closing the GUI window.
 	public:		virtual ~VSTPlugIn();																					///< The destructor will close any open plug-in editor, issue a close call to the effect to dispose it and lastly release the bundle reference that was used to construct the plug-in instance.
 	
 	protected:	typedef AEffect* (VSTCALLBACK* VSTMainFunctionPointerType)(audioMasterCallback audioMaster);
-	protected:	VstIntPtr myAudioMasterCallback(int opcode, int index, int value, void *ptr, float opt);
+	protected:	VstIntPtr myAudioMasterCallback(VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt);
 	protected:	static VstIntPtr staticAudioMasterCallback(AEffect *effect, VstInt32 opcode, VstInt32 index
 						, VstIntPtr value, void *ptr, float opt);
-	protected:	int dispatch(int opCode, int index, int value, void *ptr, float opt);
+	protected:	VstIntPtr dispatch(VstInt32 opCode, VstInt32 index, VstIntPtr value, void *ptr, float opt);
 	protected:	unsigned char* writeFxCk(unsigned char* bp);
 	protected:	const unsigned char* readFxCk(const unsigned char* bp, const unsigned char* ep, bool* wasPerfect);
 
@@ -760,23 +758,23 @@ class VSTPlugIn {
 	protected:	bool wantsMidiFlag;
 	protected:	bool editorOpenFlag;
 	protected:	float currentSampleRate;
-	protected:	int currentBlockSize;
+	protected:	VstInt32 currentBlockSize;
 };
 
 class SymbiosisComponent : public VSTHost {
 	public:		SymbiosisComponent(::AudioUnit auComponentInstance);
 	public:		virtual void getVendor(VSTPlugIn& plugIn, char vendor[63 + 1]);
 	public:		virtual void getProduct(VSTPlugIn& plugIn, char product[63 + 1]);
-	public:		virtual int getVersion(VSTPlugIn& plugIn);
+	public:		virtual VstInt32 getVersion(VSTPlugIn& plugIn);
 	public:		virtual bool canDo(VSTPlugIn& plugIn, const char string[]);
-	public:		virtual VstTimeInfo* getTimeInfo(VSTPlugIn& plugIn, int /*flags*/);
-	public:		virtual void beginEdit(VSTPlugIn& plugIn, int parameterIndex);
-	public:		virtual void automate(VSTPlugIn& plugIn, int parameterIndex, float /*value*/);
-	public:		virtual void endEdit(VSTPlugIn& plugIn, int parameterIndex);
+	public:		virtual VstTimeInfo* getTimeInfo(VSTPlugIn& plugIn, VstInt32 /*flags*/);
+	public:		virtual void beginEdit(VSTPlugIn& plugIn, VstInt32 parameterIndex);
+	public:		virtual void automate(VSTPlugIn& plugIn, VstInt32 parameterIndex, float /*value*/);
+	public:		virtual void endEdit(VSTPlugIn& plugIn, VstInt32 parameterIndex);
 	public:		virtual void idle(VSTPlugIn& plugIn);
-	public:		virtual bool isIOPinConnected(VSTPlugIn& plugIn, bool checkOutputPin, int pinIndex);
+	public:		virtual bool isIOPinConnected(VSTPlugIn& plugIn, bool checkOutputPin, VstInt32 pinIndex);
 	public:		virtual void updateDisplay(VSTPlugIn& plugIn);
-	public:		virtual void resizeWindow(VSTPlugIn& plugIn, int width, int height);
+	public:		virtual void resizeWindow(VSTPlugIn& plugIn, VstInt32 width, VstInt32 height);
 	public:		void dispatch(::ComponentParameters* params);
 #if (SY_INCLUDE_GUI)
 	public:		void createView(::ControlRef* createdControl, const ::Float32Point& /*requestedSize*/
@@ -791,7 +789,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	void loadConfiguration();
 	protected:	void getComponentName(char name[255 + 1]) const;
 	protected:	::OSType getComponentType() const;
-	protected:	::CFMutableDictionaryRef createAUPresetWithVSTData(int vstDataSize, const unsigned char vstData[]
+	protected:	::CFMutableDictionaryRef createAUPresetWithVSTData(size_t vstDataSize, const unsigned char vstData[]
 						, ::CFStringRef presetName);
 	protected:	::CFMutableDictionaryRef createAUPresetOfCurrentBank(::CFStringRef nameRef);
 	protected:	::CFMutableDictionaryRef createAUPresetOfCurrentProgram(::CFStringRef nameRef);
@@ -903,17 +901,16 @@ bool VSTPlugIn::isOpen() const { return openFlag; }
 bool VSTPlugIn::isEditorOpen() const { return editorOpenFlag; }
 bool VSTPlugIn::isResumed() const { return resumedFlag; }
 bool VSTPlugIn::hasEditor() const { SY_ASSERT(aeffect != 0); return ((aeffect->flags & effFlagsHasEditor) != 0); }
-int VSTPlugIn::getProgramCount() const { SY_ASSERT(aeffect != 0); return aeffect->numPrograms; }
-int VSTPlugIn::getParameterCount() const { SY_ASSERT(aeffect != 0); return aeffect->numParams; }
-int VSTPlugIn::getInputCount() const { SY_ASSERT(aeffect != 0); return aeffect->numInputs; }
-int VSTPlugIn::getOutputCount() const { SY_ASSERT(aeffect != 0); return aeffect->numOutputs; }
-int VSTPlugIn::getInitialDelay() const { SY_ASSERT(aeffect != 0); return aeffect->initialDelay; }
-int VSTPlugIn::getVersion() { SY_TRACE(SY_TRACE_VST, "VST getVersion"); return dispatch(effGetVstVersion, 0, 0, 0, 0); }
+VstInt32 VSTPlugIn::getProgramCount() const { SY_ASSERT(aeffect != 0); return aeffect->numPrograms; }
+VstInt32 VSTPlugIn::getParameterCount() const { SY_ASSERT(aeffect != 0); return aeffect->numParams; }
+VstInt32 VSTPlugIn::getInputCount() const { SY_ASSERT(aeffect != 0); return aeffect->numInputs; }
+VstInt32 VSTPlugIn::getOutputCount() const { SY_ASSERT(aeffect != 0); return aeffect->numOutputs; }
+VstInt32 VSTPlugIn::getInitialDelay() const { SY_ASSERT(aeffect != 0); return aeffect->initialDelay; }
 bool VSTPlugIn::wantsMidi() const { SY_ASSERT(resumedFlag); return wantsMidiFlag; }
-int VSTPlugIn::getTailSize() { return dispatch(effGetTailSize, 0, 0, 0, 0); }											// 0 = not supported, 1 = no tail 
+VstInt32 VSTPlugIn::getTailSize() { return static_cast<VstInt32>(dispatch(effGetTailSize, 0, 0, 0, 0)); }				// 0 = not supported, 1 = no tail 
 void VSTPlugIn::closeEditor() { SY_ASSERT(editorOpenFlag); dispatch(effEditClose, 0, 0, 0, 0); editorOpenFlag = false; }
 
-VstIntPtr VSTPlugIn::myAudioMasterCallback(int opcode, int index, int value, void *ptr, float opt) {
+VstIntPtr VSTPlugIn::myAudioMasterCallback(VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt) {
 	switch (opcode) {
 		case audioMasterAutomate:
 			SY_TRACE2(SY_TRACE_FREQUENT, "VST audioMasterAutomate: %d=%f", index, opt);
@@ -935,12 +932,12 @@ VstIntPtr VSTPlugIn::myAudioMasterCallback(int opcode, int index, int value, voi
 		
 		case audioMasterGetTime:
 			SY_TRACE(SY_TRACE_FREQUENT, "audioMasterGetTime");
-			return reinterpret_cast<VstIntPtr>(host.getTimeInfo((*this), value));
+			return reinterpret_cast<VstIntPtr>(host.getTimeInfo((*this), static_cast<VstInt32>(value)));
 
 		case audioMasterSizeWindow:
-			SY_TRACE2(SY_TRACE_VST, "VST audioMasterSizeWindow: width=%d, height=%d", index, value);
+			SY_TRACE2(SY_TRACE_VST, "VST audioMasterSizeWindow: width=%d, height=%d", index, static_cast<int>(value));
 			SY_ASSERT(editorOpenFlag);
-			host.resizeWindow(*this, index, value);
+			host.resizeWindow(*this, index, static_cast<VstInt32>(value));
 			return 1;
 
 		case DECLARE_VST_DEPRECATED(audioMasterGetParameterQuantization):
@@ -950,7 +947,7 @@ VstIntPtr VSTPlugIn::myAudioMasterCallback(int opcode, int index, int value, voi
 		case audioMasterGetSampleRate:
 			SY_TRACE(SY_TRACE_VST, "VST audioMasterGetSampleRate");
 			SY_ASSERT(currentSampleRate != 0);
-			return static_cast<int>(currentSampleRate + 0.5f);
+			return static_cast<VstInt32>(currentSampleRate + 0.5f);
 				
 		case audioMasterGetVendorString:
 			SY_TRACE(SY_TRACE_VST, "VST audioMasterGetVendorString");
@@ -1048,7 +1045,7 @@ VstIntPtr VSTPlugIn::staticAudioMasterCallback(AEffect *effect, VstInt32 opcode,
 	}
 }
 
-VSTPlugIn::VSTPlugIn(VSTHost& host, ::CFBundleRef vstBundleRef, float sampleRate, int blockSize)
+VSTPlugIn::VSTPlugIn(VSTHost& host, ::CFBundleRef vstBundleRef, float sampleRate, VstInt32 blockSize)
 		: host(host), bundleRef(0), aeffect(0), openFlag(false), resumedFlag(false), wantsMidiFlag(false)
 		, editorOpenFlag(false), currentSampleRate(sampleRate), currentBlockSize(blockSize)	{							// Note: some plug-ins request the sample rate and block-size during initialization (via the AudioMasterCallback), therefore we set them here to start with.
 	::CFRetain(vstBundleRef);
@@ -1070,7 +1067,7 @@ bool VSTPlugIn::dontProcessSilence() const {
 	return ((aeffect->flags & effFlagsNoSoundInStop) != 0);
 }
 
-int VSTPlugIn::dispatch(int opCode, int index, int value, void *ptr, float opt) {
+VstIntPtr VSTPlugIn::dispatch(VstInt32 opCode, VstInt32 index, VstIntPtr value, void *ptr, float opt) {
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT0((aeffect->dispatcher != 0), "VST dispatcher function pointer was null");
 	try {
@@ -1129,7 +1126,7 @@ void VSTPlugIn::setSampleRate(float sampleRate) {
 	}
 }
 
-void VSTPlugIn::setBlockSize(int blockSize) {
+void VSTPlugIn::setBlockSize(VstInt32 blockSize) {
 	SY_TRACE1(SY_TRACE_VST, "VST setBlockSize: %d", blockSize);
 	currentBlockSize = blockSize;
 	if (openFlag) {
@@ -1137,15 +1134,15 @@ void VSTPlugIn::setBlockSize(int blockSize) {
 	}
 }
 
-void VSTPlugIn::setCurrentProgram(int program) {
+void VSTPlugIn::setCurrentProgram(VstInt32 program) {
 	SY_TRACE1(SY_TRACE_VST, "VST setCurrentProgram: %d", program);
 	SY_ASSERT(program >= 0 && program < getProgramCount());
 	dispatch(effSetProgram, 0, program, 0, 0);
 }
 
-int VSTPlugIn::getCurrentProgram() {
+VstInt32 VSTPlugIn::getCurrentProgram() {
 	SY_TRACE(SY_TRACE_VST, "VST getCurrentProgram");
-	int programNumber = dispatch(effGetProgram, 0, 0, 0, 0);
+	VstInt32 programNumber = static_cast<VstInt32>(dispatch(effGetProgram, 0, 0, 0, 0));
 	return (programNumber > aeffect->numPrograms) ? aeffect->numPrograms : programNumber;
 }
 
@@ -1163,7 +1160,7 @@ void VSTPlugIn::setCurrentProgramName(const char programName[24 + 1]) {
 	dispatch(effSetProgramName, 0, 0, reinterpret_cast<void*>(const_cast<char*>(programName)), 0);
 }
 
-bool VSTPlugIn::getProgramName(int programIndex, char programName[24 + 1]) {
+bool VSTPlugIn::getProgramName(VstInt32 programIndex, char programName[24 + 1]) {
 	SY_TRACE1(SY_TRACE_VST, "VST getProgramName: %d", programIndex);
 	SY_ASSERT(programIndex < aeffect->numPrograms);
 	char buffer[1024] = "";
@@ -1176,7 +1173,7 @@ bool VSTPlugIn::getProgramName(int programIndex, char programName[24 + 1]) {
 	}
 }
 
-float VSTPlugIn::getParameter(int parameterIndex) {
+float VSTPlugIn::getParameter(VstInt32 parameterIndex) {
 	SY_TRACE1(SY_TRACE_FREQUENT, "VST getParameter: %d", parameterIndex);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < getParameterCount());
 	SY_ASSERT(aeffect != 0);
@@ -1193,7 +1190,7 @@ float VSTPlugIn::getParameter(int parameterIndex) {
 	}
 }
 
-void VSTPlugIn::setParameter(int parameterIndex, float value) {
+void VSTPlugIn::setParameter(VstInt32 parameterIndex, float value) {
 	SY_TRACE2(SY_TRACE_FREQUENT, "VST setParameter: %d=%f", parameterIndex, value);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < getParameterCount());
 	SY_ASSERT(value >= 0.0);
@@ -1201,14 +1198,14 @@ void VSTPlugIn::setParameter(int parameterIndex, float value) {
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT0((aeffect->setParameter != 0), "VST setParameter function pointer was null");
 	try {
-		(*aeffect->setParameter)(aeffect, parameterIndex, (value < 0.0) ? 0 : ((value > 1.0) ? 1.0 : value));
+		(*aeffect->setParameter)(aeffect, parameterIndex, value);
 	}
 	catch (...) {
 		SY_ASSERT0(0, "Caught exception in VST setParameter");
 	}
 }
 
-void VSTPlugIn::getParameterName(int parameterIndex, char parameterName[24 + 1]) {										// The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
+void VSTPlugIn::getParameterName(VstInt32 parameterIndex, char parameterName[24 + 1]) {									// The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
 	SY_TRACE1(SY_TRACE_VST, "VST getParameterName: %d", parameterIndex);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < getParameterCount());
 	char buffer[1024] = "";
@@ -1217,7 +1214,7 @@ void VSTPlugIn::getParameterName(int parameterIndex, char parameterName[24 + 1])
 	parameterName[24] = '\0';
 }
 
-void VSTPlugIn::getParameterDisplay(int parameterIndex, char parameterDisplay[24 + 1]) {								// The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
+void VSTPlugIn::getParameterDisplay(VstInt32 parameterIndex, char parameterDisplay[24 + 1]) {							// The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
 	SY_TRACE1(SY_TRACE_VST, "VST getParameterDisplay: %d", parameterIndex);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < getParameterCount());
 	char buffer[1024] = "";
@@ -1226,7 +1223,7 @@ void VSTPlugIn::getParameterDisplay(int parameterIndex, char parameterDisplay[24
 	parameterDisplay[24] = '\0';
 }
 
-void VSTPlugIn::getParameterLabel(int parameterIndex, char parameterLabel[24 + 1]) {									// The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
+void VSTPlugIn::getParameterLabel(VstInt32 parameterIndex, char parameterLabel[24 + 1]) {								// The VST spec says 8 characters max, but many VSTs don't care about that, so I say 24. :-)
 	SY_TRACE1(SY_TRACE_VST, "VST getParameterLabel: %d", parameterIndex);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < getParameterCount());
 	char buffer[1024] = "";
@@ -1235,7 +1232,7 @@ void VSTPlugIn::getParameterLabel(int parameterIndex, char parameterLabel[24 + 1
 	parameterLabel[24] = '\0';
 }
 
-bool VSTPlugIn::setParameterFromString(int parameterIndex, const char* string) {
+bool VSTPlugIn::setParameterFromString(VstInt32 parameterIndex, const char* string) {
 	SY_TRACE2(SY_TRACE_VST, "VST setParameterFromString: %d=%s", parameterIndex, (string == 0) ? "<null>" : string);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < getParameterCount());
 	return (dispatch(effString2Parameter, parameterIndex, 0, const_cast<void*>(reinterpret_cast<const void*>(string))
@@ -1260,7 +1257,7 @@ void VSTPlugIn::suspend() {
 	resumedFlag = false;
 }
 
-void VSTPlugIn::processAccumulating(const float* const* inBuffers, float* const* outBuffers, int sampleCount) {
+void VSTPlugIn::processAccumulating(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount) {
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT0((aeffect->DECLARE_VST_DEPRECATED(process) != 0), "VST process function pointer was null");
 	SY_ASSERT(openFlag && resumedFlag);
@@ -1278,7 +1275,7 @@ void VSTPlugIn::processEvents(const VstEvents& events) {
 	dispatch(effProcessEvents, 0, 0, (void*)(&events), 0);
 }
 
-void VSTPlugIn::processReplacing(const float* const* inBuffers, float* const* outBuffers, int sampleCount) {
+void VSTPlugIn::processReplacing(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount) {
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT0(aeffect->processReplacing != 0, "VST processReplacing function pointer was null");
 	SY_ASSERT(openFlag && resumedFlag);
@@ -1292,7 +1289,7 @@ void VSTPlugIn::processReplacing(const float* const* inBuffers, float* const* ou
 	}
 }
 
-int VSTPlugIn::vendorSpecific(int intA, int intB, void* pointer, float floating) {
+VstIntPtr VSTPlugIn::vendorSpecific(VstInt32 intA, VstIntPtr intB, void* pointer, float floating) {
 	return dispatch(effVendorSpecific, intA, intB, pointer, floating);
 }
 
@@ -1301,24 +1298,24 @@ bool VSTPlugIn::setBypass(bool bypass) {
 	return (dispatch(effSetBypass, 0, bypass ? 1 : 0, 0, 0) != 0);
 }
 
-bool VSTPlugIn::getInputProperties(int inputPinIndex, VstPinProperties& properties) {
+bool VSTPlugIn::getInputProperties(VstInt32 inputPinIndex, VstPinProperties& properties) {
 	SY_TRACE1(SY_TRACE_VST, "VST getInputProperties: %d", inputPinIndex);
 	SY_ASSERT(0 <= inputPinIndex && inputPinIndex < getInputCount());
 	return (dispatch(effGetInputProperties, inputPinIndex, 0, &properties, 0) != 0);
 }
 
-bool VSTPlugIn::getOutputProperties(int outputPinIndex, VstPinProperties& properties) {
+bool VSTPlugIn::getOutputProperties(VstInt32 outputPinIndex, VstPinProperties& properties) {
 	SY_TRACE1(SY_TRACE_VST, "VST getOutputProperties: %d", outputPinIndex);
 	SY_ASSERT(0 <= outputPinIndex && outputPinIndex < getOutputCount());
 	return (dispatch(effGetOutputProperties, outputPinIndex, 0, &properties, 0) != 0);
 }
 
-void VSTPlugIn::connectInputPin(int inputPinIndex, bool connect) {
+void VSTPlugIn::connectInputPin(VstInt32 inputPinIndex, bool connect) {
 	SY_TRACE2(SY_TRACE_VST, "VST connectInputPin: %d=%s", inputPinIndex, connect ? "on" : "off");
 	dispatch(DECLARE_VST_DEPRECATED(effConnectInput), inputPinIndex, connect ? 1 : 0, 0, 0);
 }
 
-void VSTPlugIn::connectOutputPin(int outputPinIndex, bool connect) {
+void VSTPlugIn::connectOutputPin(VstInt32 outputPinIndex, bool connect) {
 	SY_TRACE2(SY_TRACE_VST, "VST connectOutputPin: %d=%s", outputPinIndex, connect ? "on" : "off");
 	dispatch(DECLARE_VST_DEPRECATED(effConnectOutput), outputPinIndex, connect ? 1 : 0, 0, 0);
 }
@@ -1400,27 +1397,28 @@ const unsigned char* VSTPlugIn::readFxCk(const unsigned char* bp, const unsigned
 	return bp;
 }
 
-unsigned char* VSTPlugIn::createFXP(int* size) {
-	SY_ASSERT(size != 0);
+unsigned char* VSTPlugIn::createFXP(size_t& size) {
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT(openFlag);
 	SY_TRACE(SY_TRACE_VST, "VST createFXP");
 	
 	unsigned char* bytes = 0;
-	(*size) = 0;
+	size = 0;
 	try {
 		if (hasProgramChunks()) {
 			unsigned char* chunkPointer = 0;
-			int chunkSize = dispatch(effGetChunk, 1, 0, &chunkPointer, 0);
-			if (chunkSize <= 0) {
+			size_t chunkSize = dispatch(effGetChunk, 1, 0, &chunkPointer, 0);
+			assert(static_cast<unsigned int>(chunkSize) == chunkSize);
+			if (static_cast<long>(chunkSize) <= 0) {
 				throw SymbiosisException("VST could not create chunk for FXP");
 			}
 			SY_ASSERT(chunkPointer != 0);
-			(*size) = 60 + chunkSize;
-			bytes = new unsigned char[(*size)];
+			size = 60 + chunkSize;
+			assert(static_cast<unsigned int>(size) == size);
+			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeBigInt32(bp, 'CcnK');
-			bp = writeBigInt32(bp, (*size) - 8);
+			bp = writeBigInt32(bp, static_cast<unsigned int>(size - 8));
 			bp = writeBigInt32(bp, 'FPCh');
 			bp = writeBigInt32(bp, 1);
 			bp = writeBigInt32(bp, aeffect->uniqueID);
@@ -1429,49 +1427,50 @@ unsigned char* VSTPlugIn::createFXP(int* size) {
 			memset(bp, 0, 28);
 			getCurrentProgramName(reinterpret_cast<char*>(bp));
 			bp += 28;
-			bp = writeBigInt32(bp, chunkSize);
+			bp = writeBigInt32(bp, static_cast<unsigned int>(chunkSize));
 			memcpy(bp, chunkPointer, chunkSize);
 			bp += chunkSize;
-			SY_ASSERT((bp - bytes) == (*size));
+			SY_ASSERT(static_cast<size_t>(bp - bytes) == size);
 		} else {
-			(*size) = (56 + getParameterCount() * 4);
-			bytes = new unsigned char[(*size)];
+			size = (56 + getParameterCount() * 4);
+			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeFxCk(bp);
-			SY_ASSERT((bp - bytes) == (*size));
+			SY_ASSERT(static_cast<size_t>(bp - bytes) == size);
 		}
 	}
 	catch (...) {
 		delete [] bytes;
-		(*size) = 0;
+		size = 0;
 		bytes = 0;
 		throw;
 	}
 	return bytes;
 }
 				
-unsigned char* VSTPlugIn::createFXB(int* size) {
-	SY_ASSERT(size != 0);
+unsigned char* VSTPlugIn::createFXB(size_t& size) {
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT(openFlag);
 	SY_TRACE(SY_TRACE_VST, "VST createFXB");
 	
 	int oldProgramIndex = -1;
 	unsigned char* bytes = 0;
-	(*size) = 0;
+	size = 0;
 	try {
 		if (hasProgramChunks()) {
 			unsigned char* chunkPointer = 0;
-			int chunkSize = dispatch(effGetChunk, 0, 0, &chunkPointer, 0);
-			if (chunkSize <= 0) {
+			size_t chunkSize = dispatch(effGetChunk, 0, 0, &chunkPointer, 0);
+			assert(static_cast<unsigned int>(chunkSize) == chunkSize);
+			if (static_cast<long>(chunkSize) <= 0) {
 				throw SymbiosisException("VST could not create chunk for FXB");
 			}
 			SY_ASSERT(chunkPointer != 0);
-			(*size) = 160 + chunkSize;
-			bytes = new unsigned char[(*size)];
+			size = 160 + chunkSize;
+			assert(static_cast<unsigned int>(size) == size);
+			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeBigInt32(bp, 'CcnK');
-			bp = writeBigInt32(bp, (*size) - 8);
+			bp = writeBigInt32(bp, static_cast<unsigned int>(size - 8));
 			bp = writeBigInt32(bp, 'FBCh');
 			bp = writeBigInt32(bp, 1);
 			bp = writeBigInt32(bp, aeffect->uniqueID);
@@ -1479,16 +1478,17 @@ unsigned char* VSTPlugIn::createFXB(int* size) {
 			bp = writeBigInt32(bp, aeffect->numPrograms);
 			memset(bp, 0, 128);
 			bp += 128;
-			bp = writeBigInt32(bp, chunkSize);
+			bp = writeBigInt32(bp, static_cast<unsigned int>(chunkSize));
 			memcpy(bp, chunkPointer, chunkSize);
 			bp += chunkSize;
-			SY_ASSERT((bp - bytes) == (*size));
+			SY_ASSERT(static_cast<size_t>(bp - bytes) == size);
 		} else {
-			(*size) = 156 + aeffect->numPrograms * (56 + getParameterCount() * 4);
-			bytes = new unsigned char[(*size)];
+			size = 156 + aeffect->numPrograms * (56 + getParameterCount() * 4);
+			assert(static_cast<unsigned int>(size) == size);
+			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeBigInt32(bp, 'CcnK');
-			bp = writeBigInt32(bp, (*size) - 8);
+			bp = writeBigInt32(bp, static_cast<unsigned int>(size - 8));
 			bp = writeBigInt32(bp, 'FxBk');
 			bp = writeBigInt32(bp, 1);
 			bp = writeBigInt32(bp, aeffect->uniqueID);
@@ -1504,7 +1504,7 @@ unsigned char* VSTPlugIn::createFXB(int* size) {
 			}
 			setCurrentProgram(oldProgramIndex);
 			oldProgramIndex = -1;
-			SY_ASSERT((bp - bytes) == (*size));
+			SY_ASSERT(static_cast<size_t>(bp - bytes) == size);
 		}
 	}
 	catch (...) {
@@ -1512,19 +1512,19 @@ unsigned char* VSTPlugIn::createFXB(int* size) {
 			setCurrentProgram(oldProgramIndex);
 		}
 		delete [] bytes;
-		(*size) = 0;
+		size = 0;
 		bytes = 0;
 		throw;
 	}
 	return bytes;
 }
 
-bool VSTPlugIn::loadFXPOrFXB(int size, const unsigned char bytes[]) {
+bool VSTPlugIn::loadFXPOrFXB(size_t size, const unsigned char bytes[]) {
 	SY_ASSERT(size >= 0);
 	SY_ASSERT(bytes != 0);
 	SY_ASSERT(aeffect != 0);
 	SY_ASSERT(openFlag);
-	SY_TRACE1(SY_TRACE_VST, "VST loadFXPOrFXB (size=%d)", size);
+	SY_TRACE1(SY_TRACE_VST, "VST loadFXPOrFXB (size=%ld)", static_cast<long>(size));
 
 	int oldProgramIndex = -1;
 	try {
@@ -1542,7 +1542,8 @@ bool VSTPlugIn::loadFXPOrFXB(int size, const unsigned char bytes[]) {
 		bp = readBigInt32(bp, ep, &version);
 		bp = readBigInt32(bp, ep, &plugInID);
 		bp = readBigInt32(bp, ep, &plugInVersion);
-		if (magicID != 'CcnK' || (dataSize + 8) > size || version != 1 || plugInID != aeffect->uniqueID) {
+		if (magicID != 'CcnK' || (static_cast<size_t>(dataSize) + 8) > size
+				|| version != 1 || plugInID != aeffect->uniqueID) {
 			throw FormatException("Invalid format of FXP / FXB data");
 		}
 		switch (formatID) {
@@ -1628,10 +1629,10 @@ void VSTPlugIn::idle() {
 	}
 }
 
-void VSTPlugIn::getEditorDimensions(int& width, int& height) {
+void VSTPlugIn::getEditorDimensions(VstInt32& width, VstInt32& height) {
 	SY_ASSERT(hasEditor());
 	ERect* rectPointer = 0;
-	int vstDispatchReturn = dispatch(effEditGetRect, 0, 0, reinterpret_cast<void*>(&rectPointer), 0);
+	VstIntPtr vstDispatchReturn = dispatch(effEditGetRect, 0, 0, reinterpret_cast<void*>(&rectPointer), 0);
 	SY_ASSERT(vstDispatchReturn != 0);
 	SY_ASSERT(rectPointer != 0);
 	SY_ASSERT(rectPointer->left <= rectPointer->right);
@@ -1645,7 +1646,7 @@ void VSTPlugIn::openEditor(::WindowRef inWindow) {
 	SY_ASSERT(!editorOpenFlag);
 	SY_ASSERT(inWindow != 0);
 	editorOpenFlag = true;
-	int vstDispatchReturn = dispatch(effEditOpen, 0, 0, reinterpret_cast<void*>(inWindow), 0);
+	VstIntPtr vstDispatchReturn = dispatch(effEditOpen, 0, 0, reinterpret_cast<void*>(inWindow), 0);
 	if (vstDispatchReturn == 0) {
 		throw SymbiosisException("VST could not open editor");
 	}
@@ -1670,7 +1671,7 @@ VSTPlugIn::~VSTPlugIn() {
 /* --- SymbiosisComponent --- */
 
 void SymbiosisComponent::idle(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn == vst); }
-int SymbiosisComponent::getVersion(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn == vst); return kSymbiosisVSTVersion; }
+VstInt32 SymbiosisComponent::getVersion(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn == vst); return kSymbiosisVSTVersion; }
 SymbiosisComponent::~SymbiosisComponent() { uninit(); }
 
 void SymbiosisComponent::uninit() {
@@ -1770,9 +1771,8 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
 	return desc.componentType;
 }
 
-::CFMutableDictionaryRef SymbiosisComponent::createAUPresetWithVSTData(int vstDataSize, const unsigned char vstData[]
+::CFMutableDictionaryRef SymbiosisComponent::createAUPresetWithVSTData(size_t vstDataSize, const unsigned char vstData[]
 		, ::CFStringRef presetName) {
-	SY_ASSERT(vstDataSize >= 0);
 	SY_ASSERT(vstData != 0);
 	SY_ASSERT(presetName != 0);
 	::CFMutableDictionaryRef dictionary = 0;
@@ -1809,8 +1809,8 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
 	unsigned char* fxpData = 0;
 	::CFMutableDictionaryRef dictionary = 0;
 	try {
-		int fxpSize;
-		fxpData = vst->createFXB(&fxpSize);
+		size_t fxpSize;
+		fxpData = vst->createFXB(fxpSize);
 		dictionary = createAUPresetWithVSTData(fxpSize, fxpData, nameRef);
 		delete [] fxpData;
 		fxpData = 0;
@@ -1831,8 +1831,8 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
 	unsigned char* fxpData = 0;
 	::CFMutableDictionaryRef dictionary = 0;
 	try {
-		int fxpSize;
-		fxpData = vst->createFXP(&fxpSize);
+		size_t fxpSize;
+		fxpData = vst->createFXP(fxpSize);
 		dictionary = createAUPresetWithVSTData(fxpSize, fxpData, nameRef);
 		delete [] fxpData;
 		fxpData = 0;
@@ -1863,7 +1863,7 @@ void SymbiosisComponent::convertLoadedPrograms(const ::FSRef* parentFSRef, bool 
 			char filenameBuffer[24 + 9 + 1 + 1] = "";																	// 9 extra for aupreset extension, one extra for the '\r' if we write to name-list file
 			vst->getCurrentProgramName(filenameBuffer);
 			char* filename = const_cast<char*>(eatSpace(filenameBuffer));												// Skip leading spaces
-			int l = strlen(filename);
+			size_t l = strlen(filename);
 			while (l > 0 && filename[l - 1] == ' ') {
 				--l;
 			}
@@ -1949,8 +1949,8 @@ void SymbiosisComponent::convertVSTPreset(const ::FSRef* fsRef, bool isFXB) {
 			if (::FSCreateDirectoryUnicode(&parentFSRef, (extensionStartIndex == kLSInvalidExtensionIndex)
 					? uniName.length : extensionStartIndex - 1, uniName.unicode, kFSCatInfoNone, 0, &newFolderFSRef, 0
 					, 0) == noErr) {
-				int size = 0;
-				bytes = loadFromFile(fsRef, &size);
+				size_t size = 0;
+				bytes = loadFromFile(fsRef, size);
 				vst->loadFXPOrFXB(size, bytes);
 				delete [] bytes;
 				bytes = 0;
@@ -1976,8 +1976,8 @@ void SymbiosisComponent::convertVSTPreset(const ::FSRef* fsRef, bool isFXB) {
 			::FSRef newFSRef;
 			if (::FSCreateFileUnicode(&parentFSRef, extensionStartIndex + 8, uniName.unicode, kFSCatInfoNone, 0
 					, &newFSRef, 0) == noErr) {
-				int size = 0;
-				bytes = loadFromFile(fsRef, &size);
+				size_t size = 0;
+				bytes = loadFromFile(fsRef, size);
 				auPresetDictionary = createAUPresetWithVSTData(size, bytes, auPresetName);
 				delete [] bytes;
 				bytes = 0;
@@ -2154,8 +2154,8 @@ void SymbiosisComponent::loadFactoryPresets(::FSRef* factoryPresetsListFSRef) {
 		factoryPresetsArray = ::CFArrayCreateMutable(0, 0, 0);
 		SY_ASSERT(factoryPresetsArray != 0);
 								
-		int size = 0;
-		bytes = loadFromFile(factoryPresetsListFSRef, &size);
+		size_t size = 0;
+		bytes = loadFromFile(factoryPresetsListFSRef, size);
 		
 		char line[2047 + 1];
 		const unsigned char* bp = bytes;
@@ -2272,8 +2272,8 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 	::AudioUnitParameterInfo info;
 	memset(&info, 0, sizeof (info));
 	try {
-		int size = 0;
-		bytes = loadFromFile(fsRef, &size);
+		size_t size = 0;
+		bytes = loadFromFile(fsRef, size);
 		char line[2047 + 1];
 		const unsigned char* bp = bytes;
 		const unsigned char* ep = bytes + size;
@@ -2299,7 +2299,7 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 
 			bool isMeta = false;
 			int vstParameterIndex = 0;
-			int indexAndFlagsLength = strlen(indexAndFlags);
+			size_t indexAndFlagsLength = strlen(indexAndFlags);
 			if (indexAndFlagsLength > 0) {
 				if (indexAndFlags[indexAndFlagsLength - 1] == '+') {
 					indexAndFlags[indexAndFlagsLength - 1] = 0;
@@ -2356,7 +2356,7 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 					SY_ASSERT(choicesArray != 0);
 					releaseCFRef((::CFTypeRef*)&choicesString);
 					auMin = 0;
-					auMax = ::CFArrayGetCount(choicesArray) - 1;
+					auMax = static_cast<int>(::CFArrayGetCount(choicesArray)) - 1;
 					SY_ASSERT(auMax >= 0);
 					info.unit = kAudioUnitParameterUnit_Indexed;
 					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
@@ -2428,7 +2428,7 @@ void SymbiosisComponent::createDefaultParameterMappingFile(const ::FSRef* fsRef)
 			char displayLow[24 + 1];
 			vst->getParameterDisplay(i, displayLow);
 
-			vst->setParameter(i, 0.5);
+			vst->setParameter(i, 0.5f);
 			char displayMid[24 + 1];
 			vst->getParameterDisplay(i, displayMid);
 
@@ -2452,10 +2452,10 @@ void SymbiosisComponent::createDefaultParameterMappingFile(const ::FSRef* fsRef)
 				eatenParameterLabel = "-";
 			}
 			char displayChar = '=';
-			if ((lowValue = strtod(displayLow, &e), e != &displayLow[strlen(displayLow)])
-					|| (defaultValue = strtod(displayDefault, &e), e != &displayDefault[strlen(displayDefault)])
-					|| (highValue = strtod(displayHigh, &e), e != &displayHigh[strlen(displayHigh)])
-					|| (midValue = strtod(displayMid, &e), e != &displayMid[strlen(displayMid)])
+			if ((lowValue = strtof(displayLow, &e), e != &displayLow[strlen(displayLow)])
+					|| (defaultValue = strtof(displayDefault, &e), e != &displayDefault[strlen(displayDefault)])
+					|| (highValue = strtof(displayHigh, &e), e != &displayHigh[strlen(displayHigh)])
+					|| (midValue = strtof(displayMid, &e), e != &displayMid[strlen(displayMid)])
 					|| (avgValue = (lowValue + highValue) * 0.5f, midValue < avgValue - 0.0001f
 					|| midValue > avgValue + 0.0001f)) {
 				if (vstGotSymbiosisExtensions) {
@@ -2667,7 +2667,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		SY_ASSERT(urlArrayRef == 0);
 		throwOnNull(urlArrayRef = ::CFBundleCopyResourceURLsOfType(auBundleRef, CFSTR("vst"), 0)
 				, "Could not locate resources of specific type in bundle");
-		int vstCount = ::CFArrayGetCount(urlArrayRef);
+		size_t vstCount = ::CFArrayGetCount(urlArrayRef);
 		if (vstCount < 1) {
 			::CFRetain(auBundleRef);
 			SY_ASSERT(vstBundleRef == 0);
@@ -2931,6 +2931,11 @@ bool SymbiosisComponent::canDo(VSTPlugIn& plugIn, const char string[]) {
 	}
 }
 
+VstInt32 VSTPlugIn::getVersion() {
+	SY_TRACE(SY_TRACE_VST, "VST getVersion");
+	return static_cast<VstInt32>(dispatch(effGetVstVersion, 0, 0, 0, 0));
+}
+
 VstTimeInfo* SymbiosisComponent::getTimeInfo(VSTPlugIn& plugIn, int /*flags*/) {
 	SY_ASSERT(&plugIn == vst);
 	return &vstTimeInfo;
@@ -3163,8 +3168,8 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			}
 			(*isReadable) = true;
 			(*isWritable) = (scope != kAudioUnitScope_Input || inputConnections[element].sourceAudioUnit == 0);
-			(*minDataSize) = ((id == kAudioUnitProperty_SampleRate)
-					? sizeof (::Float64) : sizeof (::AudioStreamBasicDescription));
+			(*minDataSize) = static_cast<int>(((id == kAudioUnitProperty_SampleRate)
+					? sizeof (::Float64) : sizeof (::AudioStreamBasicDescription)));
 			(*normalDataSize) = (*minDataSize);
 			break;
 		}
@@ -3177,8 +3182,8 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			(*minDataSize) = 0;
 			(*normalDataSize) = 0;
 			if (scope == kAudioUnitScope_Global) {
-				(*minDataSize) = sizeof (::AudioUnitParameterID) * parameterCount;
-				(*normalDataSize) = sizeof (::AudioUnitParameterID) * parameterCount;
+				(*minDataSize) = static_cast<int>(sizeof (::AudioUnitParameterID) * parameterCount);
+				(*normalDataSize) = static_cast<int>(sizeof (::AudioUnitParameterID) * parameterCount);
 			}
 			break;
 		
@@ -3485,7 +3490,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kMusicDeviceProperty_StreamFromDisk: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kMusicDeviceProperty_StreamFromDisk (not supported)"); goto unsupported;
 		case kAudioUnitMigrateProperty_FromPlugin: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitMigrateProperty_FromPlugin (not supported)"); goto unsupported;
 		case kAudioUnitMigrateProperty_OldAutomation: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitMigrateProperty_OldAutomation (not supported)"); goto unsupported;
-		default: SY_TRACE1(SY_TRACE_AU, "AU GetPropertyInfo: unknown property id: %d", id); goto unsupported;
+		default: SY_TRACE1(SY_TRACE_AU, "AU GetPropertyInfo: unknown property id: %d", static_cast<int>(id)); goto unsupported;
 		unsupported: throw MacOSException(kAudioUnitErr_InvalidProperty);
 	}
 }
@@ -3639,22 +3644,24 @@ void SymbiosisComponent::renderOutput(int frameCount, float** inputPointers, boo
 
 void SymbiosisComponent::render(::AudioUnitRenderActionFlags* ioActionFlags, const ::AudioTimeStamp* inTimeStamp
 		, ::UInt32 inOutputBusNumber, ::UInt32 inNumberFrames, ::AudioBufferList* ioData) {
-	SY_TRACE2(SY_TRACE_FREQUENT, "Rendering %u channels on bus %u", ioData->mNumberBuffers, inOutputBusNumber);
+	SY_TRACE2(SY_TRACE_FREQUENT, "Rendering %u channels on bus %u", static_cast<unsigned int>(ioData->mNumberBuffers)
+			, static_cast<unsigned int>(inOutputBusNumber));
 	if (ioData == 0 || inTimeStamp == 0) {
 		throw MacOSException(paramErr);
 	}
 	if (static_cast<int>(inOutputBusNumber) < 0 || static_cast<int>(inOutputBusNumber) >= outputBusCount) {
-		SY_TRACE1(1, "AURender called for an invalid bus (%u)", inOutputBusNumber);
+		SY_TRACE1(1, "AURender called for an invalid bus (%u)", static_cast<unsigned int>(inOutputBusNumber));
 		throw MacOSException(paramErr);
 	}
 	if (inNumberFrames > static_cast< ::UInt32 >(maxFramesPerSlice)) {
 		SY_TRACE2(1, "AURender called for an unexpected large number of frames (expected max %d, got %u)"
-				, maxFramesPerSlice, inNumberFrames);
+				, static_cast<int>(maxFramesPerSlice), static_cast<unsigned int>(inNumberFrames));
 		throw MacOSException(paramErr);
 	}
 	SY_ASSERT2(static_cast<int>(ioData->mNumberBuffers) == getOutputBusChannelCount(inOutputBusNumber)
 			, "AURender called for an unexpected number of output channels (expected %d, got %u)"
-			, getOutputBusChannelCount(inOutputBusNumber), ioData->mNumberBuffers);
+			, static_cast<int>(getOutputBusChannelCount(inOutputBusNumber))
+			, static_cast<unsigned int>(ioData->mNumberBuffers));
 
 	// --- Call pre-render notification callbacks
 
@@ -3720,7 +3727,7 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 	int normalDataSize = 0;
 	getPropertyInfo(inID, inScope, inElement, &isReadable, &isWritable, &minDataSize, &normalDataSize);
 	if (!isReadable) {
-		SY_TRACE1(SY_TRACE_MISC, "Cannot read property: %d", inID);
+		SY_TRACE1(SY_TRACE_MISC, "Cannot read property: %d", static_cast<int>(inID));
 		throw MacOSException(kAudioUnitErr_InvalidProperty);
 	}
 	(*ioDataSize) = minDataSize;
@@ -3812,8 +3819,8 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				break;
 
 			case kAudioUnitProperty_HostCallbacks:
-				(*ioDataSize) = (bufferSize >= static_cast<int>(sizeof (hostCallbackInfo))
-						? sizeof (hostCallbackInfo) : bufferSize);
+				(*ioDataSize) = static_cast<int>((bufferSize >= static_cast<int>(sizeof (hostCallbackInfo))
+						? sizeof (hostCallbackInfo) : bufferSize));
 				memcpy(outData, &hostCallbackInfo, (*ioDataSize));
 				break;
 
@@ -3858,7 +3865,7 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				} else {
 					SY_ASSERT(vstGotSymbiosisExtensions);
 					*reinterpret_cast<float*>(buffer) = scaleFromAUParameter(sfv->inParamID, (*sfv->inValue));
-					int vendorSpecificReturn = vst->vendorSpecific('sV2S', sfv->inParamID, buffer, 0);
+					VstIntPtr vendorSpecificReturn = vst->vendorSpecific('sV2S', sfv->inParamID, buffer, 0);
 					if (vendorSpecificReturn == 0) {
 						SY_TRACE(1, "Warning! Symbiosis extension 'sV2S' (value to string conversion) returned 0");
 						throw MacOSException(kAudioUnitErr_InvalidProperty);
@@ -3884,7 +3891,7 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				SY_ASSERT(wasOK);
 				SY_TRACE2(SY_TRACE_MISC, "Trying to convert '%s' for parameter %d", buffer
 						, static_cast<int>(vfs->inParamID));
-				int vendorSpecificReturn = vst->vendorSpecific('sS2V', vfs->inParamID, buffer, 0);
+				VstIntPtr vendorSpecificReturn = vst->vendorSpecific('sS2V', vfs->inParamID, buffer, 0);
 				if (vendorSpecificReturn == 0) {
 					SY_TRACE(1, "Warning! Symbiosis extension 'sS2V' (string to value conversion) returned 0");
 					throw MacOSException(kAudioUnitErr_InvalidProperty);
@@ -3992,7 +3999,8 @@ void SymbiosisComponent::updateMaxFramesPerSlice(int newFramesPerSlice) {
 void SymbiosisComponent::updateFormat(::AudioUnitScope scope, int busNumber
 		, const ::AudioStreamBasicDescription& format) {
 	SY_TRACE3(SY_TRACE_MISC, "Trying to set %s format on bus %d to %u channels"
-			, (scope == kAudioUnitScope_Input) ? "input" : "output", busNumber, format.mChannelsPerFrame);
+			, (scope == kAudioUnitScope_Input) ? "input" : "output", static_cast<int>(busNumber)
+			, static_cast<unsigned int>(format.mChannelsPerFrame));
 	int channelCount = ((scope == kAudioUnitScope_Input)
 			? getInputBusChannelCount(busNumber) : getOutputBusChannelCount(busNumber));
 	if (format.mFormatID != kAudioFormatLinearPCM
@@ -4030,7 +4038,7 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 	int normalDataSize = 0;
 	getPropertyInfo(inID, inScope, inElement, &readable, &writable, &minDataSize, &normalDataSize);
 	if (!writable) {
-		SY_TRACE1(SY_TRACE_MISC, "Cannot write property: %d", inID);
+		SY_TRACE1(SY_TRACE_MISC, "Cannot write property: %d", static_cast<int>(inID));
 		throw MacOSException(kAudioUnitErr_InvalidProperty);
 	}
 	if (static_cast<int>(inDataSize) < minDataSize) {
@@ -4067,7 +4075,7 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 						}
 						::SInt32 programNumber;
 						::CFNumberGetValue(numberRef, kCFNumberSInt32Type, &programNumber);
-						SY_TRACE1(SY_TRACE_MISC, "Requested program number: %d", programNumber);
+						SY_TRACE1(SY_TRACE_MISC, "Requested program number: %d", static_cast<int>(programNumber));
 						if (0 <= programNumber && programNumber < vst->getProgramCount()) {
 							useProgramNumber = programNumber;
 						}
@@ -4325,7 +4333,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			listener.fListenerRefCon = pinProcRefCon;
 			propertyListeners[propertyListenersCount] = listener;
 			++propertyListenersCount;
-			SY_TRACE1(SY_TRACE_AU, "AU Added listener on %d", pinID);
+			SY_TRACE1(SY_TRACE_AU, "AU Added listener on %d", static_cast<int>(pinID));
 			break;
 		}
 		
@@ -4343,7 +4351,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 					propertyListeners[j] = propertyListeners[i];
 					++j;
 				} else {
-					SY_TRACE1(SY_TRACE_AU, "AU Removed listener on %d", pinID);
+					SY_TRACE1(SY_TRACE_AU, "AU Removed listener on %d", static_cast<int>(pinID));
 				}
 				++i;
 			}
@@ -4368,7 +4376,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 					propertyListeners[j] = propertyListeners[i];
 					++j;
 				} else {
-					SY_TRACE1(SY_TRACE_AU, "AU Removed listener on %d", pinID);
+					SY_TRACE1(SY_TRACE_AU, "AU Removed listener on %d", static_cast<int>(pinID));
 				}
 				++i;
 			}
@@ -4382,10 +4390,11 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 
 			PARAM(AudioUnitParameterID, pinID, 0, 4);
 			PARAM(AudioUnitScope, pinScope, 1, 4);
-			PARAM(AudioUnitElement, pinElement, 2, 4);
+		//	PARAM(AudioUnitElement, pinElement, 2, 4);
 			PARAM(Float32 *, poutValue, 3, 4);
 		
-			SY_TRACE2(SY_TRACE_FREQUENT, "AU Get parameter: %d, %d", pinID, pinScope);
+			SY_TRACE2(SY_TRACE_FREQUENT, "AU Get parameter: %d, %d", static_cast<int>(pinID)
+					, static_cast<int>(pinScope));
 			SY_ASSERT(poutValue != 0);
 			if (pinScope != kAudioUnitScope_Global) {
 				throw MacOSException(kAudioUnitErr_InvalidScope);
@@ -4402,12 +4411,12 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 
 			PARAM(AudioUnitParameterID, pinID, 0, 5);
 			PARAM(AudioUnitScope, pinScope, 1, 5);
-			PARAM(AudioUnitElement, pinElement, 2, 5);
+		//	PARAM(AudioUnitElement, pinElement, 2, 5);
 			PARAM(Float32, pinValue, 3, 5);
 			PARAM(UInt32, pinBufferOffsetInFrames, 4, 5);
 		
-			SY_TRACE4(SY_TRACE_FREQUENT, "AU Set parameter: %d, %d, %f, %d", pinID, pinScope, pinValue
-					, pinBufferOffsetInFrames);
+			SY_TRACE4(SY_TRACE_FREQUENT, "AU Set parameter: %d, %d, %f, %d", static_cast<int>(pinID)
+					, static_cast<int>(pinScope), pinValue, static_cast<int>(pinBufferOffsetInFrames));
 			if (pinScope != kAudioUnitScope_Global) {
 				throw MacOSException(kAudioUnitErr_InvalidScope);
 			}
@@ -4422,7 +4431,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			SY_TRACE(SY_TRACE_AU, "AU kAudioUnitResetSelect");
 
 			PARAM(AudioUnitScope, pinScope, 0, 2);
-			PARAM(AudioUnitElement, pinElement, 1, 2);
+		//	PARAM(AudioUnitElement, pinElement, 1, 2);
 		
 			if (pinScope != kAudioUnitScope_Global) {
 				throw MacOSException(kAudioUnitErr_InvalidScope);
@@ -4700,6 +4709,9 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 ::EventLoopTimerUPP SymbiosisComponent::idleTimerUPP = ::NewEventLoopTimerUPP(idleTimerAction);
 
 /* --- Component entry functions --- */
+
+extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEntry(::ComponentParameters* params
+		, ::Handle userDataHandle);
 
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEntry(::ComponentParameters* params
 		, ::Handle userDataHandle) {
