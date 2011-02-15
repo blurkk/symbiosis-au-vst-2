@@ -364,16 +364,16 @@ static const char* cfStringToCString(::CFStringRef stringRef, ::CFStringEncoding
 static unsigned char* writeBigInt32(unsigned char* p, int x) throw() {
 	SY_ASSERT(p != 0);
 
-	#if defined(__POWERPC__)
-		*reinterpret_cast<int*>(p) = x;
-		return p + 4;
-	#elif !defined(__POWERPC__)
-		*p++ = static_cast<unsigned char>((x >> 24) & 0xFF);
-		*p++ = static_cast<unsigned char>((x >> 16) & 0xFF);
-		*p++ = static_cast<unsigned char>((x >> 8) & 0xFF);
-		*p++ = static_cast<unsigned char>((x >> 0) & 0xFF);
-		return p;
-	#endif
+#if defined(__POWERPC__)
+	*reinterpret_cast<int*>(p) = x;
+	return p + 4;
+#elif !defined(__POWERPC__)
+	*p++ = static_cast<unsigned char>((x >> 24) & 0xFF);
+	*p++ = static_cast<unsigned char>((x >> 16) & 0xFF);
+	*p++ = static_cast<unsigned char>((x >> 8) & 0xFF);
+	*p++ = static_cast<unsigned char>((x >> 0) & 0xFF);
+	return p;
+#endif
 }
 
 // Attention: this code expects the C++ representation of float to be in IEEE 754 format!
@@ -392,11 +392,11 @@ static const unsigned char* readBigInt32(const unsigned char* p, const unsigned 
 	if (p + 4 > e) {
 		throw EOFException();
 	}
-	#if defined(__POWERPC__)
-		(*x) = *reinterpret_cast<const int*>(p);
-	#elif !defined(__POWERPC__)
-		(*x) = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-	#endif
+#if defined(__POWERPC__)
+	(*x) = *reinterpret_cast<const int*>(p);
+#elif !defined(__POWERPC__)
+	(*x) = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+#endif
 	return p + 4;
 }
 
@@ -447,18 +447,18 @@ static inline const char* eatSpace(const char* p) throw() {
 }
 
 #if (SY_DO_TRACE && SY_INCLUDE_GUI)
-	static void traceControlInfo(const char* s, ::ControlRef controlRef) throw(MacOSException) {
-		if (controlRef == 0) {
-			SY_TRACE2(SY_TRACE_MISC, "%s: @0x%8.8x", s, 0);
-		} else {
-			::ControlKind controlKind;
-			throwOnOSError(::GetControlKind(controlRef, &controlKind));
-			char buffer1[5]; *(reinterpret_cast< ::OSType* >(buffer1)) = controlKind.signature; buffer1[4] = '\0';
-			char buffer2[5]; *(reinterpret_cast< ::OSType* >(buffer2)) = controlKind.kind; buffer2[4] = '\0';
-			SY_TRACE4(SY_TRACE_MISC, "%s: @0x%8.8x %s/%s", s, reinterpret_cast<unsigned int>(controlRef), buffer1
-					, buffer2);
-		}
+static void traceControlInfo(const char* s, ::ControlRef controlRef) throw(MacOSException) {
+	if (controlRef == 0) {
+		SY_TRACE2(SY_TRACE_MISC, "%s: @0x%8.8x", s, 0);
+	} else {
+		::ControlKind controlKind;
+		throwOnOSError(::GetControlKind(controlRef, &controlKind));
+		char buffer1[5]; *(reinterpret_cast< ::OSType* >(buffer1)) = controlKind.signature; buffer1[4] = '\0';
+		char buffer2[5]; *(reinterpret_cast< ::OSType* >(buffer2)) = controlKind.kind; buffer2[4] = '\0';
+		SY_TRACE4(SY_TRACE_MISC, "%s: @0x%8.8x %s/%s", s, reinterpret_cast<unsigned int>(controlRef), buffer1
+				, buffer2);
 	}
+}
 #endif
 
 static void descendOrCreateFolder(const ::FSRef* parentFSRef, size_t nameLength, const char* name, ::FSRef* folderFSRef)
@@ -2060,12 +2060,12 @@ void SymbiosisComponent::convertVSTPresetsInDomain(short domain, const char comp
 								&& ::CFStringCompare(itemInfo.extension, CFSTR("fxb"), kCFCompareCaseInsensitive)
 								== kCFCompareEqualTo));
 						if ((isFXP && !presetIsFXB) || isFXB) {
-							#if (SY_DO_TRACE)
-								char buffer[1023 + 1];
-								if (::FSRefMakePath(&fsRefs[i], reinterpret_cast< ::UInt8* >(buffer), 1023) == noErr) {
-									SY_TRACE2(SY_TRACE_MISC, "Found %s: %s", (isFXP) ? "fxp" : "fxb", buffer);
-								}
-							#endif
+						#if (SY_DO_TRACE)
+							char buffer[1023 + 1];
+							if (::FSRefMakePath(&fsRefs[i], reinterpret_cast< ::UInt8* >(buffer), 1023) == noErr) {
+								SY_TRACE2(SY_TRACE_MISC, "Found %s: %s", (isFXP) ? "fxp" : "fxb", buffer);
+							}
+						#endif
 							convertVSTPreset(&fsRefs[i], isFXB);
 						}
 					}
@@ -2678,11 +2678,11 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		} else {
 			urlRef1 = reinterpret_cast< ::CFURLRef >(::CFArrayGetValueAtIndex(urlArrayRef, 0));
 			::CFRetain(urlRef1);
-			#if (SY_DO_TRACE && SY_TRACE_MISC)
-				char buffer[1024] = "?";
-				::CFURLGetFileSystemRepresentation(urlRef1, true, reinterpret_cast< ::UInt8* >(buffer), 1023);
-				SY_TRACE1(SY_TRACE_MISC, "Found VST bundle or alias at %s", buffer);
-			#endif
+		#if (SY_DO_TRACE && SY_TRACE_MISC)
+			char buffer[1024] = "?";
+			::CFURLGetFileSystemRepresentation(urlRef1, true, reinterpret_cast< ::UInt8* >(buffer), 1023);
+			SY_TRACE1(SY_TRACE_MISC, "Found VST bundle or alias at %s", buffer);
+		#endif
 
 			// --- Resolve alias (if it is an alias)
 			
@@ -2693,10 +2693,10 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 				if (::FSResolveAliasFile(&fsRef, true, &targetIsFolder, &wasAliased) == noErr) {
 					releaseCFRef((::CFTypeRef*)&urlRef1);
 					throwOnNull(urlRef1 = ::CFURLCreateFromFSRef(NULL, &fsRef), "Could not create URL from FSRef");
-					#if (SY_DO_TRACE && SY_TRACE_MISC)
-						::CFURLGetFileSystemRepresentation(urlRef1, true, reinterpret_cast< ::UInt8* >(buffer), 1023);
-						SY_TRACE1(SY_TRACE_MISC, "Resolved alias to %s", buffer);
-					#endif
+				#if (SY_DO_TRACE && SY_TRACE_MISC)
+					::CFURLGetFileSystemRepresentation(urlRef1, true, reinterpret_cast< ::UInt8* >(buffer), 1023);
+					SY_TRACE1(SY_TRACE_MISC, "Resolved alias to %s", buffer);
+				#endif
 				}
 			}
 			SY_ASSERT(vstBundleRef == 0);
@@ -3591,17 +3591,17 @@ bool SymbiosisComponent::collectInputAudio(int frameCount, float** inputPointers
 	}
 	SY_ASSERT(ioChannelIndex == vst->getInputCount());
 	
-	#if (!defined(NDEBUG))
-		if (inputIsSilent) {
-			bool gotSignal = false;
-			for (int i = 0; i < vst->getInputCount() && !gotSignal; ++i) {
-				for (int j = 0; j < frameCount && !gotSignal; ++j) {
-					gotSignal = (inputPointers[i][j] != 0.0);
-				}
+#if (!defined(NDEBUG))
+	if (inputIsSilent) {
+		bool gotSignal = false;
+		for (int i = 0; i < vst->getInputCount() && !gotSignal; ++i) {
+			for (int j = 0; j < frameCount && !gotSignal; ++j) {
+				gotSignal = (inputPointers[i][j] != 0.0);
 			}
-			SY_ASSERT0(!gotSignal, "Input was flagged silent when signal was not (may be bug in signal source)");
 		}
-	#endif
+		SY_ASSERT0(!gotSignal, "Input was flagged silent when signal was not (may be bug in signal source)");
+	}
+#endif
 	
 	return inputIsSilent;
 }
@@ -3616,26 +3616,26 @@ void SymbiosisComponent::renderOutput(int frameCount, float** inputPointers, boo
 	}
 	vst->processReplacing(inputPointers, ioBuffers, frameCount);
 	if (vstGotSymbiosisExtensions) {
-		#if (!defined(NDEBUG))
-			bool reallyGotSignal = false;
-			for (int i = 0; i < vst->getOutputCount() && !reallyGotSignal; ++i) {
-				for (int j = 0; j < static_cast<int>(frameCount) && !reallyGotSignal; ++j) {
-					reallyGotSignal = (ioBuffers[i][j] != 0.0);
-				}
+	#if (!defined(NDEBUG))
+		bool reallyGotSignal = false;
+		for (int i = 0; i < vst->getOutputCount() && !reallyGotSignal; ++i) {
+			for (int j = 0; j < static_cast<int>(frameCount) && !reallyGotSignal; ++j) {
+				reallyGotSignal = (ioBuffers[i][j] != 0.0);
 			}
-		#endif
+		}
+	#endif
 		if (vst->vendorSpecific('sO00', 0, 0, 0)) {
 			silentOutput = true;
 			SY_ASSERT0(!reallyGotSignal
 					, "SY vendor-specific callback 'sO00' returned true (output silent) when output was not silent");
 		} else {
 			silentOutput = false;
-			#if (!defined(NDEBUG))
-				if (!reallyGotSignal) {
-					SY_TRACE(SY_TRACE_FREQUENT
-							, "SY vendor-specific callback 'sO00' returned false (not silent) when output was silent");
-				}
-			#endif
+		#if (!defined(NDEBUG))
+			if (!reallyGotSignal) {
+				SY_TRACE(SY_TRACE_FREQUENT
+						, "SY vendor-specific callback 'sO00' returned false (not silent) when output was silent");
+			}
+		#endif
 		}
 	} else {
 		silentOutput = false;
@@ -4571,9 +4571,9 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 		bool isCompositing = (attributes & kWindowCompositingAttribute);
 		SY_TRACE1(SY_TRACE_MISC, "Is composite window: %s", (isCompositing ? "true" : "false"));
 
-		#if (SY_DO_TRACE)
-			traceControlInfo("Embed in control", inParentControl);
-		#endif
+	#if (SY_DO_TRACE)
+		traceControlInfo("Embed in control", inParentControl);
+	#endif
 
 		int width;
 		int height;
@@ -4592,16 +4592,16 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 			throwOnOSError(::HIViewAddSubview(inParentControl, viewControl));
 			::ControlRef rootControlRef = ::HIViewGetRoot(viewWindowRef);
 			throwOnOSError(::HIViewFindByID(rootControlRef, kHIViewWindowContentID, &contentControlRef));
-			#if (SY_DO_TRACE)
-				traceControlInfo("HI root", rootControlRef);
-				traceControlInfo("HI content", contentControlRef);
-			#endif
+		#if (SY_DO_TRACE)
+			traceControlInfo("HI root", rootControlRef);
+			traceControlInfo("HI content", contentControlRef);
+		#endif
 		} else {
 			throwOnOSError(::EmbedControl(viewControl, inParentControl));
 			throwOnOSError(::GetRootControl(viewWindowRef, &contentControlRef));
-			#if (SY_DO_TRACE)
-				traceControlInfo("Classic root / content", contentControlRef);
-			#endif
+		#if (SY_DO_TRACE)
+			traceControlInfo("Classic root / content", contentControlRef);
+		#endif
 		}
 		SY_ASSERT(contentControlRef != 0);
 		
@@ -4615,9 +4615,9 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 		for (int i = 0; i < numChildren; ++i) {
 			throwOnOSError(::GetIndexedSubControl(contentControlRef, i + 1, &existingControls[i]));
 			SY_ASSERT(existingControls[i] != 0);
-			#if (SY_DO_TRACE)
-				traceControlInfo("Existing control", existingControls[i]);
-			#endif
+		#if (SY_DO_TRACE)
+			traceControlInfo("Existing control", existingControls[i]);
+		#endif
 		}
 		existingControlCount = numChildren;
 
@@ -4643,9 +4643,9 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 				newControls[newControlCount] = controlRef;
 				++newControlCount;
 				SY_ASSERT1(newControlCount <= kMaxNewControls, "Too many controls in root (%d)", numChildren);
-				#if (SY_DO_TRACE)
-					traceControlInfo("New control", controlRef);
-				#endif
+			#if (SY_DO_TRACE)
+				traceControlInfo("New control", controlRef);
+			#endif
 			}
 		}
 

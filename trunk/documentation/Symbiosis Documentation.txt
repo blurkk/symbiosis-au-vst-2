@@ -394,6 +394,7 @@ Preprocessor Defines
  SY_ASSERT(x)               Macro for asserts without details                   assert() if SY_STD_ASSERT == 1
  SY_ASSERT0..n(x, d, ...)   Macros for asserts with details                     first trace out the details, then assert
  SY_DO_TRACE                Tracing "master switch"             0, 1            1 or 0 if NDEBUG is defined
+ SY_INCLUDE_GUI             Include support for custom GUI      0, 1            1
  SY_TRACE_EXCEPTIONS        Trace caught exceptions             0, 1            1
  SY_TRACE_AU                Trace AU messages / calls           0, 1            1
  SY_TRACE_VST               Trace VST messages / calls          0, 1            1
@@ -411,7 +412,7 @@ Copyrights and Trademarks
  Symbiosis is released under the "New Simplified BSD License".
  http://www.opensource.org/licenses/bsd-license.php
 
- Copyright (c) 2011, NuEdge Development / Magnus Lidström
+ Copyright (c) 2010-2011, NuEdge Development / Magnus Lidström
  All rights reserved.
 
  *)  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the

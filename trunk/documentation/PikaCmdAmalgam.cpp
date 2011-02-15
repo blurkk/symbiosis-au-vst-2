@@ -5,13 +5,13 @@
 	
 	\version
 	
-	Version 0.92
+	Version 0.93
 	
 	\page Copyright
 	
 	PikaScript is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2009, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2009-2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -58,10 +58,10 @@ namespace Pika {
 
 #if (PIKA_UNICODE)
 	#define STR(s) L##s
-	#define PIKA_SCRIPT_VERSION L"0.92"
+	#define PIKA_SCRIPT_VERSION L"0.93"
 #else
 	#define STR(x) x
-	#define PIKA_SCRIPT_VERSION "0.92"
+	#define PIKA_SCRIPT_VERSION "0.93"
 #endif
 
 typedef unsigned char uchar;
@@ -535,16 +535,16 @@ template<class CFG> struct Script {
 	static bool deleter(const Frame& frame);
 	static Value evaluate(const Frame& frame);
 	static bool exists(const Frame& frame);
-	static SizeType find(const String& a, const String& b);
+	static ulong find(const String& a, const String& b);
 	static void foreach(Frame& frame);
 	static String input(const String& prompt);
 	static Value invoke(Frame& frame);
-	static SizeType length(const String& s);
+	static ulong length(const String& s);
 	static String load(const String& file);
 	static String lower(String s);
-	static SizeType mismatch(const String& a, const String& b);
+	static ulong mismatch(const String& a, const String& b);
 	static uint ordinal(const String& s);
-	static SizeType parse(Frame& frame);
+	static ulong parse(Frame& frame);
 	static String precision(const Frame& frame);
 	static void print(const String& s);
 	static String radix(const Frame& frame);
@@ -552,8 +552,8 @@ template<class CFG> struct Script {
 	static String reverse(String s);
 	static void save(const String& file, const String& chars);
 	static int system(const String& command);
-	static SizeType search(const String& a, const String& b);
-	static SizeType span(const String& a, const String& b);
+	static ulong search(const String& a, const String& b);
+	static ulong span(const String& a, const String& b);
 	static void thrower(const String& s);
 	static Value time(const Frame&);
 	static void trace(const Frame& frame);
@@ -596,13 +596,13 @@ typedef Script<StdConfig> StdScript;
 	                                                                           
 	\version
 	
-	Version 0.92
+	Version 0.93
 	
 	\page Copyright
 	
 	PikaScript is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2009, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2009-2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -698,13 +698,13 @@ template<class S> long stringToLong(typename S::const_iterator& p, const typenam
 template<class S, class T> S intToString(T i, int radix, int minLength) {
 	assert(2 <= radix && radix <= 16);
 	assert(0 <= minLength);
-	typename S::value_type buffer[sizeof (int) * 8], * p = buffer + sizeof (int) * 8, * e = p - minLength;
+	typename S::value_type buffer[sizeof (T) * 8], * p = buffer + sizeof (T) * 8, * e = p - minLength;
 	for (T x = i; p > e || x != 0; x /= radix) {
 		assert(p >= buffer + 1);
 		*--p = STR("fedcba9876543210123456789abcdef")[15 + x % radix];													// Mirrored hex string to handle negative x.
 	}
 	if (std::numeric_limits<T>::is_signed && i < 0) *--p = '-';
-	return S(p, buffer + sizeof (int) * 8 - p);
+	return S(p, buffer + sizeof (T) * 8 - p);
 }
 
 template<class S> double stringToDouble(typename S::const_iterator& p, const typename S::const_iterator& e) {
@@ -1389,7 +1389,7 @@ TMPL void Script<CFG>::Root::trace(Frame& frame, const String& source, SizeType 
 	if (!tracerFunction.isVoid() && !isInsideTracer) {
 		try {
 			isInsideTracer = true;
-			Value argv[6] = { source, offset, lvalue, value, int(level), exit };
+			Value argv[6] = { source, static_cast<ulong>(offset), lvalue, value, int(level), exit };
 			frame.call(String(), tracerFunction, 6, argv);
 			isInsideTracer = false;
 		} catch (...) {
@@ -1420,7 +1420,7 @@ TMPL T_TYPE(Native*) Script<CFG>::STLVariables::lookupNative(const String& ident
 }
 
 TMPL bool Script<CFG>::STLVariables::assignNative(const String& identifier, Native* native) {
-	typename NativeMap::iterator it = natives.insert(typename NativeMap::value_type(identifier, 0)).first;
+	typename NativeMap::iterator it = natives.insert(typename NativeMap::value_type(identifier, (Native*)(0))).first;
 	if (it->second != native) delete it->second;
 	it->second = native;
 	return true;
@@ -1433,7 +1433,7 @@ TMPL Script<CFG>::STLVariables::~STLVariables() {
 /* --- Standard Library --- */
 
 TMPL T_TYPE(Value) Script<CFG>::elevate(Frame& f) { return f.execute(f.get(getThisAndMethod(f).first, true)); }
-TMPL T_TYPE(SizeType) Script<CFG>::length(const String& s) { return s.size(); }
+TMPL ulong Script<CFG>::length(const String& s) { return static_cast<ulong>(s.size()); }
 TMPL T_TYPE(String) Script<CFG>::lower(String s) { std::transform(s.begin(), s.end(), s.begin(), ::tolower); return s; }
 TMPL void Script<CFG>::print(const String& s) { xcout<Char>() << std::basic_string<Char>(s) << std::endl; }
 TMPL double Script<CFG>::random(double m) { return m * ::rand() / double(RAND_MAX); }
@@ -1476,8 +1476,8 @@ TMPL bool Script<CFG>::exists(const Frame& f) {
 	return fs.first->getVariables().lookup(fs.second, result);
 }
 
-TMPL T_TYPE(SizeType) Script<CFG>::find(const String& a, const String& b) {
-	return std::find_first_of(a.begin(), a.end(), b.begin(), b.end()) - a.begin();
+TMPL ulong Script<CFG>::find(const String& a, const String& b) {
+	return static_cast<ulong>(std::find_first_of(a.begin(), a.end(), b.begin(), b.end()) - a.begin());
 }
 
 TMPL void Script<CFG>::foreach(Frame& f) {
@@ -1517,19 +1517,19 @@ TMPL T_TYPE(String) Script<CFG>::load(const String& file) {
 		if (instream.bad()) throw Xception(String(STR("Error reading from file: ")) += escape(file));
 		Char buffer[1024];
 		instream.read(buffer, 1024);
-		chars += String(buffer, instream.gcount());
+		chars += String(buffer, static_cast<typename String::size_type>(instream.gcount()));
 	}
 	return chars;
 }
 
-TMPL T_TYPE(SizeType) Script<CFG>::mismatch(const String& a, const String& b) {
-	if (a.size() > b.size()) return std::mismatch(b.begin(), b.end(), a.begin()).first - b.begin();
-	else return std::mismatch(a.begin(), a.end(), b.begin()).first - a.begin();
+TMPL ulong Script<CFG>::mismatch(const String& a, const String& b) {
+	if (a.size() > b.size()) return static_cast<ulong>(std::mismatch(b.begin(), b.end(), a.begin()).first - b.begin());
+	else return static_cast<ulong>(std::mismatch(a.begin(), a.end(), b.begin()).first - a.begin());
 }
 
-TMPL T_TYPE(SizeType) Script<CFG>::parse(Frame& f) {
+TMPL ulong Script<CFG>::parse(Frame& f) {
 	const String source = f.get(STR("$0"));
-	return f.parse(source.begin(), source.end(), f.get(STR("$1"))) - source.begin();
+	return static_cast<ulong>(f.parse(source.begin(), source.end(), f.get(STR("$1"))) - source.begin());
 }
 
 TMPL T_TYPE(String) Script<CFG>::radix(const Frame& f) {
@@ -1548,14 +1548,14 @@ TMPL void Script<CFG>::save(const String& file, const String& chars) {
 	if (outstream.bad()) throw Xception(String(STR("Error writing to file: ")) += escape(file));
 }
 
-TMPL T_TYPE(SizeType) Script<CFG>::search(const String& a, const String& b) {
-	return std::search(a.begin(), a.end(), b.begin(), b.end()) - a.begin();
+TMPL ulong Script<CFG>::search(const String& a, const String& b) {
+	return static_cast<ulong>(std::search(a.begin(), a.end(), b.begin(), b.end()) - a.begin());
 }
 
-TMPL T_TYPE(SizeType) Script<CFG>::span(const String& a, const String& b) {
+TMPL ulong Script<CFG>::span(const String& a, const String& b) {
 	typename String::const_iterator it;
 	for (it = a.begin(); it != a.end() && std::find(b.begin(), b.end(), *it) != b.end(); ++it);
-	return it - a.begin();
+	return static_cast<ulong>(it - a.begin());
 }
 
 TMPL T_TYPE(String) Script<CFG>::precision(const Frame& f) {
@@ -2146,13 +2146,13 @@ template<class Super, unsigned int CACHE_SIZE = 11> class QuickVars : public Sup
 	
 	\version
 	
-	Version 0.92
+	Version 0.93
 	
 	\page Copyright
 	
 	PikaScript is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2009, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2009-2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -3151,13 +3151,13 @@ const char* BUILT_IN_STDLIB =
 
 	\version
 
-	Version 0.92
+	Version 0.93
 	
 	\page Copyright
 
 	PikaScript is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2010, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2010-2011, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -3278,7 +3278,7 @@ int main(int argc, const char* argv[]) {
 	std::srand(static_cast<unsigned int>(std::time(0)) ^ static_cast<unsigned int>(std::clock()));
 	rand();
 	if (argc < 2)
-		std::cout << "PikaCmd version " << PIKA_SCRIPT_VERSION << ". (C) 2010 NuEdge Development. "
+		std::cout << "PikaCmd version " << PIKA_SCRIPT_VERSION << ". (C) 2010-2011 NuEdge Development. "
 				"All rights reserved." << std::endl << "Run PikaCmd -? for command-line argument syntax."
 				<< std::endl << std::endl;
 	try {
