@@ -1,0 +1,13 @@
+#summary A list of plug-ins that use Symbiosis.
+
+= Introduction =
+
+If you have published a product that is using the Symbiosis technology. Please add a comment to this wiki and I'll add a link to the product.
+
+
+= Details =
+
+  * [http://www.soniccharge.com/microtonic Sonic Charge µTonic]
+  * [http://www.soniccharge.com/synplant Sonic Charge Synplant]
+  * [http://www.soniccharge.com/bitspeek Sonic Charge Bitspeek]
+  * [http://www.xlnaudio.com/ Addictive Drums]
