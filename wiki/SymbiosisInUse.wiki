@@ -2,7 +2,7 @@
 
 = Introduction =
 
-If you have published a product that is using the Symbiosis technology. Please add a comment to this wiki and I'll add a link to the product.
+This list is most likely to be incomplete (at any given time), but it should function as a sampler of products that are utilizing the Symbiosis technology. If you have published a product that is using Symbiosis, please leave a comment and I'll add it.
 
 
 = Details =
@@ -10,4 +10,9 @@ If you have published a product that is using the Symbiosis technology. Please a
   * [http://www.soniccharge.com/microtonic Sonic Charge µTonic]
   * [http://www.soniccharge.com/synplant Sonic Charge Synplant]
   * [http://www.soniccharge.com/bitspeek Sonic Charge Bitspeek]
-  * [http://www.xlnaudio.com/ Addictive Drums]
+  * [http://www.xlnaudio.com/ XLN Audio Addictive Drums]
+  * [http://www.xferrecords.com/ Xfer Records Nerve]
+  * [http://loudmax.blogspot.com/ LoudMax]
+  * [http://www.audjoo.com/Helix/HelixAbout.html Audjoo Helix]
+  * [http://martineastwood.com/wordpress/ Martin Eastwood MVerb]
+  * [http://www.admiralquality.com/products/Poly-Ana/ Admiral Quality Poly-Ana]
