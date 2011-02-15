@@ -176,7 +176,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = Symbiosis.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
-				OTHER_REZFLAGS = "-d ppc_$ppc -d i386_$i386";
+				OTHER_REZFLAGS = "-d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)";
 				PRODUCT_NAME = Symbiosis;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
@@ -216,7 +216,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = Symbiosis.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
-				OTHER_REZFLAGS = "-d ppc_$ppc -d i386_$i386";
+				OTHER_REZFLAGS = "-d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)";
 				PRODUCT_NAME = Symbiosis;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
@@ -244,7 +244,7 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = Symbiosis.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
-				OTHER_REZFLAGS = "-d ppc_$ppc -d i386_$i386";
+				OTHER_REZFLAGS = "-d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)";
 				PRODUCT_NAME = Symbiosis;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
