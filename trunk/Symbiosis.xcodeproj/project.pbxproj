@@ -159,6 +159,10 @@
 		F76E337E0919684F00E4400B /* Beta */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
 				COPY_PHASE_STRIP = YES;
 				DEPLOYMENT_LOCATION = NO;
 				DSTROOT = /;
@@ -176,8 +180,10 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = Symbiosis.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				OTHER_REZFLAGS = "-d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)";
 				PRODUCT_NAME = Symbiosis;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
 				ZERO_LINK = NO;
@@ -199,6 +205,10 @@
 		F7D698350909427700040FB7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_LOCATION = NO;
 				DSTROOT = /;
@@ -216,8 +226,10 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = Symbiosis.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				OTHER_REZFLAGS = "-d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)";
 				PRODUCT_NAME = Symbiosis;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
 				ZERO_LINK = YES;
@@ -227,6 +239,10 @@
 		F7D698360909427700040FB7 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
 				COPY_PHASE_STRIP = YES;
 				DEPLOYMENT_LOCATION = NO;
 				DSTROOT = /;
@@ -244,8 +260,10 @@
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = Symbiosis.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				OTHER_REZFLAGS = "-d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)";
 				PRODUCT_NAME = Symbiosis;
+				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
 				ZERO_LINK = NO;
