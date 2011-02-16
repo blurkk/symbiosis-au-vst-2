@@ -5,7 +5,7 @@
 	
 	\version
 
-	Version 1.22
+	Version 1.23
 
 	\page Copyright
 
@@ -37,7 +37,6 @@
 
 #include <Carbon/Carbon.h>
 #include <AudioUnit/AudioUnit.h>
-#include <AudioUnit/AudioUnitCarbonView.h>
 #include <AudioToolbox/AudioUnitUtilities.h>
 #include <mach-o/dyld.h>
 #include <mach-o/ldsyms.h>
@@ -46,6 +45,22 @@
 #include <assert.h>
 #include <exception>
 #include <new>
+
+#if !defined(SY_INCLUDE_GUI)
+	#define SY_INCLUDE_GUI 1
+#endif
+
+#if !defined(SY_USE_COCOA_UI)
+	#if __LP64__
+		#define SY_USE_COCOA_UI 1
+	#else
+		#define SY_USE_COCOA_UI 0
+	#endif
+#endif
+
+#if (!SY_USE_COCOA_UI)
+	#include <AudioUnit/AudioUnitCarbonView.h>
+#endif
 
 #if !defined(SY_USE_VST_VERSION)	// See Symbiosis_Prefix.pch for information on this define.
 	#if defined(kVstVersion)		// If the VST SDK is in precompiled header, use kVstVersion defined in aeffect.h
@@ -171,10 +186,6 @@
 			return -32767; \
 		}
 
-#if !defined(SY_INCLUDE_GUI)
-	#define SY_INCLUDE_GUI 1
-#endif
-
 #if __LP64__
 	// comp instance, parameters in forward order
 	#define PARAM(_typ, _name, _index, _nparams) \
@@ -185,7 +196,7 @@
 		_typ _name = *(_typ *)&params->params[_nparams - 1 - _index];
 #endif
 
-#if (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5)
+#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
 	#if __LP64__
 		typedef int FSIORefNum;
 	#else
@@ -446,7 +457,7 @@ static inline const char* eatSpace(const char* p) throw() {
 	return p;
 }
 
-#if (SY_DO_TRACE && SY_INCLUDE_GUI)
+#if (SY_DO_TRACE && SY_INCLUDE_GUI && !SY_USE_COCOA_UI)
 static void traceControlInfo(const char* s, ::ControlRef controlRef) throw(MacOSException) {
 	if (controlRef == 0) {
 		SY_TRACE2(SY_TRACE_MISC, "%s: @0x%8.8x", s, 0);
@@ -3391,6 +3402,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			if (scope != kAudioUnitScope_Global) {
 				throw MacOSException(kAudioUnitErr_InvalidScope);
 			}
+		#if (SY_INCLUDE_GUI)
 			if (!vst->hasEditor()) {
 				SY_TRACE(SY_TRACE_AU, "VST has no editor");
 				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
@@ -3411,6 +3423,9 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 				(*minDataSize) = sizeof (::ComponentDescription);
 				(*normalDataSize) = sizeof (::ComponentDescription);
 			}
+		#else
+			throw MacOSException(kAudioUnitErr_InvalidProperty);														// Emperically it seems better to return an invalid property error if we have no gui
+		#endif
 			break;
 		
 		case kAudioUnitProperty_TailTime:
@@ -3833,11 +3848,15 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				break;
 			
 			case kAudioUnitProperty_GetUIComponentList: {
+			#if (SY_INCLUDE_GUI)
 				::ComponentDescription* cd = reinterpret_cast< ::ComponentDescription* >(outData);
 				throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), cd, 0, 0, 0));
 				cd->componentType = kAudioUnitCarbonViewComponentType;
 				cd->componentFlags = 0;
 				cd->componentFlagsMask = 0;
+			#else
+				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
+			#endif
 				break;
 			}
 
@@ -4360,7 +4379,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		}
 	#endif
 
-	#if (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+	#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 		case kAudioUnitRemovePropertyListenerWithUserDataSelect: {
 			SY_TRACE(SY_TRACE_AU, "AU kAudioUnitRemovePropertyListenerWithUserDataSelect");
 
@@ -4726,7 +4745,7 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 				#if (!__LP64__)
 					case kAudioUnitRemovePropertyListenerSelect:
 				#endif
-				#if (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+				#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 					case kAudioUnitRemovePropertyListenerWithUserDataSelect:
 				#endif
 					case kAudioUnitGetParameterSelect: case kAudioUnitSetParameterSelect: case kAudioUnitResetSelect:

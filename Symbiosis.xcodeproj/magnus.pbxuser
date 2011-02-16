@@ -83,7 +83,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					848,
+					729,
 					20,
 					48,
 					43,
@@ -141,7 +141,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					808,
+					689,
 					60,
 					20,
 					48,
@@ -158,17 +158,21 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 319497909;
-			PBXWorkspaceStateSaveDate = 319497909;
+			PBXPerProjectTemplateStateSaveDate = 319507378;
+			PBXWorkspaceStateSaveDate = 319507378;
 		};
 		perUserProjectItems = {
 			F721D43012F63D6A006BA722 /* PBXTextBookmark */ = F721D43012F63D6A006BA722 /* PBXTextBookmark */;
 			F721D43912F64254006BA722 /* PBXTextBookmark */ = F721D43912F64254006BA722 /* PBXTextBookmark */;
+			F75651B3130B480300D9E656 /* PBXTextBookmark */ = F75651B3130B480300D9E656 /* PBXTextBookmark */;
+			F75651E7130B4BA300D9E656 /* PBXTextBookmark */ = F75651E7130B4BA300D9E656 /* PBXTextBookmark */;
 			F7742EE711676CD100D3E68D /* PBXTextBookmark */ = F7742EE711676CD100D3E68D /* PBXTextBookmark */;
-			F7972616130B284F00C1A1F2 /* PBXTextBookmark */ = F7972616130B284F00C1A1F2 /* PBXTextBookmark */;
-			F7972624130B296300C1A1F2 /* PBXTextBookmark */ = F7972624130B296300C1A1F2 /* PBXTextBookmark */;
 			F7972625130B296300C1A1F2 /* PBXTextBookmark */ = F7972625130B296300C1A1F2 /* PBXTextBookmark */;
-			F7972626130B296300C1A1F2 /* PBXTextBookmark */ = F7972626130B296300C1A1F2 /* PBXTextBookmark */;
+			F7D744E3130B4C9300B2DAD1 /* PBXTextBookmark */ = F7D744E3130B4C9300B2DAD1 /* PBXTextBookmark */;
+			F7D744E4130B4C9300B2DAD1 /* PBXTextBookmark */ = F7D744E4130B4C9300B2DAD1 /* PBXTextBookmark */;
+			F7D744E5130B4C9300B2DAD1 /* PBXBookmark */ = F7D744E5130B4C9300B2DAD1 /* PBXBookmark */;
+			F7D744E6130B4C9300B2DAD1 /* PBXTextBookmark */ = F7D744E6130B4C9300B2DAD1 /* PBXTextBookmark */;
+			F7D744E8130B4C9300B2DAD1 /* PBXTextBookmark */ = F7D744E8130B4C9300B2DAD1 /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7D698380909427700040FB7 /* Source Control */;
 		userBuildSettings = {
@@ -220,6 +224,40 @@
 		path = "/Users/magnus/projects/symbiosis-au-vst/documentation/Symbiosis Documentation.txt";
 		sourceTree = "<absolute>";
 	};
+	F756511A130B45DB00D9E656 /* AUComponent.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = AUComponent.h;
+		path = /System/Library/Frameworks/AudioUnit.framework/Versions/A/Headers/AUComponent.h;
+		sourceTree = "<absolute>";
+	};
+	F75651B3130B480300D9E656 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F756511A130B45DB00D9E656 /* AUComponent.h */;
+		name = "AUComponent.h: 1269";
+		rLen = 0;
+		rLoc = 54094;
+		rType = 0;
+		vrLen = 1266;
+		vrLoc = 53382;
+	};
+	F75651E7130B4BA300D9E656 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F75651E8130B4BA300D9E656 /* AUCocoaUIView.h */;
+		name = "AUCocoaUIView.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1655;
+		vrLoc = 361;
+	};
+	F75651E8130B4BA300D9E656 /* AUCocoaUIView.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = AUCocoaUIView.h;
+		path = /System/Library/Frameworks/AudioUnit.framework/Versions/A/Headers/AUCocoaUIView.h;
+		sourceTree = "<absolute>";
+	};
 	F7742EE711676CD100D3E68D /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 32BAE0B30371A71500C91783 /* Symbiosis_Prefix.pch */;
@@ -228,26 +266,6 @@
 		rLoc = 0;
 		rType = 0;
 		vrLen = 618;
-		vrLoc = 0;
-	};
-	F7972616130B284F00C1A1F2 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
-		name = "Symbiosis.cpp: 91";
-		rLen = 0;
-		rLoc = 3246;
-		rType = 0;
-		vrLen = 1344;
-		vrLoc = 2513;
-	};
-	F7972624130B296300C1A1F2 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
-		name = "Symbiosis.r: 17";
-		rLen = 0;
-		rLoc = 932;
-		rType = 0;
-		vrLen = 1544;
 		vrLoc = 0;
 	};
 	F7972625130B296300C1A1F2 /* PBXTextBookmark */ = {
@@ -260,15 +278,12 @@
 		vrLen = 120;
 		vrLoc = 0;
 	};
-	F7972626130B296300C1A1F2 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
-		name = "Symbiosis.cpp: 91";
-		rLen = 0;
-		rLoc = 3246;
-		rType = 0;
-		vrLen = 1704;
-		vrLoc = 0;
+	F7CB194E130B3F32001ABEB7 /* Symbiosis.r */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.rez;
+		name = Symbiosis.r;
+		path = "/Users/magnus/projects/symbiosis-au-vst/PreBuiltWrappers/Development/Symbiosis.component/Contents/Resources/Symbiosis.r";
+		sourceTree = "<absolute>";
 	};
 	F7D3E4EE091BE7B900501C1B /* AUVal */ = {
 		isa = PBXExecutable;
@@ -346,20 +361,87 @@
 	};
 	F7D698480909601200040FB7 /* Symbiosis.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {975, 63648}}";
-			sepNavSelRange = "{16254, 0}";
-			sepNavVisRange = "{15823, 439}";
+			sepNavIntBoundsRect = "{{0, 0}, {919, 63388}}";
+			sepNavSelRange = "{110, 0}";
+			sepNavVisRange = "{0, 1586}";
 			sepNavVisRect = "{{0, 55651}, {1046, 645}}";
 			sepNavWindowFrame = "{{19, 0}, {1230, 778}}";
 		};
 	};
 	F7D69A5F09096C9F00040FB7 /* Symbiosis.r */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1038, 1729}}";
-			sepNavSelRange = "{932, 0}";
-			sepNavVisRange = "{0, 1544}";
+			sepNavIntBoundsRect = "{{0, 0}, {919, 1807}}";
+			sepNavSelRange = "{991, 0}";
+			sepNavVisRange = "{0, 1523}";
 			sepNavVisRect = "{{0, 0}, {1046, 645}}";
 			sepNavWindowFrame = "{{19, 0}, {1230, 778}}";
+		};
+	};
+	F7D744E3130B4C9300B2DAD1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D698480909601200040FB7 /* Symbiosis.cpp */;
+		name = "Symbiosis.cpp: 8";
+		rLen = 0;
+		rLoc = 110;
+		rType = 0;
+		vrLen = 1586;
+		vrLoc = 0;
+	};
+	F7D744E4130B4C9300B2DAD1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
+		name = "Symbiosis.r: 19";
+		rLen = 0;
+		rLoc = 991;
+		rType = 0;
+		vrLen = 1523;
+		vrLoc = 0;
+	};
+	F7D744E5130B4C9300B2DAD1 /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = F7CB194E130B3F32001ABEB7 /* Symbiosis.r */;
+	};
+	F7D744E6130B4C9300B2DAD1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D744E7130B4C9300B2DAD1 /* Symbiosis.r */;
+		name = "Symbiosis.r: 53";
+		rLen = 0;
+		rLoc = 2055;
+		rType = 0;
+		vrLen = 1043;
+		vrLoc = 1789;
+	};
+	F7D744E7130B4C9300B2DAD1 /* Symbiosis.r */ = {
+		isa = PBXFileReference;
+		name = Symbiosis.r;
+		path = "/Users/magnus/projects/symbiosis-au-vst/PreBuiltWrappers/Development/Symbiosis.component/Contents/Resources/Symbiosis.r";
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {919, 1755}}";
+			sepNavSelRange = "{2055, 0}";
+			sepNavVisRange = "{1789, 1043}";
+		};
+	};
+	F7D744E8130B4C9300B2DAD1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D744E9130B4C9300B2DAD1 /* AUCocoaUIView.h */;
+		name = "AUCocoaUIView.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1657;
+		vrLoc = 359;
+	};
+	F7D744E9130B4C9300B2DAD1 /* AUCocoaUIView.h */ = {
+		isa = PBXFileReference;
+		name = AUCocoaUIView.h;
+		path = /System/Library/Frameworks/AudioUnit.framework/Versions/A/Headers/AUCocoaUIView.h;
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1181, 806}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{359, 1657}";
+			sepNavWindowFrame = "{{19, 0}, {1099, 778}}";
 		};
 	};
 	F7FA8F2E10EC1E5300FA9980 /* CompileSymbiosisRsrc.command */ = {
