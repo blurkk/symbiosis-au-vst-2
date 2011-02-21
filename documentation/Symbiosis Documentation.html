@@ -270,9 +270,6 @@
 <td>SY_DO_TRACE</td><td>Tracing "master switch"</td><td>0, 1</td><td>1 or 0 if NDEBUG is defined</td>
 </tr>
 <tr>
-<td>SY_INCLUDE_GUI</td><td>Include support for custom GUI</td><td>0, 1</td><td>1</td>
-</tr>
-<tr>
 <td>SY_TRACE_EXCEPTIONS</td><td>Trace caught exceptions</td><td>0, 1</td><td>1</td>
 </tr>
 <tr>
@@ -295,6 +292,12 @@
 </tr>
 <tr>
 <td>SY_TRACE1..n</td><td>Macros for tracing with arguments</td><td>&nbsp;</td><td>- " -</td>
+</tr>
+<tr>
+<td>SY_INCLUDE_GUI_SUPPORT</td><td>Include support for custom GUI</td><td>0, 1</td><td>1</td>
+</tr>
+<tr>
+<td>SY_USE_COCOA_GUI</td><td>Use Cocoa Views for GUI</td><td>0, 1</td><td>0 in 32-bit, 1 in 64-bit</td>
 </tr>
 </table>
 <p>Most of these can be overridden by redefining them in your build settings or in a "prefix header file".</p>

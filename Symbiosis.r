@@ -18,7 +18,7 @@
 #ifndef ppc_YES || i386_YES || x86_64_YES
 	#define ppc_YES
 	#define i386_YES
-	#define x86_64_NO
+	#define x86_64_YES
 #endif
 
 // AudioUnit name in "company: product" format. This is typically the name that is presented to the user by the host
