@@ -394,7 +394,6 @@ Preprocessor Defines
  SY_ASSERT(x)               Macro for asserts without details                   assert() if SY_STD_ASSERT == 1
  SY_ASSERT0..n(x, d, ...)   Macros for asserts with details                     first trace out the details, then assert
  SY_DO_TRACE                Tracing "master switch"             0, 1            1 or 0 if NDEBUG is defined
- SY_INCLUDE_GUI             Include support for custom GUI      0, 1            1
  SY_TRACE_EXCEPTIONS        Trace caught exceptions             0, 1            1
  SY_TRACE_AU                Trace AU messages / calls           0, 1            1
  SY_TRACE_VST               Trace VST messages / calls          0, 1            1
@@ -403,6 +402,8 @@ Preprocessor Defines
  SY_STD_TRACE               Trace to stderr                     0, 1            1
  SY_TRACE(c, s)             Macro for tracing a string                          prints to stderr if SY_STD_TRACE == 1
  SY_TRACE1..n               Macros for tracing with arguments                   - " -
+ SY_INCLUDE_GUI_SUPPORT     Include support for custom GUI      0, 1            1
+ SY_USE_COCOA_GUI           Use Cocoa Views for GUI             0, 1            0 in 32-bit, 1 in 64-bit
 
  Most of these can be overridden by redefining them in your build settings or in a "prefix header file".
 

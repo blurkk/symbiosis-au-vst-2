@@ -5,7 +5,7 @@
 	
 	\version
 
-	Version 1.23
+	Version 1.29b
 
 	\page Copyright
 
@@ -46,19 +46,23 @@
 #include <exception>
 #include <new>
 
-#if !defined(SY_INCLUDE_GUI)
-	#define SY_INCLUDE_GUI 1
+#if !defined(SY_INCLUDE_GUI_SUPPORT)
+	#define SY_INCLUDE_GUI_SUPPORT 1
 #endif
 
-#if !defined(SY_USE_COCOA_UI)
+#if !defined(SY_USE_COCOA_GUI)
 	#if __LP64__
-		#define SY_USE_COCOA_UI 1
+		#define SY_USE_COCOA_GUI 1
 	#else
-		#define SY_USE_COCOA_UI 0
+		#define SY_USE_COCOA_GUI 0
 	#endif
 #endif
 
-#if (!SY_USE_COCOA_UI)
+#if (SY_USE_COCOA_GUI)
+	#import <Cocoa/Cocoa.h>
+	#import <AudioUnit/AUCocoaUIView.h>
+	#import "objc/runtime.h"
+#elif (!SY_USE_COCOA_GUI)
 	#include <AudioUnit/AudioUnitCarbonView.h>
 #endif
 
@@ -303,7 +307,7 @@ static inline void releaseCFRef(::CFTypeRef* cf) throw() {
 	}
 }
 
-static void getPathForThisBundle(char path[1023 + 1]) throw(SymbiosisException) {
+static void getPathForThisImage(char path[1023 + 1]) throw(SymbiosisException) {
 	SY_ASSERT(path != 0);
 	
 	int image_count = _dyld_image_count();
@@ -457,7 +461,7 @@ static inline const char* eatSpace(const char* p) throw() {
 	return p;
 }
 
-#if (SY_DO_TRACE && SY_INCLUDE_GUI && !SY_USE_COCOA_UI)
+#if (SY_DO_TRACE && SY_INCLUDE_GUI_SUPPORT && !SY_USE_COCOA_GUI)
 static void traceControlInfo(const char* s, ::ControlRef controlRef) throw(MacOSException) {
 	if (controlRef == 0) {
 		SY_TRACE2(SY_TRACE_MISC, "%s: @0x%8.8x", s, 0);
@@ -696,8 +700,6 @@ class VSTHost {
 	public:		virtual ~VSTHost() { };
 };
 
-/* --- VSTPlugIn --- */
-
 /**
 	VSTPlugin encapsulates a single instance of a VST plug-in.
 */
@@ -749,6 +751,7 @@ class VSTPlugIn {
 	public:		void idle();																							///< Call as often as possible from your main event loop. Many older plug-ins need idling both when editor is opened and not to perform low priority background tasks. Always call this method from the "GUI thread", *never* call it from the real-time audio thread.
 	public:		void getEditorDimensions(VstInt32& width, VstInt32& height);											///< Returns the (initial) pixel dimensions of the plug-in GUI in \p width and \p height. It is illegal to call this method if hasEditor() has returned false.
 	public:		void openEditor(::WindowRef inWindow);																	///< Opens the plug-in editor in the window referred to by \p inWindow. The plug-in will add it's user-pane control / HIView to this window and possibly hook other required event handlers to the window itself. It is important that you call closeEditor() before disposing the window. It is illegal to call this method if hasEditor() has returned false. It is also illegal to call this method more than once before a call to closeEditor().
+	public:		void openEditor(::NSView* inNSView);																	///< Opens the plug-in editor in the Cocoa NSView referred to by \p inNSView. It is important that you call closeEditor() before disposing the window. It is illegal to call this method if hasEditor() has returned false. It is also illegal to call this method more than once before a call to closeEditor(). Only use this version of the function if the VST uses Cocoa views (e.g. 64-bit version).
 	public:		void closeEditor();																						///< Closes the plug-in editor and disposes any views / event handles and other resources required by the GUI. It is important to call this method before closing the GUI window.
 	public:		virtual ~VSTPlugIn();																					///< The destructor will close any open plug-in editor, issue a close call to the effect to dispose it and lastly release the bundle reference that was used to construct the plug-in instance.
 	
@@ -772,6 +775,36 @@ class VSTPlugIn {
 	protected:	VstInt32 currentBlockSize;
 };
 
+#if (SY_INCLUDE_GUI_SUPPORT && SY_USE_COCOA_GUI)
+
+class SymbiosisComponent;
+
+/**
+	Symbiosis20010220_CocoaView is an NSView with one simple override on 'dealloc' that calls the VST's close method.
+	
+	Cocoa has a flat name space, far from ideal for plug-ins. This means that each unique class must have a unique name
+	and therefore we prefix this class with a version (which is actually a date). This date must be changed if the
+	implementation changes.
+*/
+
+@interface Symbiosis20010220_CocoaView : NSView { SymbiosisComponent* symbiosis; }
+
+- initWithFrame:(NSRect)frame symbiosis:(SymbiosisComponent*)symbiosisComponent;
+- (void)dealloc;
+
+@end
+
+@interface Symbiosis20010220_CocoaViewFactory : NSObject <AUCocoaUIBase> { }
+
+- (NSString*) description;
+
+@end
+
+#endif
+
+/**
+	SymbiosisComponent is our main class that manages the translation of all calls between AU and VST.
+*/
 class SymbiosisComponent : public VSTHost {
 	public:		SymbiosisComponent(::AudioUnit auComponentInstance);
 	public:		virtual void getVendor(VSTPlugIn& plugIn, char vendor[63 + 1]);
@@ -787,12 +820,17 @@ class SymbiosisComponent : public VSTHost {
 	public:		virtual void updateDisplay(VSTPlugIn& plugIn);
 	public:		virtual void resizeWindow(VSTPlugIn& plugIn, VstInt32 width, VstInt32 height);
 	public:		void dispatch(::ComponentParameters* params);
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (SY_USE_COCOA_GUI)
+	public:		NSView* createView();
+	public:		void dropView();
+#elif (!SY_USE_COCOA_GUI)
 	public:		void createView(::ControlRef* createdControl, const ::Float32Point& /*requestedSize*/
 						, const ::Float32Point& requestedLocation, ::ControlRef inParentControl, ::WindowRef inWindow
 						, ::AudioUnitCarbonView auViewComponentInstance);
 	public:		void dropView(::AudioUnitCarbonView auViewComponentInstance);
 	public:		void setViewEventListener(::AudioUnitCarbonViewEventListener callback, void* userData);
+#endif
 #endif
 	public:		virtual ~SymbiosisComponent();
 
@@ -895,12 +933,16 @@ class SymbiosisComponent : public VSTHost {
 	protected:	::CFStringRef outputBusNames[kMaxBuses];
 	protected:	HostApplication hostApplication;
 	protected:	::EventLoopTimerRef idleTimerRef;
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (SY_USE_COCOA_GUI)
+	protected:	NSView* cocoaView;
+#elif (!SY_USE_COCOA_GUI)
 	protected:	::AudioUnitCarbonView viewComponentInstance;
 	protected:	::AudioUnitCarbonViewEventListener viewEventListener;
 	protected:	void* viewEventListenerUserData;
 	protected:	::WindowRef viewWindowRef;
 	protected:	::ControlRef viewControl;
+#endif
 #endif
 };
 
@@ -1112,7 +1154,7 @@ void VSTPlugIn::open() {
 		if (newAEffect == 0 || newAEffect->magic != kEffectMagic) {
 			throw SymbiosisException("VST main() doesn't return object AEffect*");
 		}
-		assert(aeffect == 0 || aeffect == newAEffect);
+		SY_ASSERT(aeffect == 0 || aeffect == newAEffect);
 		aeffect = newAEffect;
 		aeffect->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	}
@@ -1419,13 +1461,13 @@ unsigned char* VSTPlugIn::createFXP(size_t& size) {
 		if (hasProgramChunks()) {
 			unsigned char* chunkPointer = 0;
 			size_t chunkSize = dispatch(effGetChunk, 1, 0, &chunkPointer, 0);
-			assert(static_cast<unsigned int>(chunkSize) == chunkSize);
+			SY_ASSERT(static_cast<unsigned int>(chunkSize) == chunkSize);
 			if (static_cast<long>(chunkSize) <= 0) {
 				throw SymbiosisException("VST could not create chunk for FXP");
 			}
 			SY_ASSERT(chunkPointer != 0);
 			size = 60 + chunkSize;
-			assert(static_cast<unsigned int>(size) == size);
+			SY_ASSERT(static_cast<unsigned int>(size) == size);
 			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeBigInt32(bp, 'CcnK');
@@ -1471,13 +1513,13 @@ unsigned char* VSTPlugIn::createFXB(size_t& size) {
 		if (hasProgramChunks()) {
 			unsigned char* chunkPointer = 0;
 			size_t chunkSize = dispatch(effGetChunk, 0, 0, &chunkPointer, 0);
-			assert(static_cast<unsigned int>(chunkSize) == chunkSize);
+			SY_ASSERT(static_cast<unsigned int>(chunkSize) == chunkSize);
 			if (static_cast<long>(chunkSize) <= 0) {
 				throw SymbiosisException("VST could not create chunk for FXB");
 			}
 			SY_ASSERT(chunkPointer != 0);
 			size = 160 + chunkSize;
-			assert(static_cast<unsigned int>(size) == size);
+			SY_ASSERT(static_cast<unsigned int>(size) == size);
 			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeBigInt32(bp, 'CcnK');
@@ -1495,7 +1537,7 @@ unsigned char* VSTPlugIn::createFXB(size_t& size) {
 			SY_ASSERT(static_cast<size_t>(bp - bytes) == size);
 		} else {
 			size = 156 + aeffect->numPrograms * (56 + getParameterCount() * 4);
-			assert(static_cast<unsigned int>(size) == size);
+			SY_ASSERT(static_cast<unsigned int>(size) == size);
 			bytes = new unsigned char[size];
 			unsigned char* bp = bytes;
 			bp = writeBigInt32(bp, 'CcnK');
@@ -1663,6 +1705,17 @@ void VSTPlugIn::openEditor(::WindowRef inWindow) {
 	}
 }
 
+void VSTPlugIn::openEditor(::NSView* inNSView) {
+	SY_ASSERT(hasEditor());
+	SY_ASSERT(!editorOpenFlag);
+	SY_ASSERT(inNSView != 0);
+	editorOpenFlag = true;
+	VstIntPtr vstDispatchReturn = dispatch(effEditOpen, 0, 0, reinterpret_cast<void*>(inNSView), 0);
+	if (vstDispatchReturn == 0) {
+		throw SymbiosisException("VST could not open editor");
+	}
+}
+
 VSTPlugIn::~VSTPlugIn() {
 	if (editorOpenFlag) {
 		closeEditor();
@@ -1686,12 +1739,14 @@ VstInt32 SymbiosisComponent::getVersion(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn =
 SymbiosisComponent::~SymbiosisComponent() { uninit(); }
 
 void SymbiosisComponent::uninit() {
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (!SY_USE_COCOA_GUI)
 	if (viewComponentInstance != 0) {
 		::SetComponentInstanceStorage(reinterpret_cast< ::ComponentInstance >(viewComponentInstance), 0);
 		dropView(viewComponentInstance);
-		assert(viewComponentInstance == 0);
+		SY_ASSERT(viewComponentInstance == 0);
 	}
+#endif
 #endif
 
 	if (idleTimerRef != 0) {
@@ -2588,8 +2643,12 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		, updateNameOnLoad(false), vst(0), vstGotSymbiosisExtensions(false), vstSupportsTail(false), initialDelayTime(0.0)
 		, tailTime(0.0), vstSupportsBypass(false), isBypassing(false), supportNumChannelsProperty(true), inputBusCount(0)
 		, outputBusCount(0), hostApplication(undetermined), idleTimerRef(0)
-	#if (SY_INCLUDE_GUI)
+	#if (SY_INCLUDE_GUI_SUPPORT)
+	#if (SY_USE_COCOA_GUI)
+		, cocoaView(0)
+	#elif (!SY_USE_COCOA_GUI)
 		, viewComponentInstance(0), viewEventListener(0), viewEventListenerUserData(0), viewWindowRef(0), viewControl(0)
+	#endif
 	#endif
 {
 	SY_ASSERT(auComponentInstance != 0);
@@ -2646,7 +2705,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		getComponentName(gTraceIdentifierString);
 
 		char bundlePath[1023 + 1];
-		getPathForThisBundle(bundlePath);																				// We need to find the path through this mechanism since we do not know of a bundle identifier to look for (every component should have a unique identifier).
+		getPathForThisImage(bundlePath);																				// We need to find the path through this mechanism since we do not know of a bundle identifier to look for (every component should have a unique identifier).
 		SY_ASSERT(urlRef1 == 0);
 		throwOnNull(urlRef1 = ::CFURLCreateFromFileSystemRepresentation(0, reinterpret_cast< ::UInt8* >(bundlePath)
 				, strlen(bundlePath), false), "Could not create URL from file system representation");
@@ -2963,13 +3022,15 @@ void SymbiosisComponent::beginEdit(VSTPlugIn& plugIn, int parameterIndex) {
 	myEvent.mArgument.mParameter.mScope = kAudioUnitScope_Global;
 	myEvent.mArgument.mParameter.mElement = 0;
 
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (!SY_USE_COCOA_GUI)
 	if (viewEventListener != 0) {																						// Old style
 		SY_TRACE2(SY_TRACE_MISC, "Sending mouse down notification for parameter %d to view event listener @0x%8.8x"
 				, parameterIndex, reinterpret_cast<unsigned int>(viewEventListener));
 		(*viewEventListener)(viewEventListenerUserData, viewComponentInstance, &myEvent.mArgument.mParameter
 				, kAudioUnitCarbonViewEvent_MouseDownInControl, 0);
 	} else
+#endif
 #endif
 	 {																													// New style
 		SY_TRACE1(SY_TRACE_MISC, "Notifying kAudioUnitEvent_BeginParameterChangeGesture on parameter %d"
@@ -3011,13 +3072,15 @@ void SymbiosisComponent::endEdit(VSTPlugIn& plugIn, int parameterIndex) {
 	myEvent.mArgument.mParameter.mScope = kAudioUnitScope_Global;
 	myEvent.mArgument.mParameter.mElement = 0;
 
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (!SY_USE_COCOA_GUI)
 	if (viewEventListener != 0) {																						// Old style
 		SY_TRACE2(SY_TRACE_MISC, "Sending mouse up notification for parameter %d to view event listener @0x%8.8x"
 				, parameterIndex, reinterpret_cast<unsigned int>(viewEventListener));
 		(*viewEventListener)(viewEventListenerUserData, viewComponentInstance, &myEvent.mArgument.mParameter
 				, kAudioUnitCarbonViewEvent_MouseUpInControl, 0);
 	} else
+#endif
 #endif
 	 {																													// New style
 		SY_TRACE1(SY_TRACE_MISC, "Notifying kAudioUnitEvent_EndParameterChangeGesture on parameter %d", parameterIndex);
@@ -3046,9 +3109,14 @@ void SymbiosisComponent::resizeWindow(VSTPlugIn& plugIn, int width, int height) 
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(width > 0);
 	SY_ASSERT(height > 0);
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (SY_USE_COCOA_GUI)
+	SY_ASSERT(cocoaView != 0);
+	[cocoaView setFrameSize:NSMakeSize(width, height)];
+#elif (!SY_USE_COCOA_GUI)
 	SY_ASSERT(viewControl != 0);
 	::SizeControl(viewControl, width, height);
+#endif
 #endif
 }
 
@@ -3396,13 +3464,38 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			}
 			break;
 
+	#if (SY_USE_COCOA_GUI)
+	
+		case kAudioUnitProperty_CocoaUI:
+			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_CocoaUI (scope: %d, element: %d)"
+					, static_cast<int>(scope), static_cast<int>(element));
+			if (scope != kAudioUnitScope_Global) {
+				throw MacOSException(kAudioUnitErr_InvalidScope);
+			}
+		#if (SY_INCLUDE_GUI_SUPPORT)
+			if (!vst->hasEditor()) {
+				SY_TRACE(SY_TRACE_AU, "VST has no editor");
+				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
+			} else {
+				(*isReadable) = true;
+				(*isWritable) = false;
+				(*minDataSize) = sizeof (::AudioUnitCocoaViewInfo);
+				(*normalDataSize) = sizeof (::AudioUnitCocoaViewInfo);
+			}
+		#else
+			throw MacOSException(kAudioUnitErr_InvalidProperty);														// Emperically it seems better to return an invalid property error if we have no gui
+		#endif
+			break;
+			
+	#elif (!SY_USE_COCOA_GUI)
+	
 		case kAudioUnitProperty_GetUIComponentList:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_GetUIComponentList (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
 			if (scope != kAudioUnitScope_Global) {
 				throw MacOSException(kAudioUnitErr_InvalidScope);
 			}
-		#if (SY_INCLUDE_GUI)
+		#if (SY_INCLUDE_GUI_SUPPORT)
 			if (!vst->hasEditor()) {
 				SY_TRACE(SY_TRACE_AU, "VST has no editor");
 				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
@@ -3427,6 +3520,8 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			throw MacOSException(kAudioUnitErr_InvalidProperty);														// Emperically it seems better to return an invalid property error if we have no gui
 		#endif
 			break;
+			
+	#endif
 		
 		case kAudioUnitProperty_TailTime:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_TailTime (scope: %d, element: %d)"
@@ -3481,7 +3576,6 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_AudioChannelLayout: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_AudioChannelLayout (not supported)"); goto unsupported;
 		case kAudioUnitProperty_ContextName: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_ContextName (not supported)"); goto unsupported;
 		case kAudioUnitProperty_RenderQuality: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_RenderQuality (not supported)"); goto unsupported;
-		case kAudioUnitProperty_CocoaUI: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_CocoaUI (not supported)"); goto unsupported;
 		case kAudioUnitProperty_SupportedChannelLayoutTags: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_SupportedChannelLayoutTags (not supported)"); goto unsupported;
 		case kAudioUnitProperty_ParameterIDName: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_ParameterIDName (not supported)"); goto unsupported;
 		case kAudioUnitProperty_ParameterClumpName: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_ParameterClumpName (not supported)"); goto unsupported;
@@ -3846,9 +3940,41 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				::CFRetain(factoryPresetsArray);
 				*reinterpret_cast< ::CFArrayRef* >(outData) = factoryPresetsArray;
 				break;
+		
+		#if (SY_USE_COCOA_GUI)
+
+			case kAudioUnitProperty_CocoaUI: {
+			#if (SY_INCLUDE_GUI_SUPPORT)
+				AudioUnitCocoaViewInfo cocoaInfo;
+				// This is important. Since the class name will be the same for all Symbiosis wrapped plug-ins there
+				// will be Objective-C name collisions. Instead of trying to avoid that, we accept it as long as we
+				// are using the same binary version of the class implementation (hence the date in the class name).
+				// However, we need to locate the bundle that has loaded the currently active class object instance
+				// for Symbiosis20010220_CocoaViewFactory, i.e. the first loaded and opened Symbiosis bundle. Otherwise
+				// there will be a failure when the host tries to retrieve the class from the new bundle (because of a
+				// collision).
+				
+				// I don't know why, but using objc_getClass is required here for this to work.
+				// Class factoryClass = [Symbiosis20010220_CocoaViewFactory class];
+				Class factoryClass = objc_getClass("Symbiosis20010220_CocoaViewFactory");
+				SY_ASSERT(factoryClass != nil);
+				NSBundle* symbiosisBundle = [NSBundle bundleForClass:factoryClass];
+				NSString* bundlePath = [symbiosisBundle bundlePath];
+				cocoaInfo.mCocoaAUViewBundleLocation = (CFURLRef)[[NSURL fileURLWithPath:bundlePath] retain];
+				SY_ASSERT(cocoaInfo.mCocoaAUViewBundleLocation != nil);
+				cocoaInfo.mCocoaAUViewClass[0]
+						= ::CFStringCreateWithCString(NULL, "Symbiosis20010220_CocoaViewFactory", kCFStringEncodingUTF8);
+				*((AudioUnitCocoaViewInfo *)outData) = cocoaInfo;
+			#else
+				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
+			#endif
+				break;
+			}
 			
+		#elif (!SY_USE_COCOA_GUI)
+		
 			case kAudioUnitProperty_GetUIComponentList: {
-			#if (SY_INCLUDE_GUI)
+			#if (SY_INCLUDE_GUI_SUPPORT)
 				::ComponentDescription* cd = reinterpret_cast< ::ComponentDescription* >(outData);
 				throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), cd, 0, 0, 0));
 				cd->componentType = kAudioUnitCarbonViewComponentType;
@@ -3859,6 +3985,8 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 			#endif
 				break;
 			}
+			
+		#endif
 
 			case kAudioUnitProperty_TailTime:
 				updateTailTime();
@@ -4569,7 +4697,37 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 	}
 }
 
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+
+#if (SY_USE_COCOA_GUI)
+
+NSView* SymbiosisComponent::createView() {
+	SY_ASSERT(vst->hasEditor());
+
+	int width, height;
+	vst->getEditorDimensions(width, height);
+
+	SY_ASSERT(cocoaView == 0);
+	cocoaView = [[Symbiosis20010220_CocoaView alloc] initWithFrame:NSMakeRect(0, 0, width, height) symbiosis:this];
+	SY_ASSERT(cocoaView != 0);
+
+	SY_ASSERT(!vst->isEditorOpen());
+	vst->openEditor(cocoaView);
+	SY_ASSERT(vst->isEditorOpen());
+
+	return [cocoaView autorelease];    
+}
+
+void SymbiosisComponent::dropView() {
+	SY_ASSERT(vst->hasEditor());
+	SY_ASSERT(vst->isEditorOpen());
+	vst->closeEditor();
+	SY_ASSERT(!vst->isEditorOpen());
+	SY_ASSERT(cocoaView != 0);
+	cocoaView = 0;
+}
+
+#elif (!SY_USE_COCOA_GUI)
 
 void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float32Point& /*requestedSize*/
 		, const ::Float32Point& requestedLocation, ::ControlRef inParentControl, ::WindowRef inWindow
@@ -4594,8 +4752,7 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 		traceControlInfo("Embed in control", inParentControl);
 	#endif
 
-		int width;
-		int height;
+		int width, height;
 		vst->getEditorDimensions(width, height);
 
 		::Rect area;
@@ -4722,7 +4879,9 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 	viewEventListener = callback;
 	viewEventListenerUserData = userData;
 }
-	
+
+#endif
+
 #endif
 
 ::EventLoopTimerUPP SymbiosisComponent::idleTimerUPP = ::NewEventLoopTimerUPP(idleTimerAction);
@@ -4812,7 +4971,38 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 	return noErr;
 }
 
-#if (SY_INCLUDE_GUI)
+#if (SY_INCLUDE_GUI_SUPPORT)
+
+#if (SY_USE_COCOA_GUI)
+
+@implementation Symbiosis20010220_CocoaView
+
+- initWithFrame:(NSRect)frame symbiosis:(SymbiosisComponent*)symbiosisComponent {
+	SY_ASSERT(symbiosisComponent != 0);
+	if ((self = [super initWithFrame:frame]) != nil) symbiosis = symbiosisComponent;
+	return self;
+}
+
+- (void)dealloc { SY_ASSERT(symbiosis != 0); symbiosis->dropView(); [super dealloc]; }
+
+@end
+
+@implementation Symbiosis20010220_CocoaViewFactory
+
+- (unsigned int) interfaceVersion { return 0; }
+
+- (NSString*) description { return @"Symbiosis Cocoa View"; }
+
+- (NSView*)uiViewForAudioUnit:(AudioUnit)inAU withSize:(NSSize)inPreferredSize {
+	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(inAU));
+	SY_ASSERT(symbiosisComponent != 0);	
+	return symbiosisComponent->createView();
+}
+
+@end
+
+#elif (!SY_USE_COCOA_GUI)
+
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisViewEntry(::ComponentParameters* params
 		, ::Handle userDataHandle) {
 	try {
@@ -4836,7 +5026,7 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 				SY_TRACE(SY_TRACE_AU, "AUView kComponentCloseSelect");
 				SymbiosisComponent* symbiosisComponent = reinterpret_cast<SymbiosisComponent*>(userDataHandle);
 				if (symbiosisComponent != 0) {
-				#if (SY_INCLUDE_GUI)
+				#if (SY_INCLUDE_GUI_SUPPORT)
 					symbiosisComponent->dropView(reinterpret_cast< ::ComponentInstance >(params->params[0]));
 				#endif
 					::SetComponentInstanceStorage(reinterpret_cast< ::ComponentInstance >(params->params[0]), 0);
@@ -4912,4 +5102,7 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 	SY_COMPONENT_CATCH("SymbiosisViewEntry");
 	return noErr;
 }
+
+#endif
+
 #endif

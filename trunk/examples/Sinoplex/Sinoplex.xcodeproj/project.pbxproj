@@ -10,7 +10,7 @@
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		F74920FD0C87B0390057A327 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F74920C30C87B0380057A327 /* audioeffect.cpp */; };
 		F74920FE0C87B0390057A327 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F74920C50C87B0380057A327 /* audioeffectx.cpp */; };
-		F74921A20C87BC160057A327 /* Symbiosis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F74921A10C87BC160057A327 /* Symbiosis.cpp */; };
+		F74921A20C87BC160057A327 /* Symbiosis.mm in Sources */ = {isa = PBXBuildFile; fileRef = F74921A10C87BC160057A327 /* Symbiosis.mm */; };
 		F74921C70C87BC270057A327 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F74921C50C87BC270057A327 /* AudioUnit.framework */; };
 		F74921C80C87BC270057A327 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F74921C60C87BC270057A327 /* AudioToolbox.framework */; };
 		F74922890C87BECF0057A327 /* Sinoplex.r in Rez */ = {isa = PBXBuildFile; fileRef = F74921790C87BB340057A327 /* Sinoplex.r */; };
@@ -27,6 +27,7 @@
 		F74922D20C87C05F0057A327 /* SYFactoryPresets.txt in Resources */ = {isa = PBXBuildFile; fileRef = F74922C20C87C03B0057A327 /* SYFactoryPresets.txt */; };
 		F74922D30C87C05F0057A327 /* SYParameters.txt in Resources */ = {isa = PBXBuildFile; fileRef = F74922C30C87C03B0057A327 /* SYParameters.txt */; };
 		F7A920940903D63C009996D9 /* Sinoplex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */; };
+		F7A9FF96131153140062CEF8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7A9FF95131153140062CEF8 /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,7 +40,7 @@
 		F74920C60C87B0380057A327 /* audioeffectx.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = audioeffectx.h; path = public.sdk/source/vst2.x/audioeffectx.h; sourceTree = "<group>"; };
 		F74921790C87BB340057A327 /* Sinoplex.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; path = Sinoplex.r; sourceTree = "<group>"; };
 		F74921990C87BBC80057A327 /* Sinoplex.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; path = Sinoplex.plist; sourceTree = "<group>"; };
-		F74921A10C87BC160057A327 /* Symbiosis.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Symbiosis.cpp; path = ../../Symbiosis.cpp; sourceTree = SOURCE_ROOT; };
+		F74921A10C87BC160057A327 /* Symbiosis.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; name = Symbiosis.mm; path = ../../Symbiosis.mm; sourceTree = SOURCE_ROOT; };
 		F74921C50C87BC270057A327 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F74921C60C87BC270057A327 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
 		F74922B80C87C03B0057A327 /* 3Molo.aupreset */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; path = 3Molo.aupreset; sourceTree = "<group>"; };
@@ -55,6 +56,7 @@
 		F74922C20C87C03B0057A327 /* SYFactoryPresets.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SYFactoryPresets.txt; sourceTree = "<group>"; };
 		F74922C30C87C03B0057A327 /* SYParameters.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SYParameters.txt; sourceTree = "<group>"; };
 		F7A920930903D63C009996D9 /* Sinoplex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sinoplex.cpp; sourceTree = "<group>"; };
+		F7A9FF95131153140062CEF8 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +67,7 @@
 				8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */,
 				F74921C70C87BC270057A327 /* AudioUnit.framework in Frameworks */,
 				F74921C80C87BC270057A327 /* AudioToolbox.framework in Frameworks */,
+				F7A9FF96131153140062CEF8 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,13 +80,14 @@
 				F74921C50C87BC270057A327 /* AudioUnit.framework */,
 				F74921C60C87BC270057A327 /* AudioToolbox.framework */,
 				08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */,
+				F7A9FF95131153140062CEF8 /* Cocoa.framework */,
 				F74922B70C87C03B0057A327 /* SYResources */,
 				19C28FB4FE9D528D11CA2CBB /* Products */,
 				F7A920930903D63C009996D9 /* Sinoplex.cpp */,
 				F74921990C87BBC80057A327 /* Sinoplex.plist */,
 				F74921790C87BB340057A327 /* Sinoplex.r */,
 				32BAE0B30371A71500C91783 /* Sinoplex_Prefix.pch */,
-				F74921A10C87BC160057A327 /* Symbiosis.cpp */,
+				F74921A10C87BC160057A327 /* Symbiosis.mm */,
 				F749207C0C87B0370057A327 /* VST2400 */,
 			);
 			name = Sinoplex;
@@ -232,7 +236,7 @@
 				F7A920940903D63C009996D9 /* Sinoplex.cpp in Sources */,
 				F74920FD0C87B0390057A327 /* audioeffect.cpp in Sources */,
 				F74920FE0C87B0390057A327 /* audioeffectx.cpp in Sources */,
-				F74921A20C87BC160057A327 /* Symbiosis.cpp in Sources */,
+				F74921A20C87BC160057A327 /* Symbiosis.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,7 +270,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Sinoplex_Prefix.pch;
-				GCC_PREPROCESSOR_DEFINITIONS = "SY_INCLUDE_GUI=0";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GENERATE_PKGINFO_FILE = YES;
@@ -292,10 +295,7 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Sinoplex_Prefix.pch;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					NDEBUG,
-					"SY_INCLUDE_GUI=0",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
