@@ -8,6 +8,7 @@ This list is most likely to be incomplete. Consider it a sampler of products tha
   * [http://www.soniccharge.com/bitspeek Sonic Charge Bitspeek]
   * [http://www.xlnaudio.com/ XLN Audio Addictive Drums]
   * [http://www.xferrecords.com/ Xfer Records Nerve]
+  * [http://www.xferrecords.com/ Xfer Records LFOTool]
   * [http://loudmax.blogspot.com/ LoudMax]
   * [http://www.audjoo.com/Helix/HelixAbout.html Audjoo Helix]
   * [http://martineastwood.com/wordpress/ Martin Eastwood MVerb]
@@ -18,3 +19,4 @@ This list is most likely to be incomplete. Consider it a sampler of products tha
   * [http://www.audiodamage.com/effects/product.php?pid=AD013 Audio Damage Replicant]
   * [http://www.audiodamage.com/instruments/product.php?pid=AD027 Audio Damage Phosphor]
   * [http://www.audiodamage.com/effects/product.php?pid=AD023 Audio Damage Eos]
+  * [http://www.audiodamage.com/effects/product.php?pid=AD028 Audio Damage Panstation]
