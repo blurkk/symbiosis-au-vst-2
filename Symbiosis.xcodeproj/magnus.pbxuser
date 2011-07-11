@@ -9,16 +9,6 @@
 			F7A900B013116D860062CEF8 /* Test */,
 		);
 		breakpoints = (
-			F7652565130E030400E6D484 /* Symbiosis (failed idea of creating obj-c dynamically).mm:3469 */,
-			F7652567130E030500E6D484 /* Symbiosis (failed idea of creating obj-c dynamically).mm:3977 */,
-			F7A9004E13116AAD0062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:3975 */,
-			F7A9010F131171350062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:802 */,
-			F7A90111131171350062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:802 */,
-			F7A90113131171380062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:5006 */,
-			F7A9013C131173B40062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:5000 */,
-			F7A902751311DA4E0062CEF8 /* Symbiosis.mm:4997 */,
-			F7A9027C1311DA720062CEF8 /* Symbiosis.mm:3959 */,
-			F7A902921311DC1D0062CEF8 /* Symbiosis.mm:3472 */,
 		);
 		codeSenseManager = F7D698390909427700040FB7 /* Code sense */;
 		executables = (
@@ -82,7 +72,7 @@
 				PBXFileTableDataSourceColumnWidthsKey = (
 					22,
 					300,
-					617,
+					616.58349609375,
 				);
 				PBXFileTableDataSourceColumnsKey = (
 					PBXExecutablesDataSource_ActiveFlagID,
@@ -95,7 +85,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					729,
+					864,
 					20,
 					48,
 					43,
@@ -170,13 +160,20 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 319938694;
-			PBXWorkspaceStateSaveDate = 319938694;
+			PBXPerProjectTemplateStateSaveDate = 331901287;
+			PBXWorkspaceStateSaveDate = 331901287;
 		};
 		perUserProjectItems = {
+			F723D15D131B1CE600E19969 /* PBXTextBookmark */ = F723D15D131B1CE600E19969 /* PBXTextBookmark */;
+			F73C00D013A6376800944871 /* PBXTextBookmark */ = F73C00D013A6376800944871 /* PBXTextBookmark */;
+			F73CC3A71368C1630065AE1C /* PBXTextBookmark */ = F73CC3A71368C1630065AE1C /* PBXTextBookmark */;
+			F788C9DB13C93D1D00060949 /* PBXTextBookmark */ = F788C9DB13C93D1D00060949 /* PBXTextBookmark */;
+			F788C9DC13C93D1D00060949 /* PBXTextBookmark */ = F788C9DC13C93D1D00060949 /* PBXTextBookmark */;
+			F788C9DE13C93D1D00060949 /* PBXTextBookmark */ = F788C9DE13C93D1D00060949 /* PBXTextBookmark */;
+			F788C9E013C93D1D00060949 /* PBXTextBookmark */ = F788C9E013C93D1D00060949 /* PBXTextBookmark */;
+			F788C9E213C93D1D00060949 /* PBXTextBookmark */ = F788C9E213C93D1D00060949 /* PBXTextBookmark */;
+			F788C9E313C93D1D00060949 /* PBXTextBookmark */ = F788C9E313C93D1D00060949 /* PBXTextBookmark */;
 			F7A902CA1311E0350062CEF8 /* PBXTextBookmark */ = F7A902CA1311E0350062CEF8 /* PBXTextBookmark */;
-			F7A903031311E2DE0062CEF8 /* PBXTextBookmark */ = F7A903031311E2DE0062CEF8 /* PBXTextBookmark */;
-			F7A9030D1311E3780062CEF8 /* PBXTextBookmark */ = F7A9030D1311E3780062CEF8 /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7D698380909427700040FB7 /* Source Control */;
 		userBuildSettings = {
@@ -194,59 +191,139 @@
 	8D01CCC60486CAD60068D4B7 /* Symbiosis */ = {
 		activeExec = 0;
 	};
-	F7652565130E030400E6D484 /* Symbiosis (failed idea of creating obj-c dynamically).mm:3469 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		functionName = "SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitScope scope, ::AudioUnitElement element , bool* isReadable, bool* isWritable, int* minDataSize, int* normalDataSize)";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 3469;
-		location = Symbiosis;
-		modificationTime = 319937591.027601;
-		originalNumberOfMultipleMatches = 1;
-		state = 2;
+	F723D15D131B1CE600E19969 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F723D15E131B1CE600E19969 /* Symbiosis Documentation.txt */;
+		name = "Symbiosis Documentation.txt: 310";
+		rLen = 0;
+		rLoc = 18372;
+		rType = 0;
+		vrLen = 2843;
+		vrLoc = 17517;
 	};
-	F7652567130E030500E6D484 /* Symbiosis (failed idea of creating obj-c dynamically).mm:3977 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		functionName = "SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement , ::AudioUnitScope inScope, ::AudioUnitPropertyID inID)";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 3977;
-		location = Symbiosis;
-		modificationTime = 319937591.02765;
-		originalNumberOfMultipleMatches = 1;
-		state = 2;
+	F723D15E131B1CE600E19969 /* Symbiosis Documentation.txt */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = text;
+		name = "Symbiosis Documentation.txt";
+		path = "/Users/magnus/projects/symbiosis-au-vst/documentation/Symbiosis Documentation.txt";
+		sourceTree = "<absolute>";
 	};
-	F7A9004E13116AAD0062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:3975 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		functionName = "SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement , ::AudioUnitScope inScope, ::AudioUnitPropertyID inID)";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 3975;
-		location = Sinoplex;
-		modificationTime = 319937591.0277039;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
+	F73C00D013A6376800944871 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F73C00D113A6376800944871 /* NuxScript.cpp */;
+		name = "NuxScript.cpp: 326";
+		rLen = 0;
+		rLoc = 16335;
+		rType = 0;
+		vrLen = 2975;
+		vrLoc = 14501;
+	};
+	F73C00D113A6376800944871 /* NuxScript.cpp */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.cpp.cpp;
+		name = NuxScript.cpp;
+		path = /Users/magnus/projects/lab/ScriptLab/NuXScript/NuxScript.cpp;
+		sourceTree = "<absolute>";
+	};
+	F73CC3A71368C1630065AE1C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
+		name = "Symbiosis.r: 85";
+		rLen = 0;
+		rLoc = 3078;
+		rType = 0;
+		vrLen = 1092;
+		vrLoc = 2293;
+	};
+	F7714BD513C6953100372C78 /* AudioUnitProperties.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = AudioUnitProperties.h;
+		path = /System/Library/Frameworks/AudioUnit.framework/Versions/A/Headers/AudioUnitProperties.h;
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1349, 37622}}";
+			sepNavSelRange = "{7028, 0}";
+			sepNavVisRange = "{6561, 2732}";
+		};
+	};
+	F788C9DB13C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7714BD513C6953100372C78 /* AudioUnitProperties.h */;
+		name = "AudioUnitProperties.h: 175";
+		rLen = 0;
+		rLoc = 7028;
+		rType = 0;
+		vrLen = 2732;
+		vrLoc = 6561;
+	};
+	F788C9DC13C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F788C9DD13C93D1D00060949 /* audioeffectx.h */;
+		name = "audioeffectx.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 2699;
+		vrLoc = 0;
+	};
+	F788C9DD13C93D1D00060949 /* audioeffectx.h */ = {
+		isa = PBXFileReference;
+		name = audioeffectx.h;
+		path = "/Users/magnus/projects/symbiosis-au-vst/VST2400/public.sdk/source/vst2.x/audioeffectx.h";
+		sourceTree = "<absolute>";
+	};
+	F788C9DE13C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F788C9DF13C93D1D00060949 /* audioeffect.h */;
+		name = "audioeffect.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 2569;
+		vrLoc = 0;
+	};
+	F788C9DF13C93D1D00060949 /* audioeffect.h */ = {
+		isa = PBXFileReference;
+		name = audioeffect.h;
+		path = "/Users/magnus/projects/symbiosis-au-vst/VST2400/public.sdk/source/vst2.x/audioeffect.h";
+		sourceTree = "<absolute>";
+	};
+	F788C9E013C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F788C9E113C93D1D00060949 /* aeffectx.h */;
+		name = "aeffectx.h: 365";
+		rLen = 0;
+		rLoc = 24401;
+		rType = 0;
+		vrLen = 3853;
+		vrLoc = 21472;
+	};
+	F788C9E113C93D1D00060949 /* aeffectx.h */ = {
+		isa = PBXFileReference;
+		name = aeffectx.h;
+		path = "/Users/magnus/projects/symbiosis-au-vst/VST2400/pluginterfaces/vst2.x/aeffectx.h";
+		sourceTree = "<absolute>";
+	};
+	F788C9E213C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 4387";
+		rLen = 9;
+		rLoc = 193931;
+		rType = 0;
+		vrLen = 1843;
+		vrLoc = 190671;
+	};
+	F788C9E313C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 4439";
+		rLen = 9;
+		rLoc = 193931;
+		rType = 0;
+		vrLen = 2150;
+		vrLoc = 191569;
 	};
 	F7A900B013116D860062CEF8 /* Test */ = {
 		activeExec = 0;
@@ -306,137 +383,13 @@
 		path = "/Applications/Logic Pro.app";
 		sourceTree = "<absolute>";
 	};
-	F7A9010F131171350062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:802 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 802;
-		location = Sinoplex;
-		modificationTime = 319937591.0277261;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
-	};
-	F7A90111131171350062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:802 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 802;
-		location = Sinoplex;
-		modificationTime = 319937591.027771;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
-	};
-	F7A90113131171380062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:5006 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		functionName = "factoryUIViewForAudioUnit(id self, SEL _cmd, AudioUnit inAU, NSSize inPreferredSize)";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 5006;
-		location = Sinoplex;
-		modificationTime = 319937591.0278031;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
-	};
-	F7A9013C131173B40062CEF8 /* Symbiosis (failed idea of creating obj-c dynamically).mm:5000 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */;
-		functionName = "-uiViewForAudioUnit:withSize:";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 5000;
-		location = Sinoplex;
-		modificationTime = 319937591.027848;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
-	};
 	F7A902651311D9390062CEF8 /* Symbiosis.mm */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {919, 67145}}";
-			sepNavSelRange = "{2103, 0}";
-			sepNavVisRange = "{816, 1916}";
+			sepNavIntBoundsRect = "{{0, 0}, {1054, 67691}}";
+			sepNavSelRange = "{193931, 9}";
+			sepNavVisRange = "{191569, 2150}";
 			sepNavWindowFrame = "{{19, 0}, {1099, 778}}";
 		};
-	};
-	F7A902751311DA4E0062CEF8 /* Symbiosis.mm:4997 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
-		functionName = "-uiViewForAudioUnit:withSize:";
-		hitCount = 3;
-		ignoreCount = 0;
-		lineNumber = 4997;
-		location = Symbiosis;
-		modificationTime = 319937663.55819;
-		originalNumberOfMultipleMatches = 1;
-		state = 2;
-	};
-	F7A9027C1311DA720062CEF8 /* Symbiosis.mm:3959 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement , ::AudioUnitScope inScope, ::AudioUnitPropertyID inID)";
-		hitCount = 1;
-		ignoreCount = 0;
-		lineNumber = 3959;
-		location = Symbiosis;
-		modificationTime = 319937624.035826;
-		originalNumberOfMultipleMatches = 1;
-		state = 1;
-	};
-	F7A902921311DC1D0062CEF8 /* Symbiosis.mm:3472 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitScope scope, ::AudioUnitElement element , bool* isReadable, bool* isWritable, int* minDataSize, int* normalDataSize)";
-		hitCount = 2;
-		ignoreCount = 0;
-		lineNumber = 3472;
-		location = Symbiosis;
-		modificationTime = 319937621.758654;
-		originalNumberOfMultipleMatches = 1;
-		state = 1;
 	};
 	F7A902C71311DF540062CEF8 /* BuildWrappers.command */ = {
 		isa = PBXFileReference;
@@ -454,26 +407,6 @@
 		rType = 0;
 		vrLen = 644;
 		vrLoc = 0;
-	};
-	F7A903031311E2DE0062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
-		name = "Symbiosis.r: 21";
-		rLen = 0;
-		rLoc = 1029;
-		rType = 0;
-		vrLen = 1281;
-		vrLoc = 616;
-	};
-	F7A9030D1311E3780062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
-		name = "Symbiosis.r: 21";
-		rLen = 0;
-		rLoc = 1029;
-		rType = 0;
-		vrLen = 1515;
-		vrLoc = 270;
 	};
 	F7D3E4EE091BE7B900501C1B /* AUVal */ = {
 		isa = PBXExecutable;
@@ -549,20 +482,11 @@
 		isa = PBXCodeSenseManager;
 		indexTemplatePath = "";
 	};
-	F7D698480909601200040FB7 /* Symbiosis (failed idea of creating obj-c dynamically).mm */ = {
-		isa = PBXFileReference;
-		fileEncoding = 5;
-		lastKnownFileType = sourcecode.cpp.objcpp;
-		lineEnding = 0;
-		name = "Symbiosis (failed idea of creating obj-c dynamically).mm";
-		path = "/Users/magnus/projects/symbiosis-au-vst/Symbiosis (failed idea of creating obj-c dynamically).mm";
-		sourceTree = "<absolute>";
-	};
 	F7D69A5F09096C9F00040FB7 /* Symbiosis.r */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {919, 1794}}";
-			sepNavSelRange = "{1029, 0}";
-			sepNavVisRange = "{270, 1515}";
+			sepNavIntBoundsRect = "{{0, 0}, {1034, 1846}}";
+			sepNavSelRange = "{3078, 0}";
+			sepNavVisRange = "{2293, 1092}";
 			sepNavVisRect = "{{0, 0}, {1046, 645}}";
 			sepNavWindowFrame = "{{19, 0}, {1230, 778}}";
 		};

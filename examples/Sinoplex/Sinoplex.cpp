@@ -85,7 +85,7 @@
 
 const int kProductID = 'SiPx';
 const int kInputCount = 2; // Valid values are 0 (for synth), 1 or 2 for mono and stereo effect.
-const int kOutputCount = 2; // Valid values are 1 or 2 for mono and stereo or 4 for dual stereo (aux channel test).
+const int kOutputCount = 4; // Valid values are 1 or 2 for mono and stereo or 4 for dual stereo (aux channel test).
 const int kProgramCount = 10;
 const int kParameterCount = 12;
 const int kSyncedLFODivsCount = 20;
@@ -141,25 +141,25 @@ static inline float decayConstant(float time, float reach) {
 */
 struct SinoplexProgram {
 	enum Parameter {
-		kFreq
-		, kLFOAmount
-		, kEnvAmount
-		, kEnvInvert
-		, kLFOWaveform
-		, kLFOSync
-		, kLFORate
-		, kEnvAttack
-		, kEnvDecay
-		, kMidi
-		, kAM
-		, kMix
+		kFreq = 0
+		, kLFOAmount = 1
+		, kEnvAmount = 2
+		, kEnvInvert = 3
+		, kLFOWaveform = 4
+		, kLFOSync = 5
+		, kLFORate = 6
+		, kEnvAttack = 7
+		, kEnvDecay = 8
+		, kMidi = 9
+		, kAM = 10
+		, kMix = 11
 	};
 
 	enum LFOWaveform {
-		kSine
-		, kSquare
-		, kSawDown
-		, kSawUp
+		kSine = 0
+		, kSquare = 1
+		, kSawDown = 2
+		, kSawUp = 3
 	};
 
 	char name[24 + 1];
@@ -484,7 +484,7 @@ float SineGenerator::render(float rate) {
 	assert(rate >= 0.0 && rate <= 0.5);
 	float out = sinf(p);
 	p += rate * (kPIf * 2);
-	p = ((p >= kPIf) ? (p -= kPIf * 2) : p);
+	p = ((p >= kPIf) ? (p - kPIf * 2) : p);
 	return out;
 }
 

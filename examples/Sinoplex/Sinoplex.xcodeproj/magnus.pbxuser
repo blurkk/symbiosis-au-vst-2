@@ -1,25 +1,23 @@
 // !$*UTF8*$!
 {
 	089C1669FE841209C02AAC07 /* Project object */ = {
-		activeArchitecturePreference = i386;
+		activeArchitecturePreference = x86_64;
 		activeBuildConfigurationName = Development;
-		activeExecutable = F7FBB3470C888B470018C690 /* AULab */;
+		activeExecutable = F71271DA13CA4B0200A89FEC /* Logic */;
 		activeTarget = 8D01CCC60486CAD60068D4B7 /* Sinoplex */;
 		addToTargets = (
 			8D01CCC60486CAD60068D4B7 /* Sinoplex */,
 		);
 		breakpoints = (
-			F73549720CA745F900BDB9CA /* Symbiosis.mm:72 */,
-			F706ECED0F69C5C800649088 /* Symbiosis.mm:72 */,
-			F706ECF70F69C77900649088 /* Symbiosis.mm:72 */,
-			F7A901E71311D1210062CEF8 /* Symbiosis.mm:3982 */,
-			F7A902131311D3070062CEF8 /* Symbiosis.mm:3986 */,
+			F7FEDE3E13CBC069008CF8E4 /* Symbiosis.mm:2937 */,
+			F7FEDE6313CBC13B008CF8E4 /* Symbiosis.mm:2936 */,
 		);
 		codeSenseManager = F7A920650903D3A3009996D9 /* Code sense */;
 		executables = (
 			F74921280C87B54B0057A327 /* VSTLord */,
 			F7FBB3470C888B470018C690 /* AULab */,
 			F7CD858B12FB76E300FFB05C /* AUVal */,
+			F71271DA13CA4B0200A89FEC /* Logic */,
 		);
 		perUserDictionary = {
 			"PBXConfiguration.PBXBreakpointsDataSource.v1:1CA1AED706398EBD00589147" = {
@@ -142,21 +140,39 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 319939283;
-			PBXWorkspaceStateSaveDate = 319939283;
+			PBXPerProjectTemplateStateSaveDate = 332117124;
+			PBXWorkspaceStateSaveDate = 332117124;
 		};
 		perUserProjectItems = {
-			F7A9000313115A560062CEF8 /* PBXTextBookmark */ = F7A9000313115A560062CEF8 /* PBXTextBookmark */;
-			F7A9000513115A560062CEF8 /* PBXTextBookmark */ = F7A9000513115A560062CEF8 /* PBXTextBookmark */;
-			F7A9001413115EB70062CEF8 /* PBXTextBookmark */ = F7A9001413115EB70062CEF8 /* PBXTextBookmark */;
-			F7A9001613115EB70062CEF8 /* PBXTextBookmark */ = F7A9001613115EB70062CEF8 /* PBXTextBookmark */;
-			F7A9001713115EB70062CEF8 /* PlistBookmark */ = F7A9001713115EB70062CEF8 /* PlistBookmark */;
-			F7A9001813115EB70062CEF8 /* PBXTextBookmark */ = F7A9001813115EB70062CEF8 /* PBXTextBookmark */;
-			F7A902BC1311DE940062CEF8 /* PBXTextBookmark */ = F7A902BC1311DE940062CEF8 /* PBXTextBookmark */;
-			F7A902C31311DF250062CEF8 /* PBXTextBookmark */ = F7A902C31311DF250062CEF8 /* PBXTextBookmark */;
-			F7A902FF1311E2DC0062CEF8 /* PBXTextBookmark */ = F7A902FF1311E2DC0062CEF8 /* PBXTextBookmark */;
-			F7A9FFB0131153390062CEF8 /* PBXTextBookmark */ = F7A9FFB0131153390062CEF8 /* PBXTextBookmark */;
-			F7CD86CC12FB8A2700FFB05C /* PBXTextBookmark */ = F7CD86CC12FB8A2700FFB05C /* PBXTextBookmark */;
+			F712720513CA5B9300A89FEC = F712720513CA5B9300A89FEC /* PBXTextBookmark */;
+			F712720F13CA5FC600A89FEC = F712720F13CA5FC600A89FEC /* PBXTextBookmark */;
+			F712721013CA5FC600A89FEC = F712721013CA5FC600A89FEC /* PBXTextBookmark */;
+			F712725313CA698B00A89FEC = F712725313CA698B00A89FEC /* PBXTextBookmark */;
+			F712725413CA698B00A89FEC = F712725413CA698B00A89FEC /* PBXTextBookmark */;
+			F71272CA13CA76D300A89FEC = F71272CA13CA76D300A89FEC /* PBXTextBookmark */;
+			F71272CB13CA76D300A89FEC = F71272CB13CA76D300A89FEC /* PBXTextBookmark */;
+			F788C9C013C93B5900060949 = F788C9C013C93B5900060949 /* PBXTextBookmark */;
+			F788C9E613C93D1D00060949 = F788C9E613C93D1D00060949 /* PBXTextBookmark */;
+			F7A9000313115A560062CEF8 = F7A9000313115A560062CEF8 /* PBXTextBookmark */;
+			F7A9000513115A560062CEF8 = F7A9000513115A560062CEF8 /* PBXTextBookmark */;
+			F7A9001413115EB70062CEF8 = F7A9001413115EB70062CEF8 /* PBXTextBookmark */;
+			F7CD86CC12FB8A2700FFB05C = F7CD86CC12FB8A2700FFB05C /* PBXTextBookmark */;
+			F7FEDE3A13CBB4A4008CF8E4 /* PBXTextBookmark */ = F7FEDE3A13CBB4A4008CF8E4 /* PBXTextBookmark */;
+			F7FEDE4213CBC076008CF8E4 /* PlistBookmark */ = F7FEDE4213CBC076008CF8E4 /* PlistBookmark */;
+			F7FEDE4313CBC076008CF8E4 /* PBXTextBookmark */ = F7FEDE4313CBC076008CF8E4 /* PBXTextBookmark */;
+			F7FEDE4413CBC076008CF8E4 /* PBXTextBookmark */ = F7FEDE4413CBC076008CF8E4 /* PBXTextBookmark */;
+			F7FEDE4913CBC09C008CF8E4 /* XCBuildMessageTextBookmark */ = F7FEDE4913CBC09C008CF8E4 /* XCBuildMessageTextBookmark */;
+			F7FEDE4D13CBC0D1008CF8E4 /* XCBuildMessageTextBookmark */ = F7FEDE4D13CBC0D1008CF8E4 /* XCBuildMessageTextBookmark */;
+			F7FEDE4E13CBC0D1008CF8E4 /* PBXTextBookmark */ = F7FEDE4E13CBC0D1008CF8E4 /* PBXTextBookmark */;
+			F7FEDE5113CBC0E7008CF8E4 /* PBXTextBookmark */ = F7FEDE5113CBC0E7008CF8E4 /* PBXTextBookmark */;
+			F7FEDE5413CBC0E7008CF8E4 /* PBXTextBookmark */ = F7FEDE5413CBC0E7008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6513CBC144008CF8E4 /* PBXTextBookmark */ = F7FEDE6513CBC144008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6613CBC144008CF8E4 /* PBXTextBookmark */ = F7FEDE6613CBC144008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6713CBC14F008CF8E4 /* PBXTextBookmark */ = F7FEDE6713CBC14F008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6813CBC150008CF8E4 /* PBXTextBookmark */ = F7FEDE6813CBC150008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6913CBC150008CF8E4 /* PBXTextBookmark */ = F7FEDE6913CBC150008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6C13CBC262008CF8E4 /* PBXTextBookmark */ = F7FEDE6C13CBC262008CF8E4 /* PBXTextBookmark */;
+			F7FEDE6D13CBC263008CF8E4 /* PBXTextBookmark */ = F7FEDE6D13CBC263008CF8E4 /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7A920640903D3A3009996D9 /* Source Control */;
 		userBuildSettings = {
@@ -174,86 +190,163 @@
 	8D01CCC60486CAD60068D4B7 /* Sinoplex */ = {
 		activeExec = 0;
 	};
-	F706ECED0F69C5C800649088 /* Symbiosis.mm:72 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
+	F71271DA13CA4B0200A89FEC /* Logic */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
 		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::render()";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 72;
-		location = Sinoplex;
-		modificationTime = 319937591.029115;
-		originalNumberOfMultipleMatches = 0;
-		state = 2;
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 1;
+		configStateDict = {
+			"PBXLSLaunchAction-0" = {
+				PBXLSLaunchAction = 0;
+				PBXLSLaunchStartAction = 1;
+				PBXLSLaunchStdioStyle = 2;
+				PBXLSLaunchStyle = 0;
+				class = PBXLSRunLaunchConfig;
+				commandLineArgs = (
+				);
+				displayName = "Executable Runner";
+				environment = {
+				};
+				identifier = com.apple.Xcode.launch.runConfig;
+				remoteHostInfo = "";
+				startActionInfo = "";
+			};
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		launchableReference = F71271DB13CA4B0200A89FEC /* Logic Pro.app */;
+		libgmallocEnabled = 0;
+		name = Logic;
+		savedGlobals = {
+		};
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+		variableFormatDictionary = {
+			"type-OSType-SymbiosisComponent::SymbiosisComponent" = 5;
+		};
 	};
-	F706ECF70F69C77900649088 /* Symbiosis.mm:72 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::setProperty()";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 72;
-		location = Sinoplex;
-		modificationTime = 319937591.029165;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
+	F71271DB13CA4B0200A89FEC /* Logic Pro.app */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = wrapper.application;
+		name = "Logic Pro.app";
+		path = "/Applications/Logic Pro.app";
+		sourceTree = "<absolute>";
 	};
-	F73549720CA745F900BDB9CA /* Symbiosis.mm:72 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::getPropertyInfo()";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 72;
-		location = Sinoplex;
-		modificationTime = 319937591.029079;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
+	F712720513CA5B9300A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74920C40C87B0380057A327 /* audioeffect.h */;
+		name = "audioeffect.h: 166";
+		rLen = 0;
+		rLoc = 10975;
+		rType = 0;
+		vrLen = 3217;
+		vrLoc = 8295;
+	};
+	F712720F13CA5FC600A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74920C30C87B0380057A327 /* audioeffect.cpp */;
+		name = "audioeffect.cpp: 287";
+		rLen = 0;
+		rLoc = 11142;
+		rType = 0;
+		vrLen = 1653;
+		vrLoc = 10568;
+	};
+	F712721013CA5FC600A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 32BAE0B30371A71500C91783 /* Sinoplex_Prefix.pch */;
+		name = "Sinoplex_Prefix.pch: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 525;
+		vrLoc = 0;
+	};
+	F712725313CA698B00A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74920C60C87B0380057A327 /* audioeffectx.h */;
+		name = "audioeffectx.h: 71";
+		rLen = 13;
+		rLoc = 4115;
+		rType = 0;
+		vrLen = 3422;
+		vrLoc = 2504;
+	};
+	F712725413CA698B00A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
+		name = "Sinoplex.cpp: 87";
+		rLen = 0;
+		rLoc = 3249;
+		rType = 0;
+		vrLen = 1848;
+		vrLoc = 2562;
+	};
+	F71272CA13CA76D300A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 4764";
+		rLen = 0;
+		rLoc = 205261;
+		rType = 0;
+		vrLen = 1340;
+		vrLoc = 203958;
+	};
+	F71272CB13CA76D300A89FEC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 4767";
+		rLen = 0;
+		rLoc = 205408;
+		rType = 0;
+		vrLen = 1363;
+		vrLoc = 203843;
 	};
 	F74920C30C87B0380057A327 /* audioeffect.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1239, 11552}}";
-			sepNavSelRange = "{2271, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {962, 9243}}";
+			sepNavSelRange = "{11142, 0}";
+			sepNavVisRange = "{10568, 1653}";
 			sepNavVisRect = "{{0, 808}, {1239, 289}}";
 		};
 	};
 	F74920C40C87B0380057A327 /* audioeffect.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1861, 2848}}";
-			sepNavSelRange = "{8243, 0}";
+			sepNavIntBoundsRect = "{{0, 0}, {1853, 2314}}";
+			sepNavSelRange = "{605, 7}";
+			sepNavVisRange = "{0, 2738}";
 			sepNavVisRect = "{{0, 2032}, {1031, 641}}";
+			sepNavWindowFrame = "{{19, 0}, {1261, 773}}";
 		};
 	};
 	F74920C50C87B0380057A327 /* audioeffectx.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1227, 19890}}";
-			sepNavSelRange = "{51752, 0}";
-			sepNavVisRange = "{0, 695}";
+			sepNavIntBoundsRect = "{{0, 0}, {1489, 20046}}";
+			sepNavSelRange = "{50404, 20}";
+			sepNavVisRange = "{43582, 1343}";
 			sepNavVisRect = "{{0, 13576}, {1031, 641}}";
+			sepNavWindowFrame = "{{19, 0}, {1261, 773}}";
 		};
 	};
 	F74920C60C87B0380057A327 /* audioeffectx.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1819, 4048}}";
-			sepNavSelRange = "{4062, 295}";
+			sepNavIntBoundsRect = "{{0, 0}, {1573, 3315}}";
+			sepNavSelRange = "{4357, 0}";
+			sepNavVisRange = "{3866, 2444}";
 			sepNavVisRect = "{{0, 951}, {1031, 641}}";
 		};
 	};
@@ -314,9 +407,9 @@
 	};
 	F74921790C87BB340057A327 /* Sinoplex.r */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {962, 1716}}";
-			sepNavSelRange = "{1835, 4}";
-			sepNavVisRange = "{379, 1938}";
+			sepNavIntBoundsRect = "{{0, 0}, {962, 1703}}";
+			sepNavSelRange = "{1550, 0}";
+			sepNavVisRange = "{379, 1897}";
 			sepNavVisRect = "{{0, 0}, {970, 645}}";
 			sepNavWindowFrame = "{{19, 0}, {1002, 778}}";
 		};
@@ -330,9 +423,9 @@
 	};
 	F74921A10C87BC160057A327 /* Symbiosis.mm */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {962, 66937}}";
-			sepNavSelRange = "{106, 4}";
-			sepNavVisRange = "{0, 1705}";
+			sepNavIntBoundsRect = "{{0, 0}, {955, 68146}}";
+			sepNavSelRange = "{184751, 0}";
+			sepNavVisRange = "{183526, 2296}";
 			sepNavVisRect = "{{0, 89786}, {970, 645}}";
 			sepNavWindowFrame = "{{183, 0}, {1002, 778}}";
 		};
@@ -365,6 +458,26 @@
 			sepNavSelRange = "{269, 0}";
 			sepNavVisRect = "{{0, 0}, {1031, 439}}";
 		};
+	};
+	F788C9C013C93B5900060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74920C50C87B0380057A327 /* audioeffectx.cpp */;
+		name = "audioeffectx.cpp: 328";
+		rLen = 0;
+		rLoc = 12093;
+		rType = 0;
+		vrLen = 2433;
+		vrLoc = 10459;
+	};
+	F788C9E613C93D1D00060949 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921790C87BB340057A327 /* Sinoplex.r */;
+		name = "Sinoplex.r: 36";
+		rLen = 0;
+		rLoc = 1550;
+		rType = 0;
+		vrLen = 1897;
+		vrLoc = 379;
 	};
 	F7A9000313115A560062CEF8 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
@@ -417,103 +530,6 @@
 		path = /usr/include/objc/runtime.h;
 		sourceTree = "<absolute>";
 	};
-	F7A9001613115EB70062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74921790C87BB340057A327 /* Sinoplex.r */;
-		name = "Sinoplex.r: 45";
-		rLen = 4;
-		rLoc = 1835;
-		rType = 0;
-		vrLen = 1938;
-		vrLoc = 379;
-	};
-	F7A9001713115EB70062CEF8 /* PlistBookmark */ = {
-		isa = PlistBookmark;
-		fRef = F74921990C87BBC80057A327 /* Sinoplex.plist */;
-		fallbackIsa = PBXBookmark;
-		isK = 0;
-		kPath = (
-		);
-		name = "/Users/magnus/projects/symbiosis-au-vst/examples/Sinoplex/Sinoplex.plist";
-		rLen = 0;
-		rLoc = 9223372036854775808;
-	};
-	F7A9001813115EB70062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 32BAE0B30371A71500C91783 /* Sinoplex_Prefix.pch */;
-		name = "Sinoplex_Prefix.pch: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 525;
-		vrLoc = 0;
-	};
-	F7A901E71311D1210062CEF8 /* Symbiosis.mm:3982 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement , ::AudioUnitScope inScope, ::AudioUnitPropertyID inID)";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 3982;
-		location = Sinoplex;
-		modificationTime = 319937591.029281;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
-	};
-	F7A902131311D3070062CEF8 /* Symbiosis.mm:3986 */ = {
-		isa = PBXFileBreakpoint;
-		actions = (
-		);
-		breakpointStyle = 0;
-		continueAfterActions = 0;
-		countType = 0;
-		delayBeforeContinue = 0;
-		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		functionName = "SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement , ::AudioUnitScope inScope, ::AudioUnitPropertyID inID)";
-		hitCount = 0;
-		ignoreCount = 0;
-		lineNumber = 3986;
-		location = Sinoplex;
-		modificationTime = 319937591.029305;
-		originalNumberOfMultipleMatches = 1;
-		state = 0;
-	};
-	F7A902BC1311DE940062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A920930903D63C009996D9 /* Sinoplex.cpp */;
-		name = "Sinoplex.cpp: 216";
-		rLen = 0;
-		rLoc = 9863;
-		rType = 0;
-		vrLen = 2194;
-		vrLoc = 8551;
-	};
-	F7A902C31311DF250062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		name = "Symbiosis.mm: 8";
-		rLen = 4;
-		rLoc = 106;
-		rType = 0;
-		vrLen = 1587;
-		vrLoc = 0;
-	};
-	F7A902FF1311E2DC0062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
-		name = "Symbiosis.mm: 8";
-		rLen = 4;
-		rLoc = 106;
-		rType = 0;
-		vrLen = 1705;
-		vrLoc = 0;
-	};
 	F7A920640903D3A3009996D9 /* Source Control */ = {
 		isa = PBXSourceControlManager;
 		fallbackIsa = XCSourceControlManager;
@@ -532,22 +548,12 @@
 	};
 	F7A920930903D63C009996D9 /* Sinoplex.cpp */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {2707, 12597}}";
-			sepNavSelRange = "{9863, 0}";
-			sepNavVisRange = "{8551, 2194}";
+			sepNavIntBoundsRect = "{{0, 0}, {1227, 13000}}";
+			sepNavSelRange = "{33681, 0}";
+			sepNavVisRange = "{33274, 976}";
 			sepNavVisRect = "{{0, 1121}, {970, 442}}";
 			sepNavWindowFrame = "{{15, 4}, {1076, 769}}";
 		};
-	};
-	F7A9FFB0131153390062CEF8 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F74920C50C87B0380057A327 /* audioeffectx.cpp */;
-		name = "audioeffectx.cpp: 1405";
-		rLen = 0;
-		rLoc = 51682;
-		rType = 0;
-		vrLen = 1652;
-		vrLoc = 50868;
 	};
 	F7CD858B12FB76E300FFB05C /* AUVal */ = {
 		isa = PBXExecutable;
@@ -675,5 +681,202 @@
 		name = "AU Lab.app";
 		path = "/Developer/Applications/Audio/AU Lab.app";
 		sourceTree = "<absolute>";
+	};
+	F7FEDE3A13CBB4A4008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 4774";
+		rLen = 0;
+		rLoc = 205551;
+		rType = 0;
+		vrLen = 1383;
+		vrLoc = 203832;
+	};
+	F7FEDE3E13CBC069008CF8E4 /* Symbiosis.mm:2937 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		countType = 0;
+		delayBeforeContinue = 0;
+		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		functionName = "SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)";
+		hitCount = 2;
+		ignoreCount = 0;
+		lineNumber = 2937;
+		location = Sinoplex;
+		modificationTime = 332120380.390322;
+		originalNumberOfMultipleMatches = 1;
+		state = 2;
+	};
+	F7FEDE4213CBC076008CF8E4 /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = F74921990C87BBC80057A327 /* Sinoplex.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 1;
+		kPath = (
+			SYConfig,
+			CanDoMonoIO,
+		);
+		name = "/Users/magnus/projects/symbiosis-au-vst/examples/Sinoplex/Sinoplex.plist";
+		rLen = 11;
+		rLoc = 0;
+	};
+	F7FEDE4313CBC076008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2962";
+		rLen = 0;
+		rLoc = 128524;
+		rType = 0;
+		vrLen = 2162;
+		vrLoc = 127300;
+	};
+	F7FEDE4413CBC076008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2962";
+		rLen = 0;
+		rLoc = 128524;
+		rType = 0;
+		vrLen = 2162;
+		vrLoc = 127300;
+	};
+	F7FEDE4913CBC09C008CF8E4 /* XCBuildMessageTextBookmark */ = {
+		isa = PBXTextBookmark;
+		comments = "Implicit conversion shortens 64-bit value into a 32-bit value";
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		fallbackIsa = XCBuildMessageTextBookmark;
+		rLen = 1;
+		rLoc = 3389;
+		rType = 1;
+	};
+	F7FEDE4D13CBC0D1008CF8E4 /* XCBuildMessageTextBookmark */ = {
+		isa = PBXTextBookmark;
+		comments = "Invalid conversion from 'const __CFString**' to 'size_t'";
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		fallbackIsa = XCBuildMessageTextBookmark;
+		rLen = 1;
+		rLoc = 2687;
+		rType = 1;
+	};
+	F7FEDE4E13CBC0D1008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2688";
+		rLen = 0;
+		rLoc = 116857;
+		rType = 0;
+		vrLen = 789;
+		vrLoc = 116533;
+	};
+	F7FEDE5113CBC0E7008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2962";
+		rLen = 0;
+		rLoc = 128524;
+		rType = 0;
+		vrLen = 2122;
+		vrLoc = 127360;
+	};
+	F7FEDE5413CBC0E7008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 3390";
+		rLen = 0;
+		rLoc = 145778;
+		rType = 0;
+		vrLen = 1847;
+		vrLoc = 144771;
+	};
+	F7FEDE6313CBC13B008CF8E4 /* Symbiosis.mm:2936 */ = {
+		isa = PBXFileBreakpoint;
+		actions = (
+		);
+		breakpointStyle = 0;
+		continueAfterActions = 0;
+		countType = 0;
+		delayBeforeContinue = 0;
+		fileReference = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		functionName = "SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)";
+		hitCount = 0;
+		ignoreCount = 0;
+		lineNumber = 2936;
+		location = Sinoplex;
+		modificationTime = 332120381.188695;
+		originalNumberOfMultipleMatches = 1;
+		state = 2;
+	};
+	F7FEDE6513CBC144008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2962";
+		rLen = 0;
+		rLoc = 128524;
+		rType = 0;
+		vrLen = 2122;
+		vrLoc = 127360;
+	};
+	F7FEDE6613CBC144008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 3390";
+		rLen = 0;
+		rLoc = 145778;
+		rType = 0;
+		vrLen = 1847;
+		vrLoc = 144771;
+	};
+	F7FEDE6713CBC14F008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2688";
+		rLen = 0;
+		rLoc = 116857;
+		rType = 0;
+		vrLen = 789;
+		vrLoc = 116533;
+	};
+	F7FEDE6813CBC150008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2962";
+		rLen = 0;
+		rLoc = 128524;
+		rType = 0;
+		vrLen = 2174;
+		vrLoc = 127360;
+	};
+	F7FEDE6913CBC150008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 3390";
+		rLen = 0;
+		rLoc = 145778;
+		rType = 0;
+		vrLen = 1897;
+		vrLoc = 144771;
+	};
+	F7FEDE6C13CBC262008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 2962";
+		rLen = 0;
+		rLoc = 128524;
+		rType = 0;
+		vrLen = 2174;
+		vrLoc = 127360;
+	};
+	F7FEDE6D13CBC263008CF8E4 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F74921A10C87BC160057A327 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 4232";
+		rLen = 0;
+		rLoc = 184751;
+		rType = 0;
+		vrLen = 2296;
+		vrLoc = 183526;
 	};
 }

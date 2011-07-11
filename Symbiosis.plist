@@ -24,18 +24,19 @@
 		<false/>
 
 		<!---
-				Set "DisableStereoSupport" to true if you wish to disable support for loading a multi-channel plug-in
-				(with more than 2 inputs and / or outputs) into a stereo configuration.
-		--->
-		<key>DisableStereoSupport</key>
-		<false/>
-
-		<!---
 				Set "UpdateNameOnLoad" to false if you do not wish Symbiosis to rename VST programs when AU presets are
 				loaded. (This doesn't always make sense if "PresetIsFXB" is true, i.e. when the AU preset represents an
 				entire .fxb program bank.)
 		--->
 		<key>UpdateNameOnLoad</key>
+		<true/>
+
+		<!---
+				Set "CanDoMonoIO" to true if (any of) the plug-in input(s) and / or output(s) are in stereo and it makes
+				sense to use them with mono signals as well. (The VST process() will then receive the same buffer pointer
+				for left and right channels whenever the plug-in is used in a mono configuration.)
+		--->
+		<key>CanDoMonoIO</key>
 		<true/>
 	</dict>
 

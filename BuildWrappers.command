@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ${0%/*}
+cd "${0%/*}"
 xcodebuild -configuration Development -target Symbiosis clean
 xcodebuild -configuration Beta -target Symbiosis clean
 xcodebuild -configuration Deployment -target Symbiosis clean

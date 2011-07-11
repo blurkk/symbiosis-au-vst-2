@@ -30,11 +30,11 @@
 	<dict>
 		<key>AutoConvertPresets</key>
 		<true/>
-		<key>DisableStereoSupport</key>
-		<false/>
 		<key>PresetIsFXB</key>
 		<false/>
 		<key>UpdateNameOnLoad</key>
+		<true/>
+		<key>CanDoMonoIO</key>
 		<true/>
 	</dict>
 	<key>VSTWindowCompositing</key>
