@@ -200,7 +200,7 @@
 		_typ _name = *(_typ *)&params->params[_nparams - 1 - _index];
 #endif
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED < 1050)
 	#if __LP64__
 		typedef int FSIORefNum;
 	#else
@@ -822,8 +822,8 @@ class SymbiosisComponent : public VSTHost {
 	public:		void dispatch(::ComponentParameters* params);
 #if (SY_INCLUDE_GUI_SUPPORT)
 #if (SY_USE_COCOA_GUI)
-	public:		NSView* createView();
-	public:		void dropView();
+	public:		virtual NSView* createView();
+	public:		virtual void dropView();
 #elif (!SY_USE_COCOA_GUI)
 	public:		void createView(::ControlRef* createdControl, const ::Float32Point& /*requestedSize*/
 						, const ::Float32Point& requestedLocation, ::ControlRef inParentControl, ::WindowRef inWindow
@@ -854,8 +854,10 @@ class SymbiosisComponent : public VSTHost {
 	protected:	void createDefaultParameterMappingFile(const ::FSRef* fsRef);
 	protected:	void readOrCreateParameterMapping();
 	protected:	void reallocateIOBuffers();
-	protected:	int getInputBusChannelCount(int busNumber) const;
-	protected:	int getOutputBusChannelCount(int busNumber) const;
+	protected:	int getMaxInputChannels(int busNumber) const;
+	protected:	int getMaxOutputChannels(int busNumber) const;
+	protected:	int getActiveInputChannels(int busNumber) const;
+	protected:	int getActiveOutputChannels(int busNumber) const;
 	protected:	float scaleFromAUParameter(int parameterIndex, float auValue);
 	protected:	float scaleToAUParameter(int parameterIndex, float vstValue);
 	protected:	static pascal void idleTimerAction(::EventLoopTimerRef /*theTimer*/, void* theUserData);
@@ -866,7 +868,8 @@ class SymbiosisComponent : public VSTHost {
 						, bool* isReadable, bool* isWritable, int* minDataSize, int* normalDataSize);
 	protected:	void updateVSTTimeInfo(const ::AudioTimeStamp* inTimeStamp);
 	protected:	bool collectInputAudio(int frameCount, float** inputPointers, const ::AudioTimeStamp* timeStamp);
-	protected:	void renderOutput(int frameCount, float** inputPointers, bool inputIsSilent);
+	protected:	void renderOutput(int frameCount, const float* const* inputPointers, float** outputPointers
+						, bool inputIsSilent);
 	protected:	void render(::AudioUnitRenderActionFlags* ioActionFlags, const ::AudioTimeStamp* inTimeStamp
 						, ::UInt32 inOutputBusNumber, ::UInt32 inNumberFrames, ::AudioBufferList* ioData);
 	protected:	void getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement
@@ -915,6 +918,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	bool presetIsFXB;
 	protected:	bool autoConvertPresets;
 	protected:	bool updateNameOnLoad;
+	protected:	bool canDoMonoIO;
 	protected:	VSTPlugIn* vst;
 	protected:	SymbiosisVstEvents vstMidiEvents;
 	protected:	VstTimeInfo vstTimeInfo;
@@ -924,13 +928,16 @@ class SymbiosisComponent : public VSTHost {
 	protected:	double tailTime;
 	protected:	bool vstSupportsBypass;
 	protected:	bool isBypassing;
-	protected:	bool supportNumChannelsProperty;																		// Instruments may have a variable number of channels on it's output buses if we return an "unsupported" error on kAudioUnitProperty_SupportedNumChannels. Effects need to support this though (or they will need to take any number of input -> any number of output), which also means effects need the same number of channels on all output buses.
 	protected:	int inputBusCount;
 	protected:	int outputBusCount;
 	protected:	int inputBusChannelNumbers[kMaxBuses + 1];
 	protected:	int outputBusChannelNumbers[kMaxBuses + 1];
+	protected:	int inputBusChannelCounts[kMaxBuses + 1];
+	protected:	int outputBusChannelCounts[kMaxBuses + 1];
 	protected:	::CFStringRef inputBusNames[kMaxBuses];
 	protected:	::CFStringRef outputBusNames[kMaxBuses];
+	protected:	int auChannelInfoCount;
+	protected:	::AUChannelInfo auChannelInfos[4];
 	protected:	HostApplication hostApplication;
 	protected:	::EventLoopTimerRef idleTimerRef;
 #if (SY_INCLUDE_GUI_SUPPORT)
@@ -1806,6 +1813,8 @@ void SymbiosisComponent::loadConfiguration() {
 			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("PresetIsFXB"), ::CFBooleanGetTypeID())));
 	updateNameOnLoad = ::CFBooleanGetValue(reinterpret_cast< ::CFBooleanRef >
 			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("UpdateNameOnLoad"), ::CFBooleanGetTypeID())));
+	canDoMonoIO = ::CFBooleanGetValue(reinterpret_cast< ::CFBooleanRef >
+			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("CanDoMonoIO"), ::CFBooleanGetTypeID())));
 }
 
 void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
@@ -2582,18 +2591,28 @@ void SymbiosisComponent::reallocateIOBuffers() {
 	}
 }
 
-int SymbiosisComponent::getInputBusChannelCount(int busNumber) const {
+int SymbiosisComponent::getMaxInputChannels(int busNumber) const {
 	SY_ASSERT(0 <= busNumber && busNumber < kMaxBuses);
 	int count = inputBusChannelNumbers[busNumber + 1] - inputBusChannelNumbers[busNumber];
 	SY_ASSERT(0 <= count && count < kMaxChannels);
 	return count;
 }
 
-int SymbiosisComponent::getOutputBusChannelCount(int busNumber) const {
+int SymbiosisComponent::getMaxOutputChannels(int busNumber) const {
 	SY_ASSERT(0 <= busNumber && busNumber < kMaxBuses);
 	int count = outputBusChannelNumbers[busNumber + 1] - outputBusChannelNumbers[busNumber];
 	SY_ASSERT(0 <= count && count < kMaxChannels);
 	return count;
+}
+
+int SymbiosisComponent::getActiveInputChannels(int busNumber) const {
+	SY_ASSERT(0 <= busNumber && busNumber < kMaxBuses);
+	return inputBusChannelCounts[busNumber];
+}
+
+int SymbiosisComponent::getActiveOutputChannels(int busNumber) const {
+	SY_ASSERT(0 <= busNumber && busNumber < kMaxBuses);
+	return outputBusChannelCounts[busNumber];
 }
 
 void SymbiosisComponent::tryToIdentifyHostApplication() {
@@ -2638,11 +2657,10 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		: auComponentInstance(auComponentInstance), auBundleRef(0), maxFramesPerSlice(kDefaultMaxFramesPerSlice)
 		, renderNotificationReceiversCount(0), lastRenderSampleTime(-12345678), silentOutput(false)
 		, propertyListenersCount(0), factoryPresetsArray(0), parameterCount(0), parameterInfos(0)
-		, parameterValueStrings(0)
-		, presetIsFXB(false), autoConvertPresets(false)
-		, updateNameOnLoad(false), vst(0), vstGotSymbiosisExtensions(false), vstSupportsTail(false), initialDelayTime(0.0)
-		, tailTime(0.0), vstSupportsBypass(false), isBypassing(false), supportNumChannelsProperty(true), inputBusCount(0)
-		, outputBusCount(0), hostApplication(undetermined), idleTimerRef(0)
+		, parameterValueStrings(0), presetIsFXB(false), autoConvertPresets(false), updateNameOnLoad(false)
+		, canDoMonoIO(false), vst(0), vstGotSymbiosisExtensions(false), vstSupportsTail(false), initialDelayTime(0.0)
+		, tailTime(0.0), vstSupportsBypass(false), isBypassing(false), inputBusCount(0), outputBusCount(0)
+		, auChannelInfoCount(0), hostApplication(undetermined), idleTimerRef(0)
 	#if (SY_INCLUDE_GUI_SUPPORT)
 	#if (SY_USE_COCOA_GUI)
 		, cocoaView(0)
@@ -2663,10 +2681,13 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 	memset(factoryPresetData, 0, sizeof (factoryPresetData));
 	memset(&vstMidiEvents, 0, sizeof (vstMidiEvents));
 	memset(&vstTimeInfo, 0, sizeof (vstTimeInfo));
-	memset(inputBusChannelNumbers, 0, sizeof (int) * (kMaxBuses + 1));
-	memset(outputBusChannelNumbers, 0, sizeof (int) * (kMaxBuses + 1));
-	memset(inputBusNames, 0, sizeof (::CFStringRef) * kMaxBuses);
-	memset(outputBusNames, 0, sizeof (::CFStringRef) * kMaxBuses);
+	memset(inputBusChannelNumbers, 0, sizeof (inputBusChannelNumbers));
+	memset(inputBusChannelCounts, 0, sizeof (inputBusChannelCounts));
+	memset(outputBusChannelNumbers, 0, sizeof (outputBusChannelNumbers));
+	memset(outputBusChannelCounts, 0, sizeof (outputBusChannelCounts));
+	memset(inputBusNames, 0, sizeof (inputBusNames));
+	memset(outputBusNames, 0, sizeof (outputBusNames));
+	memset(auChannelInfos, 0, sizeof (auChannelInfos));
 
 	streamFormat.mSampleRate = kDefaultSampleRate;
 	streamFormat.mFormatID = kAudioFormatLinearPCM;
@@ -2853,6 +2874,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 					inputBusNames[inputBusCount] = ::CFStringCreateWithCString(0, properties.label
 							, kCFStringEncodingMacRoman);
 				}
+				inputBusChannelCounts[inputBusCount] = inputChannelCount;
 				++inputBusCount;
 				inputPinIndex += inputChannelCount;
 			}
@@ -2881,6 +2903,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 					outputBusNames[outputBusCount] = ::CFStringCreateWithCString(0, properties.label
 							, kCFStringEncodingMacRoman);
 				}
+				outputBusChannelCounts[outputBusCount] = outputChannelCount;
 				++outputBusCount;
 				outputPinIndex += outputChannelCount;
 			}
@@ -2890,25 +2913,57 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		SY_ASSERT(outputBusCount <= kMaxBuses);
 		outputBusChannelNumbers[outputBusCount] = outputPinIndex;
 		SY_ASSERT0(outputPinIndex == outputCount, "Invalid VST output count");
-
-		supportNumChannelsProperty = true;
+		
+		int maxInputChannels = ((inputBusCount > 0) ? getMaxInputChannels(0) : 0);
+		int maxOutputChannels = ((outputBusCount > 0) ? getMaxOutputChannels(0) : 0);
+		
+		bool supportNumChannelsProperty = true;
 		for (int i = 1; i < inputBusCount; ++i) {
-			if (getInputBusChannelCount(i) != getInputBusChannelCount(0)) {
+			if (getMaxInputChannels(i) != maxInputChannels) {
 				supportNumChannelsProperty = false;
 				break;
 			}
 		}
 		for (int i = 1; i < outputBusCount; ++i) {
-			if (getOutputBusChannelCount(i) != getOutputBusChannelCount(0)) {
+			if (getMaxOutputChannels(i) != maxOutputChannels) {
 				supportNumChannelsProperty = false;
 				break;
 			}
 		}
 		
-		SY_ASSERT(supportNumChannelsProperty || !requireNumChannels);
+		if (!supportNumChannelsProperty) {
+			auChannelInfoCount = 0;
+		} else {
+			if (canDoMonoIO) {
+				if (maxInputChannels == 2) {
+					if (maxOutputChannels == 2) {
+						SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+						auChannelInfos[auChannelInfoCount].inChannels = 1;
+						auChannelInfos[auChannelInfoCount].outChannels = 1;
+						++auChannelInfoCount;
+					}
+					SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+					auChannelInfos[auChannelInfoCount].inChannels = 1;
+					auChannelInfos[auChannelInfoCount].outChannels = maxOutputChannels;
+					++auChannelInfoCount;
+				}
+				if (maxOutputChannels == 2) {
+					SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+					auChannelInfos[auChannelInfoCount].inChannels = maxInputChannels;
+					auChannelInfos[auChannelInfoCount].outChannels = 1;
+					++auChannelInfoCount;
+				}
+			}
+			SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+			auChannelInfos[auChannelInfoCount].inChannels = maxInputChannels;
+			auChannelInfos[auChannelInfoCount].outChannels = maxOutputChannels;
+			++auChannelInfoCount;
+		}
+		
+		SY_ASSERT(auChannelInfoCount > 0 || !requireNumChannels);
 		SY_TRACE5(SY_TRACE_MISC, "VST has %d inputs and %d outputs configured into %d input buses and %d output buses"
 				" (SupportedNumChannels %s)", inputCount, outputCount, inputBusCount, outputBusCount
-				, (supportNumChannelsProperty ? "supported" : "not supported"));
+				, (auChannelInfoCount > 0 ? "supported" : "not supported"));
 		
 		// --- Allocate parameters and audio buffers
 		
@@ -3322,7 +3377,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			break;
 
 		case kAudioUnitProperty_SupportedNumChannels:
-			if (!supportNumChannelsProperty) {
+			if (auChannelInfoCount == 0) {
 				SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_SupportedNumChannels (not supported)");
 				goto unsupported;
 			} else {
@@ -3332,7 +3387,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 				}
 				(*isReadable) = true;
 				(*isWritable) = false;
-				(*minDataSize) = sizeof (::AUChannelInfo);
+				(*minDataSize) = static_cast<int>(auChannelInfoCount * sizeof (::AUChannelInfo));
 				(*normalDataSize) = (*minDataSize);
 			}
 			break;
@@ -3668,8 +3723,10 @@ bool SymbiosisComponent::collectInputAudio(int frameCount, float** inputPointers
 	
 	int ioChannelIndex = 0;
 	for (int inputBusIndex = 0; inputBusIndex < inputBusCount; ++inputBusIndex) {
-		bufferList.mNumberBuffers = getInputBusChannelCount(inputBusIndex);
-		for (int i = 0; i < static_cast<int>(bufferList.mNumberBuffers); ++i) {
+		int maxChannelCount = getMaxInputChannels(inputBusIndex);
+		int activeChannelCount = getActiveInputChannels(inputBusIndex);
+		bufferList.mNumberBuffers = activeChannelCount;
+		for (int i = 0; i < activeChannelCount; ++i) {
 			bufferList.mBuffers[i].mNumberChannels = 1;
 			bufferList.mBuffers[i].mDataByteSize = frameCount * 4;
 			bufferList.mBuffers[i].mData = ioBuffers[ioChannelIndex + i];
@@ -3680,23 +3737,24 @@ bool SymbiosisComponent::collectInputAudio(int frameCount, float** inputPointers
 					, &inputFlags, timeStamp, inputBusIndex, frameCount
 					, reinterpret_cast< ::AudioBufferList* >(&bufferList)));
 		} else if (inputConnections[inputBusIndex].sourceAudioUnit != 0) {			
-			for (int i = 0; i < static_cast<int>(bufferList.mNumberBuffers); ++i) {
+			for (int i = 0; i < activeChannelCount; ++i) {
 				bufferList.mBuffers[i].mData = 0;
 			}
 			throwOnOSError(::AudioUnitRender(inputConnections[inputBusIndex].sourceAudioUnit, &inputFlags, timeStamp
 					, inputConnections[inputBusIndex].sourceOutputNumber, frameCount
 					, reinterpret_cast< ::AudioBufferList* >(&bufferList)));
 		} else {
-			for (int i = 0; i < static_cast<int>(bufferList.mNumberBuffers); ++i) {
+			for (int i = 0; i < activeChannelCount; ++i) {
 				memset(ioBuffers[ioChannelIndex + i], 0, sizeof (float) * frameCount);
 			}
 			inputFlags = kAudioUnitRenderAction_OutputIsSilence;
 		}
 		inputIsSilent = inputIsSilent && ((inputFlags & kAudioUnitRenderAction_OutputIsSilence) != 0);
-		for (int i = 0; i < static_cast<int>(bufferList.mNumberBuffers); ++i) {
-			inputPointers[ioChannelIndex + i] = reinterpret_cast<float*>(bufferList.mBuffers[i].mData);
+		for (int i = 0; i < maxChannelCount; ++i) {
+			inputPointers[ioChannelIndex + i]
+					= reinterpret_cast<float*>(bufferList.mBuffers[i % activeChannelCount].mData);
 		}
-		ioChannelIndex += bufferList.mNumberBuffers;
+		ioChannelIndex += maxChannelCount;
 	}
 	SY_ASSERT(ioChannelIndex == vst->getInputCount());
 	
@@ -3715,7 +3773,8 @@ bool SymbiosisComponent::collectInputAudio(int frameCount, float** inputPointers
 	return inputIsSilent;
 }
 
-void SymbiosisComponent::renderOutput(int frameCount, float** inputPointers, bool inputIsSilent) {
+void SymbiosisComponent::renderOutput(int frameCount, const float* const* inputPointers, float** outputPointers
+		, bool inputIsSilent) {
 	if (vstMidiEvents.numEvents > 0) {
 		vst->processEvents(*reinterpret_cast<const VstEvents*>(&vstMidiEvents));
 		vstMidiEvents.numEvents = 0;
@@ -3723,13 +3782,13 @@ void SymbiosisComponent::renderOutput(int frameCount, float** inputPointers, boo
 	if (vstGotSymbiosisExtensions) {
 		vst->vendorSpecific('sI00', inputIsSilent ? 1 : 0, 0, 0);
 	}
-	vst->processReplacing(inputPointers, ioBuffers, frameCount);
+	vst->processReplacing(inputPointers, outputPointers, frameCount);
 	if (vstGotSymbiosisExtensions) {
 	#if (!defined(NDEBUG))
 		bool reallyGotSignal = false;
 		for (int i = 0; i < vst->getOutputCount() && !reallyGotSignal; ++i) {
 			for (int j = 0; j < static_cast<int>(frameCount) && !reallyGotSignal; ++j) {
-				reallyGotSignal = (ioBuffers[i][j] != 0.0);
+				reallyGotSignal = (outputPointers[i][j] != 0.0);
 			}
 		}
 	#endif
@@ -3767,9 +3826,9 @@ void SymbiosisComponent::render(::AudioUnitRenderActionFlags* ioActionFlags, con
 				, static_cast<int>(maxFramesPerSlice), static_cast<unsigned int>(inNumberFrames));
 		throw MacOSException(paramErr);
 	}
-	SY_ASSERT2(static_cast<int>(ioData->mNumberBuffers) == getOutputBusChannelCount(inOutputBusNumber)
+	SY_ASSERT2(static_cast<int>(ioData->mNumberBuffers) == getActiveOutputChannels(inOutputBusNumber)
 			, "AURender called for an unexpected number of output channels (expected %d, got %u)"
-			, static_cast<int>(getOutputBusChannelCount(inOutputBusNumber))
+			, static_cast<int>(getActiveOutputChannels(inOutputBusNumber))
 			, static_cast<unsigned int>(ioData->mNumberBuffers));
 
 	// --- Call pre-render notification callbacks
@@ -3793,8 +3852,19 @@ void SymbiosisComponent::render(::AudioUnitRenderActionFlags* ioActionFlags, con
 		lastRenderSampleTime = inTimeStamp->mSampleTime;
 		updateVSTTimeInfo(inTimeStamp);
 		float* inputPointers[kMaxChannels];
+		float* outputPointers[kMaxChannels];
 		bool inputIsSilent = collectInputAudio(inNumberFrames, inputPointers, inTimeStamp);
-		renderOutput(inNumberFrames, inputPointers, inputIsSilent);
+		int ioChannelIndex = 0;
+		for (int outputBusIndex = 0; outputBusIndex < outputBusCount; ++outputBusIndex) {
+			int maxChannelCount = getMaxOutputChannels(outputBusIndex);
+			int activeChannelCount = getActiveOutputChannels(outputBusIndex);
+			for (int i = 0; i < maxChannelCount; ++i) {
+				outputPointers[ioChannelIndex + i] = ioBuffers[ioChannelIndex + i % activeChannelCount];
+			}
+			ioChannelIndex += maxChannelCount;
+		}
+		SY_ASSERT(ioChannelIndex == vst->getOutputCount());
+		renderOutput(inNumberFrames, inputPointers, outputPointers, inputIsSilent);
 	}
 
 	if (silentOutput) {
@@ -3894,7 +3964,7 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 						&& static_cast<int>(inElement) < ((inScope == kAudioUnitScope_Input)
 						? inputBusCount : outputBusCount));
 				streamFormat.mChannelsPerFrame = ((inScope == kAudioUnitScope_Input)
-						? getInputBusChannelCount(inElement) : getOutputBusChannelCount(inElement));
+						? getActiveInputChannels(inElement) : getActiveOutputChannels(inElement));
 				*reinterpret_cast< ::AudioStreamBasicDescription* >(outData) = streamFormat;
 				break;
 			
@@ -3915,11 +3985,9 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				break;
 			
 			case kAudioUnitProperty_SupportedNumChannels: {
-				SY_ASSERT(supportNumChannelsProperty);
+				SY_ASSERT(auChannelInfoCount > 0);
 				::AUChannelInfo* cp = reinterpret_cast< ::AUChannelInfo* >(outData);
-				memset(cp, 0, sizeof (::AUChannelInfo));
-				cp->inChannels = ((inputBusCount > 0) ? getInputBusChannelCount(0) : 0);
-				cp->outChannels = ((outputBusCount > 0) ? getOutputBusChannelCount(0) : 0);
+				memcpy(cp, auChannelInfos, auChannelInfoCount * sizeof (::AUChannelInfo));
 				break;
 			}
 
@@ -3954,7 +4022,7 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				// there will be a failure when the host tries to retrieve the class from the new bundle (because of a
 				// collision).
 				
-				// I don't know why, but using objc_getClass is required here for this to work.
+				// I don't know why, but using objc_getClass is required for this to work. Following line doesn't work.
 				// Class factoryClass = [Symbiosis20010220_CocoaViewFactory class];
 				Class factoryClass = objc_getClass("Symbiosis20010220_CocoaViewFactory");
 				SY_ASSERT(factoryClass != nil);
@@ -4148,8 +4216,8 @@ void SymbiosisComponent::updateFormat(::AudioUnitScope scope, int busNumber
 	SY_TRACE3(SY_TRACE_MISC, "Trying to set %s format on bus %d to %u channels"
 			, (scope == kAudioUnitScope_Input) ? "input" : "output", static_cast<int>(busNumber)
 			, static_cast<unsigned int>(format.mChannelsPerFrame));
-	int channelCount = ((scope == kAudioUnitScope_Input)
-			? getInputBusChannelCount(busNumber) : getOutputBusChannelCount(busNumber));
+	int maxChannelCount = ((scope == kAudioUnitScope_Input)
+			? getMaxInputChannels(busNumber) : getMaxOutputChannels(busNumber));
 	if (format.mFormatID != kAudioFormatLinearPCM
 			|| format.mFramesPerPacket != 1
 			|| format.mBytesPerPacket != format.mBytesPerFrame
@@ -4158,21 +4226,30 @@ void SymbiosisComponent::updateFormat(::AudioUnitScope scope, int busNumber
 					| kAudioFormatFlagIsNonInterleaved)
 			|| format.mBitsPerChannel != 32
 			|| format.mBytesPerFrame != 4
-			|| static_cast<int>(format.mChannelsPerFrame) != channelCount
-			) {
+			|| format.mChannelsPerFrame == 0) {
+		throw MacOSException(kAudioUnitErr_FormatNotSupported);
+	}
+	if (static_cast<int>(format.mChannelsPerFrame) != maxChannelCount && !(format.mChannelsPerFrame == 1 &&
+			maxChannelCount == 2 && canDoMonoIO)) {
 		/*
 			Logic 8 has a bug that tries to set the format of mono outputs to stereo when instantiating as a
 			stereo-only instrument. We accept this (for now) and just swallow the error. Logic will not try to render
 			on these outputs anyhow, so no other action seems necessary.
 		*/
-		if ((hostApplication == logic8_0 || hostApplication == olderGarageBand) && format.mChannelsPerFrame == 2) {
+		if ((hostApplication == logic8_0 || hostApplication == olderGarageBand) && maxChannelCount == 1
+				&& format.mChannelsPerFrame == 2) {
 			SY_TRACE1(SY_TRACE_MISC
 					, "%s is incorrectly trying to set the format on a mono bus to stereo (accepting this for now)."
 					, ((hostApplication == logic8_0) ? "Logic 8" : "GarageBand"));
 		} else {
-			SY_TRACE1(SY_TRACE_MISC, "Expecting %d channels", channelCount);
+			SY_TRACE1(SY_TRACE_MISC, "Expecting 1 to %d channels", maxChannelCount);
 			throw MacOSException(kAudioUnitErr_FormatNotSupported);
 		}
+	}
+	if (scope == kAudioUnitScope_Input) {
+		inputBusChannelCounts[busNumber] = format.mChannelsPerFrame;
+	} else {
+		outputBusChannelCounts[busNumber] = format.mChannelsPerFrame;
 	}
 	updateSampleRate(format.mSampleRate);
 }
@@ -4480,7 +4557,8 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			listener.fListenerRefCon = pinProcRefCon;
 			propertyListeners[propertyListenersCount] = listener;
 			++propertyListenersCount;
-			SY_TRACE1(SY_TRACE_AU, "AU Added listener on %d", static_cast<int>(pinID));
+			SY_TRACE3(SY_TRACE_AU, "AU Added listener %p (refcon: %p) on property: %d", pinProc, pinProcRefCon
+					, static_cast<int>(pinID));
 			break;
 		}
 		
@@ -4507,7 +4585,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		}
 	#endif
 
-	#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+	#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 1050)
 		case kAudioUnitRemovePropertyListenerWithUserDataSelect: {
 			SY_TRACE(SY_TRACE_AU, "AU kAudioUnitRemovePropertyListenerWithUserDataSelect");
 
@@ -4880,9 +4958,9 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 	viewEventListenerUserData = userData;
 }
 
-#endif
+#endif (!SY_USE_COCOA_GUI)
 
-#endif
+#endif (SY_INCLUDE_GUI_SUPPORT)
 
 ::EventLoopTimerUPP SymbiosisComponent::idleTimerUPP = ::NewEventLoopTimerUPP(idleTimerAction);
 
@@ -4904,7 +4982,7 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 				#if (!__LP64__)
 					case kAudioUnitRemovePropertyListenerSelect:
 				#endif
-				#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+				#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 1050)
 					case kAudioUnitRemovePropertyListenerWithUserDataSelect:
 				#endif
 					case kAudioUnitGetParameterSelect: case kAudioUnitSetParameterSelect: case kAudioUnitResetSelect:
@@ -5008,7 +5086,7 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 	try {
 		switch (params->what) {
 			case kComponentCanDoSelect:
-				SY_TRACE1(SY_TRACE_AU, "AUView kComponentCanDoSelect: %d", params->params[0]);
+				SY_TRACE1(SY_TRACE_AU, "AUView kComponentCanDoSelect: %d", static_cast<int>(params->params[0]));
 				switch (params->params[0]) {
 					case kComponentOpenSelect:
 					case kComponentCloseSelect:
@@ -5103,6 +5181,6 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 	return noErr;
 }
 
-#endif
+#endif (!SY_USE_COCOA_GUI)
 
-#endif
+#endif (SY_INCLUDE_GUI_SUPPORT)

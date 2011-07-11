@@ -2,7 +2,7 @@
 
 # If google code upload python fails install python v2.6 (with http://www.macports.org/ : sudo port install python26).
 
-version=1_2
+version=1_3b
 todayLong=$(date +%Y-%m-%d)
 todayShort=$(date +%Y%m%d)
 filename=Symbiosis_v$version'_'$todayShort.zip
