@@ -25,7 +25,7 @@
 
 		<!---
 				Set "UpdateNameOnLoad" to false if you do not wish Symbiosis to rename VST programs when AU presets are
-				loaded. (This doesn't always make sense if "PresetIsFXB" is true, i.e. when the AU preset represents an
+				loaded. (This doesnt always make sense if "PresetIsFXB" is true, i.e. when the AU preset represents an
 				entire .fxb program bank.)
 		--->
 		<key>UpdateNameOnLoad</key>

@@ -1,7 +1,9 @@
 [Symbiosis.png]
 
-Symbiosis
-#########
+
+Symbiosis v1.3
+##############
+
 
 Table of Contents
 =================
@@ -23,16 +25,20 @@ Table of Contents
  - Preprocessor Defines
  - Copyrights and Trademarks
 
+
 What Is Symbiosis?
 ==================
+
 
  Symbiosis is a developer tool for adapting Mac OS X VST plug-ins to the Audio Unit (AU) standard. It essentially
 consists of a single C++ file that you can compile into your VST project to make the plug-in compatible with the
 Audio Unit protocol. Optionally, you may choose to use a pre-built "wrapper plug-in" for adapting your existing VST
 plug-in to the AU standard without even having to recompile any source code.
 
+
 How Does It Work?
 =================
+
 
  Although the VST and Audio Unit SDKs differ greatly in implementation, the purpose and functions of the two standards
 are virtually identical. Both protocols provide means for querying plug-in info and capabilities, processing floating-
@@ -50,8 +56,10 @@ principles of the architecture.
  You can also configure Symbiosis to automatically convert preset files it discovers from the VST format (".fxb" and
 ".fxp" files) to the AU format (".aupreset" files).
 
+
 Who Is It For?
 ==============
+
 
  This is a tool for developers. It was not designed to be used by end-users. The idea is that Symbiosis is packaged into
 the final product, either compiled into the product on source-code level or as a "wrapper" that bridges to your VST.
@@ -66,8 +74,10 @@ should be obvious.
  The availability of Symbiosis may also makes VST a good choice as a first plug-in format for the beginner Mac developer
 who one day plan to port his / her plug-in to the VST-dominant environment of Windows.
 
+
 What Does It Cost?
 ==================
+
 
  Nothing. Symbiosis is released as open source under the BSD license form (see Copyrights and Trademarks).
 
@@ -83,8 +93,10 @@ using Symbiosis from NuEdge Development."
  My dear friends over at Bitplant (http://www.bitplant.com/) have also designed a very stylish logo that I would be
 thrilled if you used. You can find it (and other related logotypes) at http://fogbugz.nuedge.net/default.asp?W101.
 
+
 What Are the Prerequisites?
 ===========================
+
 
  The minimum requirement is that you have the Apple OS X development tools and the CoreAudio SDK installed. (Configuring
 Symbiosis for your product requires at least using the "Rez" tool in order to compile the required AU "component
@@ -94,8 +106,10 @@ resources".)
 Steinberg is required to compile Symbiosis as well, but due to licensing restrictions, the source files from this SDK
 are not included in this distribution but must be obtained separately from Steinberg and added to the project manually.
 
+
 What Are the Major Differences Between VST and AU?
 ==================================================
+
 
  In case you are new to Audio Units but familiar with VST, the following list is provided as a crash course on the
 differences between the two formats.
@@ -122,8 +136,10 @@ differences between the two formats.
 
  Symbiosis supports all unique AU features mentioned above.
 
+
 Wrapping Alternatives
 =====================
+
 
  So, you have a VST plug-in that you want to metamorphose into an Audio Unit? How do you begin? First, you need to
 decide how you wish to wrap your VST.
@@ -194,15 +210,16 @@ decide how you wish to wrap your VST.
 Wrapping the VST Using Alternatives 1 or 2
 ------------------------------------------
 
+
  If you have chosen wrapping alternative 1 or 2 (using a pre-built wrapper) the first step is to duplicate one of the
 pre-built wrappers (`Symbiosis.component`) from the zip-file `PreBuiltWrappers.zip`. The "development" and "beta"
 versions contain tracing and assertions that are written to the standard `console.log` (which you can observe with the
 "Console" application)*. The "beta" and "release" versions are compiled with optimizations and are faster than the
 "development" version, although they may be harder to debug. All pre-built wrappers are built as universal binaries for
-x86 and PPC.
+x86 (32 and 64-bit) and PPC. First time around you should choose the "development" or "beta" builds.
 
- Rename your chosen wrapper (to whatever you wish to call your plug-in) and add an alias (or copy) your VST plug-in to
-the bundle. The VST file or alias should be put under `Contents/Resources/` in the wrapper bundle.
+ Rename your wrapper to whatever you wish to call your plug-in and add an alias (or copy) your VST plug-in to the
+bundle. The VST file or alias should be put under `Contents/Resources/` in the wrapper bundle.
 
  Audio Units are based on the component API (as used by QuickTime) and components are identified by the operating system
 using classic Mac resources. Therefore, the next step is to edit and recompile these resources for your AU. Open the
@@ -225,16 +242,18 @@ see the comments.)
 the application terminates during beta testing, always check `console.log` for the reason. If you build your own wrapper
 you may want to use a custom assertion mechanism. See Preprocessor Defines for more info.
 
+
 Wrapping the VST Using Alternatives 3, 4 or 5
 ---------------------------------------------
 
+
  If you have chosen one of the latter wrapping alternative (i.e. including the Symbiosis source in your project) you
-should first make sure that you have a "Build ResourceManager Resources" build phase for your target. If there is no
-such phase, create one by choosing "New Build Phase -> New Build ResourceManager Resources Build Phase" from the
+should first make sure that you have a "Build ResourceManager Resources" Build Phase for your target. If there is no
+such Phase, create one by choosing "New Build Phase -> New Build ResourceManager Resources Build Phase" from the
 "Project" menu. Now you can copy and add the following files to your VST project:
 
- - Symbiosis.cpp
- - Symbiosis.r (make sure it also appears under the "Build ResourceManager Resources" build phase)
+ - Symbiosis.mm
+ - Symbiosis.r (make sure it also appears under the "Build ResourceManager Resources" Build Phase)
  - AudioUnit.framework (from `/System/Library/Frameworks/`)
  - AudioToolbox.framework (from `/System/Library/Frameworks/`)
 
@@ -243,15 +262,32 @@ options found in `Symbiosis.plist` to the `Info.plist` file that should already 
 called it something else though). You will find more instructions in the `Symbiosis.plist` file. (You may need to open
 `Symbiosis.plist` with a text-editor like `TextEdit` to see the comments.)
 
- If you have a custom "exported symbols file" for your project, you need to add these two entries to it:
+ If you have a custom "exported symbols file" for your project, you need to add these entries to it:
 
  - _SymbiosisEntry
  - _SymbiosisViewEntry.
+ 
+ One more thing, if you are targetting 64-bit you need to have a special header file that defines a unique class prefix.
+Objective-C has a flat name space. This is far from ideal for plug-ins. Each unique class must have a unique name and we
+accomplish this through the use of some clever macros. These macros require a prefix that you must define in
+`SymbiosisClassPrefix.h`. Here is an example definition:
 
- That's about it.
+    #define SY_CLASS_PREFIX comsonicchargebitspeek102
+
+ Or even better, add a "Run Script Build Phase" to your target(s), enter the following script:
+
+    date "+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S" >${SOURCE_ROOT}/SymbiosisClassPrefix.h
+
+ Move this Build Phase to the top so that it is executed at the beginning of the compilation. Now we are virtually
+guaranteed to obtain a unique prefix for every unique build.
+
+ That's about it. Just make sure to build your plug-in without the NDEBUG setting the first time around as explained in
+the next section.
+
 
 Running Your AU for the First Time
 ==================================
+
 
  Now let us fire up the engines and take your AU for a spin. A good idea for the first tour is to make sure your plug-in
 passes the "AU validation tests" by using the "AUVal" tool from Apple ("AUVal" should come preinstalled with OS X or
@@ -270,30 +306,35 @@ wrapping alternative as a test.
 defined in the `.r` file. (`<type>` is typically one of `aufx`, `aumu` or `aumf` for "instrument", "effect" and "effect
 with MIDI"). Hold your breath and pray for your plug-in to pass the tests.
 
- Important! When you run the AU for the first time, the wrapper automatically creates a few configuration files inside
-your component bundle under `Contents/Resources/` as well as ".aupresets" files for the default / initial VST program
-bank. It is a very good idea to distribute your Audio Units with these files pre-created, even if you do not modify
-them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have
-sufficient write privileges for the directory in question, this might prevent the Audio Unit from loading. See
-Advanced Porting Options for more info on these files.
+ Important! When you run the development or beta build of your AU for the first time, the wrapper automatically creates
+a few important configuration files inside your component bundle under `Contents/Resources/` as well as ".aupresets"
+files for the default / initial VST program bank. You should distribute your Audio Units with these files pre-created,
+even if you do not modify them. Otherwise they will be created on the end-user's computer on the first run and in case
+the user doesn't have sufficient write privileges for the directory in question, this can prevent the Audio Unit from
+loading. The release build (when NDEBUG is defined) will never attempt to create these files. See Advanced Porting
+Options for more info on these files.
+
 
 Advanced Porting Options
 ========================
+
 
  Symbiosis creates two configuration files inside your AU bundle the first time it is launched. `SYParameters.txt` and
 `SYFactoryPresets.txt`. It will also create `.aupreset` files for all the VST programs in the initial startup bank. All
 these files are created directly under `Contents/Resources/` in your bundle.
 
- It is a good idea to edit at least `SYParameters.txt` and include all the created files in the final distribution of
-your Audio Unit. (Please read an important note concerning this under Running Your AU for the First Time.) If you are
-using wrapping alternative 3, 4 or 5 (including Symbiosis.cpp etc into your VST project) you can simply drop the files
-into your project and they will be copied in the build process.
+ It is a good idea to edit at least `SYParameters.txt` and you should include all the created files in the final
+distribution of your Audio Unit. (Please read an important note concerning this under Running Your AU for the First
+Time.) If you are using wrapping alternative 3, 4 or 5 (including Symbiosis.mm etc into your VST project) you can simply
+drop the files into your project and they will be copied in the build process.
 
  Finally, if you are serious about creating a fully featured Audio Unit you might want to look into supporting
 Symbiosis' optional Vendor-Specific Extensions below.
 
+
 SYParameters.txt
 ----------------
+
 
  This file is a tab separated table with parameter information. One line per parameter with an extra header line at the
 top. You may choose to exclude certain parameters from the AU version by simply removing the corresponding lines from
@@ -310,10 +351,10 @@ this file.
  display        A string that defines how the parameter is displayed to the end user. Use one of the following:
                 `=` for linear scaling (within the `min` to `max` range).
                 `b` for boolean switch (0 is off, 1 is on)
-                a|b|c|d for discrete parameter settings (evenly distributed between 0 and 1), e.g. `sine|tri|saw|pulse`
+                a|b|c|d for discrete parameter settings, e.g. `sine|tri|saw|pulse`
                 `?` to convert the value with the Vendor-Specific Extensions (described below).
  unit           The parameter suffix / unit.
- default        The initial default setting.
+ default        The initial default setting. (Scaled according to `min` and `max` range.)
 
  * If changes to this parameter will automatically modify other parameters you need to suffix this column with `+`. This
 information is important for AU hosts.
@@ -321,16 +362,22 @@ information is important for AU hosts.
  ** You may wish to edit this column as AU can handle longer parameter names than VST.
 
  *** VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are
-used to scale and normalize the AU parameter range from / to the 0 and 1 range.
+used to scale and normalize the AU parameter range from / to the 0 and 1 range. For discrete parameters (those having
+`|` -delimited lists in the `display` column) the `min` value must be 0 and the `max` value should be the count of
+discrete options minus one, e.g. `3` if there are four choices.
+
 
 SYFactoryPresets.txt
 --------------------
 
+
  This file simply contains a list of factory preset files (one file name per row). You can edit this file to remove or
 add factory presets. Symbiosis expects to find the factory preset files under `Contents/Resources/` (as always).
 
+
 Vendor-Specific Extensions
 --------------------------
+
 
  For the full AU end-user experience, the VST standard lacks just a few minor functions, namely text conversion to and
 from arbitrary parameter values (and not just from the currently assigned settings) and silent buffer detection (for
@@ -381,10 +428,12 @@ Symbiosis.
         }
     }
 
+
 Preprocessor Defines
 ====================
 
- These are the preprocessor macros used to configure Symbiosis.cpp.
+
+ These are the preprocessor macros used to configure Symbiosis.mm.
 
  Macro                      Description                         Alternatives    Default
  -----                      -----------                         ------------    -------
@@ -403,12 +452,15 @@ Preprocessor Defines
  SY_TRACE(c, s)             Macro for tracing a string                          prints to stderr if SY_STD_TRACE == 1
  SY_TRACE1..n               Macros for tracing with arguments                   - " -
  SY_INCLUDE_GUI_SUPPORT     Include support for custom GUI      0, 1            1
+ SY_INCLUDE_CONFIG_GEN      Include config file generation      0, 1            1 or 0 if NDEBUG is defined
  SY_USE_COCOA_GUI           Use Cocoa Views for GUI             0, 1            0 in 32-bit, 1 in 64-bit
 
  Most of these can be overridden by redefining them in your build settings or in a "prefix header file".
 
+
 Copyrights and Trademarks
 =========================
+
 
  Symbiosis is released under the "New Simplified BSD License".
  http://www.opensource.org/licenses/bsd-license.php

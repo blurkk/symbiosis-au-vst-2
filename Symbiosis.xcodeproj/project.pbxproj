@@ -9,14 +9,7 @@
 /* Begin PBXBuildFile section */
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		F7652557130E01BF00E6D484 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7652556130E01BF00E6D484 /* Cocoa.framework */; };
-		F7A900B213116D860062CEF8 /* CompileSymbiosisRsrc.command in Resources */ = {isa = PBXBuildFile; fileRef = F7FA8F2E10EC1E5300FA9980 /* CompileSymbiosisRsrc.command */; };
-		F7A900B613116D860062CEF8 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
-		F7A900B713116D860062CEF8 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D698E50909606000040FB7 /* AudioUnit.framework */; };
-		F7A900B813116D860062CEF8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D698F60909606B00040FB7 /* AudioToolbox.framework */; };
-		F7A900B913116D860062CEF8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7652556130E01BF00E6D484 /* Cocoa.framework */; };
-		F7A900BC13116D860062CEF8 /* Symbiosis.r in Rez */ = {isa = PBXBuildFile; fileRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */; };
 		F7A902661311D9390062CEF8 /* Symbiosis.mm in Sources */ = {isa = PBXBuildFile; fileRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */; };
-		F7A902671311D9390062CEF8 /* Symbiosis.mm in Sources */ = {isa = PBXBuildFile; fileRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */; };
 		F7D698E60909606000040FB7 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D698E50909606000040FB7 /* AudioUnit.framework */; };
 		F7D698F70909606B00040FB7 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D698F60909606B00040FB7 /* AudioToolbox.framework */; };
 		F7FA8F2F10EC1E5300FA9980 /* CompileSymbiosisRsrc.command in Resources */ = {isa = PBXBuildFile; fileRef = F7FA8F2E10EC1E5300FA9980 /* CompileSymbiosisRsrc.command */; };
@@ -27,7 +20,6 @@
 		32BAE0B30371A71500C91783 /* Symbiosis_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Symbiosis_Prefix.pch; sourceTree = "<group>"; };
 		F713E73C10EC2062004C57D8 /* Symbiosis.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Symbiosis.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7652556130E01BF00E6D484 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		F7A900C113116D860062CEF8 /* Symbiosis.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Symbiosis.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7A902651311D9390062CEF8 /* Symbiosis.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Symbiosis.mm; sourceTree = "<group>"; };
 		F7D698E50909606000040FB7 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F7D698F60909606B00040FB7 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
@@ -44,17 +36,6 @@
 				F7D698E60909606000040FB7 /* AudioUnit.framework in Frameworks */,
 				F7D698F70909606B00040FB7 /* AudioToolbox.framework in Frameworks */,
 				F7652557130E01BF00E6D484 /* Cocoa.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F7A900B513116D860062CEF8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F7A900B613116D860062CEF8 /* Carbon.framework in Frameworks */,
-				F7A900B713116D860062CEF8 /* AudioUnit.framework in Frameworks */,
-				F7A900B813116D860062CEF8 /* AudioToolbox.framework in Frameworks */,
-				F7A900B913116D860062CEF8 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,7 +62,6 @@
 			isa = PBXGroup;
 			children = (
 				F713E73C10EC2062004C57D8 /* Symbiosis.component */,
-				F7A900C113116D860062CEF8 /* Symbiosis.component */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,6 +73,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F7D698300909427700040FB7 /* Build configuration list for PBXNativeTarget "Symbiosis" */;
 			buildPhases = (
+				F73B1CE3140D3B6E00D2724C /* ShellScript */,
 				8D01CCC90486CAD60068D4B7 /* Resources */,
 				8D01CCCB0486CAD60068D4B7 /* Sources */,
 				8D01CCCD0486CAD60068D4B7 /* Frameworks */,
@@ -106,26 +87,6 @@
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = Symbiosis;
 			productReference = F713E73C10EC2062004C57D8 /* Symbiosis.component */;
-			productType = "com.apple.product-type.bundle";
-		};
-		F7A900B013116D860062CEF8 /* Test */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F7A900BD13116D860062CEF8 /* Build configuration list for PBXNativeTarget "Test" */;
-			buildPhases = (
-				F7A900B113116D860062CEF8 /* Resources */,
-				F7A900B313116D860062CEF8 /* Sources */,
-				F7A900B513116D860062CEF8 /* Frameworks */,
-				F7A900BA13116D860062CEF8 /* ShellScript */,
-				F7A900BB13116D860062CEF8 /* Rez */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Test;
-			productInstallPath = "$(HOME)/Library/Bundles";
-			productName = Symbiosis;
-			productReference = F7A900C113116D860062CEF8 /* Symbiosis.component */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -149,7 +110,6 @@
 			projectRoot = "";
 			targets = (
 				8D01CCC60486CAD60068D4B7 /* Symbiosis */,
-				F7A900B013116D860062CEF8 /* Test */,
 			);
 		};
 /* End PBXProject section */
@@ -163,29 +123,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F7A900B113116D860062CEF8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F7A900B213116D860062CEF8 /* CompileSymbiosisRsrc.command in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXRezBuildPhase section */
-		F7A900BB13116D860062CEF8 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F7A900BC13116D860062CEF8 /* Symbiosis.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
-
 /* Begin PBXShellScriptBuildPhase section */
-		F7A900BA13116D860062CEF8 /* ShellScript */ = {
+		F73B1CE3140D3B6E00D2724C /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -196,7 +137,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp $PROJECT_DIR/Symbiosis.plist $TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Info.plist\ncp $PROJECT_DIR/Symbiosis.r $TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources/\necho \"Put a copy or an alias to your .vst in this folder\" >$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources/put\\ .vst\\ here\\ ...\n";
+			shellScript = "date \"+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S\" >${SOURCE_ROOT}/SymbiosisClassPrefix.h\n";
 		};
 		F7FA8F4C10EC1F5D00FA9980 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -219,14 +160,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F7A902661311D9390062CEF8 /* Symbiosis.mm in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F7A900B313116D860062CEF8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F7A902671311D9390062CEF8 /* Symbiosis.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,38 +204,6 @@
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				WRAPPER_EXTENSION = component;
 				ZERO_LINK = NO;
-			};
-			name = Beta;
-		};
-		F7A900BE13116D860062CEF8 /* Development */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1 = x86_64;
-				DEPLOYMENT_LOCATION = YES;
-				DSTROOT = /;
-				INFOPLIST_FILE = "Symbiosis copy.plist";
-				INSTALL_PATH = "/Library/Audio/Plug-Ins/Components/";
-			};
-			name = Development;
-		};
-		F7A900BF13116D860062CEF8 /* Deployment */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEPLOYMENT_LOCATION = YES;
-				DSTROOT = /;
-				INFOPLIST_FILE = "Symbiosis copy.plist";
-				INSTALL_PATH = "/Library/Audio/Plug-Ins/Components/";
-			};
-			name = Deployment;
-		};
-		F7A900C013116D860062CEF8 /* Beta */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEPLOYMENT_LOCATION = YES;
-				DSTROOT = /;
-				INFOPLIST_FILE = "Symbiosis copy.plist";
-				INSTALL_PATH = "/Library/Audio/Plug-Ins/Components/";
 			};
 			name = Beta;
 		};
@@ -391,16 +292,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F7A900BD13116D860062CEF8 /* Build configuration list for PBXNativeTarget "Test" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F7A900BE13116D860062CEF8 /* Development */,
-				F7A900BF13116D860062CEF8 /* Deployment */,
-				F7A900C013116D860062CEF8 /* Beta */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Development;
-		};
 		F7D698300909427700040FB7 /* Build configuration list for PBXNativeTarget "Symbiosis" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
