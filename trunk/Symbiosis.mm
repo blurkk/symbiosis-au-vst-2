@@ -5,7 +5,7 @@
 	
 	\version
 
-	Version 1.29b
+	Version 1.3b
 
 	\page Copyright
 
@@ -62,6 +62,28 @@
 	#import <Cocoa/Cocoa.h>
 	#import <AudioUnit/AUCocoaUIView.h>
 	#import "objc/runtime.h"
+	#include "SymbiosisClassPrefix.h"
+
+	// IMPORTANT: YOU NEED TO CREATE SymbiosisClassPrefix.h WHEN BUILDING 64-BIT.
+	// 
+	// Objective-C has a flat name space, far from ideal for plug-ins. This means that each unique class must have a
+	// unique name and we accomplish this through the use of some clever macros. These macros require a prefix that you
+	// must define in SymbiosisClassPrefix.h. Define like this:
+	//
+	// #define SY_CLASS_PREFIX comsonicchargebitspeek102
+	//
+	// Or even better, add a "Run Script Build Phase" to your target(s), enter the following script:
+	//
+	//     date "+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S" >${SOURCE_ROOT}/SymbiosisClassPrefix.h
+	//
+	// Move this Build Phase to the top so that it is executed at the beginning of the compilation. Now we are virtually
+	// guaranteed to obtain a unique prefix for every unique build.
+
+	#define SY_UNIQUE_NAME_3(x, y) x##_##y
+	#define SY_UNIQUE_NAME_2(x, y) SY_UNIQUE_NAME_3(x, y)
+	#define SY_UNIQUE_NAME(y) SY_UNIQUE_NAME_2(SY_CLASS_PREFIX, y)
+	#define SY_STRINGIZE_2(y) #y
+	#define SY_STRINGIZE(y) SY_STRINGIZE_2(y)
 #elif (!SY_USE_COCOA_GUI)
 	#include <AudioUnit/AudioUnitCarbonView.h>
 #endif
@@ -101,6 +123,9 @@
 #if !defined(SY_DO_ASSERT)
 	#define SY_DO_ASSERT (!defined(NDEBUG))
 #endif
+#if !defined(SY_INCLUDE_CONFIG_GEN)
+	#define SY_INCLUDE_CONFIG_GEN (!defined(NDEBUG))
+#endif
 
 #if !defined(SY_STD_TRACE)
 	#define SY_STD_TRACE 1
@@ -112,7 +137,7 @@
 #if (SY_DO_TRACE)
 
 	#if !defined(SY_TRACE_MISC)
-		#define SY_TRACE_MISC 1
+		#define SY_TRACE_MISC 0
 	#endif
 	#if !defined(SY_TRACE_EXCEPTIONS)
 		#define SY_TRACE_EXCEPTIONS 1
@@ -239,7 +264,9 @@ static const ::UniChar kDefaultFactoryPresetFileName[kDefaultFactoryPresetFileNa
 static const int kDefaultFactoryPresetFileNameCRChars = 23;
 static const char kDefaultFactoryPresetFileNameCR[kDefaultFactoryPresetFileNameCRChars + 1]
 		= "FactoryPreset.aupreset\r";																					// Yeah, I know, lazy to have another almost identical constant.
-static const char* kDefaultFactoryPresetName = "Default";
+#if (SY_INCLUDE_CONFIG_GEN)
+	static const char* kDefaultFactoryPresetName = "Default";
+#endif
 static const char* kInitialPresetName = "Untitled";
 static char gTraceIdentifierString[255 + 1] = "Symbiosis";
 static const int kSymbiosisThngResourceId = 10000;
@@ -751,7 +778,9 @@ class VSTPlugIn {
 	public:		void idle();																							///< Call as often as possible from your main event loop. Many older plug-ins need idling both when editor is opened and not to perform low priority background tasks. Always call this method from the "GUI thread", *never* call it from the real-time audio thread.
 	public:		void getEditorDimensions(VstInt32& width, VstInt32& height);											///< Returns the (initial) pixel dimensions of the plug-in GUI in \p width and \p height. It is illegal to call this method if hasEditor() has returned false.
 	public:		void openEditor(::WindowRef inWindow);																	///< Opens the plug-in editor in the window referred to by \p inWindow. The plug-in will add it's user-pane control / HIView to this window and possibly hook other required event handlers to the window itself. It is important that you call closeEditor() before disposing the window. It is illegal to call this method if hasEditor() has returned false. It is also illegal to call this method more than once before a call to closeEditor().
-	public:		void openEditor(::NSView* inNSView);																	///< Opens the plug-in editor in the Cocoa NSView referred to by \p inNSView. It is important that you call closeEditor() before disposing the window. It is illegal to call this method if hasEditor() has returned false. It is also illegal to call this method more than once before a call to closeEditor(). Only use this version of the function if the VST uses Cocoa views (e.g. 64-bit version).
+#if (SY_USE_COCOA_GUI)
+	public:		void openEditor(::NSView* inNSView);																		///< Opens the plug-in editor in the Cocoa NSView referred to by \p inNSView. It is important that you call closeEditor() before disposing the window. It is illegal to call this method if hasEditor() has returned false. It is also illegal to call this method more than once before a call to closeEditor(). Only use this version of the function if the VST uses Cocoa views (e.g. 64-bit version).
+#endif
 	public:		void closeEditor();																						///< Closes the plug-in editor and disposes any views / event handles and other resources required by the GUI. It is important to call this method before closing the GUI window.
 	public:		virtual ~VSTPlugIn();																					///< The destructor will close any open plug-in editor, issue a close call to the effect to dispose it and lastly release the bundle reference that was used to construct the plug-in instance.
 	
@@ -780,21 +809,17 @@ class VSTPlugIn {
 class SymbiosisComponent;
 
 /**
-	Symbiosis20010220_CocoaView is an NSView with one simple override on 'dealloc' that calls the VST's close method.
-	
-	Cocoa has a flat name space, far from ideal for plug-ins. This means that each unique class must have a unique name
-	and therefore we prefix this class with a version (which is actually a date). This date must be changed if the
-	implementation changes.
+	CocoaView is an NSView with one simple override on 'dealloc' that calls the VST's close method.
 */
-
-@interface Symbiosis20010220_CocoaView : NSView { SymbiosisComponent* symbiosis; }
+@interface SY_UNIQUE_NAME(CocoaView) : NSView { SymbiosisComponent* symbiosis; }
 
 - initWithFrame:(NSRect)frame symbiosis:(SymbiosisComponent*)symbiosisComponent;
+- (void)detach;
 - (void)dealloc;
 
 @end
 
-@interface Symbiosis20010220_CocoaViewFactory : NSObject <AUCocoaUIBase> { }
+@interface SY_UNIQUE_NAME(CocoaViewFactory) : NSObject <AUCocoaUIBase> { }
 
 - (NSString*) description;
 
@@ -846,12 +871,16 @@ class SymbiosisComponent : public VSTHost {
 						, ::FSIORefNum nameListFork = 0);
 	protected:	void convertVSTPreset(const ::FSRef* fsRef, bool isFXB);
 	protected:	void convertVSTPresetsInDomain(short domain, const char componentName[]);
+#if (SY_INCLUDE_CONFIG_GEN)
 	protected:	void createFactoryPresets(::FSRef* factoryPresetsListFSRef);
+#endif
 	protected:	void loadFactoryPresets(::FSRef* factoryPresetsListFSRef);
 	protected:	void loadOrCreateFactoryPresets();
 	protected:	void convertVSTPresets();
 	protected:	void readParameterMapping(const ::FSRef* fsRef);
+#if (SY_INCLUDE_CONFIG_GEN)
 	protected:	void createDefaultParameterMappingFile(const ::FSRef* fsRef);
+#endif
 	protected:	void readOrCreateParameterMapping();
 	protected:	void reallocateIOBuffers();
 	protected:	int getMaxInputChannels(int busNumber) const;
@@ -883,6 +912,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	void setProperty(::UInt32 inDataSize, const void* inData, ::AudioUnitElement inElement
 						, ::AudioUnitScope inScope, ::AudioUnitPropertyID inID);
 	protected:	void tryToIdentifyHostApplication();
+	protected:	void midiInput(int offset, int status, int data1, int data2);
 
 	protected:	enum HostApplication {
 					undetermined
@@ -942,7 +972,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	::EventLoopTimerRef idleTimerRef;
 #if (SY_INCLUDE_GUI_SUPPORT)
 #if (SY_USE_COCOA_GUI)
-	protected:	NSView* cocoaView;
+	protected:	SY_UNIQUE_NAME(CocoaView)* cocoaView;
 #elif (!SY_USE_COCOA_GUI)
 	protected:	::AudioUnitCarbonView viewComponentInstance;
 	protected:	::AudioUnitCarbonViewEventListener viewEventListener;
@@ -1603,7 +1633,7 @@ bool VSTPlugIn::loadFXPOrFXB(size_t size, const unsigned char bytes[]) {
 		bp = readBigInt32(bp, ep, &plugInID);
 		bp = readBigInt32(bp, ep, &plugInVersion);
 		if (magicID != 'CcnK' || (static_cast<size_t>(dataSize) + 8) > size
-				|| version != 1 || plugInID != aeffect->uniqueID) {
+				|| (version != 1 && version != 2) || plugInID != aeffect->uniqueID) {
 			throw FormatException("Invalid format of FXP / FXB data");
 		}
 		switch (formatID) {
@@ -1712,6 +1742,7 @@ void VSTPlugIn::openEditor(::WindowRef inWindow) {
 	}
 }
 
+#if (SY_USE_COCOA_GUI)
 void VSTPlugIn::openEditor(::NSView* inNSView) {
 	SY_ASSERT(hasEditor());
 	SY_ASSERT(!editorOpenFlag);
@@ -1722,6 +1753,7 @@ void VSTPlugIn::openEditor(::NSView* inNSView) {
 		throw SymbiosisException("VST could not open editor");
 	}
 }
+#endif
 
 VSTPlugIn::~VSTPlugIn() {
 	if (editorOpenFlag) {
@@ -1747,7 +1779,9 @@ SymbiosisComponent::~SymbiosisComponent() { uninit(); }
 
 void SymbiosisComponent::uninit() {
 #if (SY_INCLUDE_GUI_SUPPORT)
-#if (!SY_USE_COCOA_GUI)
+#if (SY_USE_COCOA_GUI)
+	if (cocoaView != 0) [cocoaView detach];
+#elif (!SY_USE_COCOA_GUI)
 	if (viewComponentInstance != 0) {
 		::SetComponentInstanceStorage(reinterpret_cast< ::ComponentInstance >(viewComponentInstance), 0);
 		dropView(viewComponentInstance);
@@ -2164,6 +2198,8 @@ void SymbiosisComponent::convertVSTPresetsInDomain(short domain, const char comp
 	}
 }
 
+#if (SY_INCLUDE_CONFIG_GEN)
+
 void SymbiosisComponent::createFactoryPresets(::FSRef* factoryPresetsListFSRef) {
 	SY_ASSERT(factoryPresetsListFSRef != 0);
 	
@@ -2218,6 +2254,8 @@ void SymbiosisComponent::createFactoryPresets(::FSRef* factoryPresetsListFSRef) 
 		throw;
 	}
 }
+
+#endif // #if (SY_INCLUDE_CONFIG_GEN)
 
 void SymbiosisComponent::loadFactoryPresets(::FSRef* factoryPresetsListFSRef) {
 	SY_ASSERT(factoryPresetsListFSRef != 0);
@@ -2299,6 +2337,7 @@ void SymbiosisComponent::loadOrCreateFactoryPresets() {
 	::FSRef factoryPresetsListFSRef;
 	::OSErr err = ::FSMakeFSRefUnicode(&resourcesFSRef, kFactoryPresetsFileNameChars, kFactoryPresetsFileName
 			, kTextEncodingUnknown, &factoryPresetsListFSRef);
+#if (SY_INCLUDE_CONFIG_GEN)
 	if (err == fnfErr) {
 		throwOnOSError(::FSCreateFileUnicode(&resourcesFSRef, kFactoryPresetsFileNameChars, kFactoryPresetsFileName
 				, kFSCatInfoNone, 0, &factoryPresetsListFSRef, 0));
@@ -2306,6 +2345,7 @@ void SymbiosisComponent::loadOrCreateFactoryPresets() {
 		err = ::FSMakeFSRefUnicode(&resourcesFSRef, kFactoryPresetsFileNameChars, kFactoryPresetsFileName
 				, kTextEncodingUnknown, &factoryPresetsListFSRef);
 	}
+#endif
 	throwOnOSError(err);
 	loadFactoryPresets(&factoryPresetsListFSRef);
 }
@@ -2417,8 +2457,10 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
 							| kAudioUnitParameterFlag_IsWritable | kAudioUnitParameterFlag_ValuesHaveStrings;
 				} else if (strcmp(auDisplayOptionPointer, "b") == 0) {
-					auMin = 0;
-					auMax = 1;
+					SY_ASSERT2(auMin == 0, "Error in SYParameters.txt: "
+							"min parameter for 'b' display type is %f, must be 0 (parameter: %s)", auMin, auName);
+					SY_ASSERT2(auMax == 1, "Error in SYParameters.txt: "
+							"max parameter for 'b' display type is %f, must be 1 (parameter: %s)", auMax, auName);
 					info.unit = kAudioUnitParameterUnit_Boolean;
 					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
 							| kAudioUnitParameterFlag_IsWritable;
@@ -2430,9 +2472,13 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 					choicesArray = ::CFStringCreateArrayBySeparatingStrings(0, choicesString, CFSTR("|"));
 					SY_ASSERT(choicesArray != 0);
 					releaseCFRef((::CFTypeRef*)&choicesString);
-					auMin = 0;
-					auMax = static_cast<int>(::CFArrayGetCount(choicesArray)) - 1;
-					SY_ASSERT(auMax >= 0);
+					SY_ASSERT2(auMin == 0, "Error in SYParameters.txt: "
+							"min parameter for '|' display type is %f, must be 0 (parameter: %s)", auMin, auName);
+					float expectedMax = static_cast<float>(::CFArrayGetCount(choicesArray) - 1);
+					SY_ASSERT(expectedMax >= 0);
+					SY_ASSERT3(auMax == expectedMax, "Error in SYParameters.txt: "
+							"max parameter for '|' display type is %f, should be %.0f (parameter: %s)"
+							, auMax, expectedMax, auName);
 					info.unit = kAudioUnitParameterUnit_Indexed;
 					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
 							| kAudioUnitParameterFlag_IsWritable;
@@ -2472,6 +2518,8 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 		throw;
 	}
 }
+
+#if (SY_INCLUDE_CONFIG_GEN)
 
 void SymbiosisComponent::createDefaultParameterMappingFile(const ::FSRef* fsRef) {
 	SY_ASSERT(fsRef != 0);
@@ -2561,10 +2609,13 @@ void SymbiosisComponent::createDefaultParameterMappingFile(const ::FSRef* fsRef)
 	}
 }
 
+#endif // #if (SY_INCLUDE_CONFIG_GEN)
+
 void SymbiosisComponent::readOrCreateParameterMapping() {
 	::FSRef parametersFSRef;
 	::OSErr err = ::FSMakeFSRefUnicode(&resourcesFSRef, kParametersFileNameChars, kParametersFileName
 			, kTextEncodingUnknown, &parametersFSRef);
+#if (SY_INCLUDE_CONFIG_GEN)
 	if (err == fnfErr) {
 		throwOnOSError(::FSCreateFileUnicode(&resourcesFSRef, kParametersFileNameChars, kParametersFileName
 				, kFSCatInfoNone, 0, &parametersFSRef, 0));
@@ -2572,6 +2623,7 @@ void SymbiosisComponent::readOrCreateParameterMapping() {
 		err = ::FSMakeFSRefUnicode(&resourcesFSRef, kParametersFileNameChars, kParametersFileName, kTextEncodingUnknown
 				, &parametersFSRef);
 	}
+#endif
 	throwOnOSError(err);
 	readParameterMapping(&parametersFSRef);
 }
@@ -3246,9 +3298,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_ClassInfo:
 			SY_TRACE2(SY_TRACE_FREQUENT, "AU GetPropertyInfo: kAudioUnitProperty_ClassInfo (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = true;
 			(*minDataSize) = sizeof (::CFPropertyListRef);
@@ -3258,12 +3308,9 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_MakeConnection:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_MakeConnection (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Input) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= inputBusCount) {
+			if (scope != kAudioUnitScope_Input) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= inputBusCount)
 				throw MacOSException(kAudioUnitErr_InvalidElement);
-			}
 			(*isReadable) = false;
 			(*isWritable) = true;
 			(*minDataSize) = sizeof (::AudioUnitConnection);
@@ -3273,12 +3320,9 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_SetRenderCallback:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_SetRenderCallback (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Input) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= inputBusCount) {
+			if (scope != kAudioUnitScope_Input) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= inputBusCount)
 				throw MacOSException(kAudioUnitErr_InvalidElement);
-			}
 			(*isReadable) = false;
 			(*isWritable) = true;
 			(*minDataSize) = sizeof (::AURenderCallbackStruct);
@@ -3324,12 +3368,9 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_ParameterInfo:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_ParameterInfo (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount()) {
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount())
 				throw MacOSException(kAudioUnitErr_InvalidElement);
-			}
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::AudioUnitParameterInfo);
@@ -3340,15 +3381,10 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			SY_TRACE2(SY_TRACE_AU
 					, "AU GetPropertyInfo: kAudioUnitProperty_ParameterValueStrings (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount()) {
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount())
 				throw MacOSException(kAudioUnitErr_InvalidElement);
-			}
-			if (parameterValueStrings[element] == 0) {
-				throw MacOSException(kAudioUnitErr_InvalidParameter);
-			}
+			if (parameterValueStrings[element] == 0) throw MacOSException(kAudioUnitErr_InvalidParameter);
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::CFArrayRef);
@@ -3367,9 +3403,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_Latency:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_Latency (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::Float64);
@@ -3382,9 +3416,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 				goto unsupported;
 			} else {
 				SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_SupportedNumChannels");
-				if (scope != kAudioUnitScope_Global) {
-					throw MacOSException(kAudioUnitErr_InvalidScope);
-				}
+				if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 				(*isReadable) = true;
 				(*isWritable) = false;
 				(*minDataSize) = static_cast<int>(auChannelInfoCount * sizeof (::AUChannelInfo));
@@ -3396,9 +3428,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			SY_TRACE2(SY_TRACE_AU
 					, "AU GetPropertyInfo: kAudioUnitProperty_MaximumFramesPerSlice (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = true;
 			(*minDataSize) = sizeof (::UInt32);
@@ -3408,9 +3438,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_HostCallbacks:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_HostCallbacks (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = true;
 			(*minDataSize) = 0;																							// We support old obsolete formats with smaller struct sizes.
@@ -3420,9 +3448,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_LastRenderError:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_LastRenderError (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::OSStatus);
@@ -3432,12 +3458,9 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_FactoryPresets:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_FactoryPresets (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (factoryPresetsArray == 0 || ::CFArrayGetCount(factoryPresetsArray) < 1) {
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (factoryPresetsArray == 0 || ::CFArrayGetCount(factoryPresetsArray) < 1)
 				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no factory presets
-			}
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::CFArrayRef);
@@ -3448,15 +3471,11 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			SY_TRACE2(SY_TRACE_FREQUENT
 					, "AU GetPropertyInfo: kAudioUnitProperty_ParameterStringFromValue (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount()) {
 				throw MacOSException(kAudioUnitErr_InvalidElement);
 			}
-			if (!vstGotSymbiosisExtensions) {							
-				throw MacOSException(kAudioUnitErr_InvalidProperty);
-			}
+			if (!vstGotSymbiosisExtensions) throw MacOSException(kAudioUnitErr_InvalidProperty);
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::AudioUnitParameterStringFromValue);
@@ -3467,15 +3486,10 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			SY_TRACE2(SY_TRACE_AU
 					, "AU GetPropertyInfo: kAudioUnitProperty_ParameterValueFromString (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount()) {
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(element) < 0 || static_cast<int>(element) >= vst->getParameterCount())
 				throw MacOSException(kAudioUnitErr_InvalidElement);
-			}
-			if (!vstGotSymbiosisExtensions) {							
-				throw MacOSException(kAudioUnitErr_InvalidProperty);
-			}
+			if (!vstGotSymbiosisExtensions) throw MacOSException(kAudioUnitErr_InvalidProperty);
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::AudioUnitParameterValueFromString);
@@ -3487,9 +3501,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			SY_TRACE3(SY_TRACE_AU, "AU GetPropertyInfo: %s (scope: %d, element: %d)"
 					, ((id == kAudioUnitProperty_CurrentPreset) ? "kAudioUnitProperty_CurrentPreset"
 					: "kAudioUnitProperty_PresentPreset"), static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = true;
 			(*minDataSize) = sizeof (::SInt32);																			// Normal size is that of ::AUPreset, i.e. 8, but some programs (like Garage Band) only uses 4.
@@ -3503,9 +3515,8 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 			} else {
 				SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_ElementName (scope: %d, element: %d)"
 						, static_cast<int>(scope), static_cast<int>(element));
-				if (scope  != kAudioUnitScope_Input && scope != kAudioUnitScope_Output) {
+				if (scope  != kAudioUnitScope_Input && scope != kAudioUnitScope_Output)
 					throw MacOSException(kAudioUnitErr_InvalidScope);
-				}
 				if (static_cast<int>(element) < 0
 						|| static_cast<int>(element) >= (scope == kAudioUnitScope_Input
 						? inputBusCount : outputBusCount)
@@ -3524,9 +3535,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_CocoaUI:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_CocoaUI (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 		#if (SY_INCLUDE_GUI_SUPPORT)
 			if (!vst->hasEditor()) {
 				SY_TRACE(SY_TRACE_AU, "VST has no editor");
@@ -3547,9 +3556,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_GetUIComponentList:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_GetUIComponentList (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 		#if (SY_INCLUDE_GUI_SUPPORT)
 			if (!vst->hasEditor()) {
 				SY_TRACE(SY_TRACE_AU, "VST has no editor");
@@ -3581,9 +3588,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_TailTime:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_TailTime (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			if (!vstSupportsTail) {
 				throw MacOSException(kAudioUnitErr_InvalidProperty); 
 			} else {
@@ -3597,9 +3602,7 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kAudioUnitProperty_BypassEffect:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_BypassEffect (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			if (!vstSupportsBypass) {
 				throw MacOSException(kAudioUnitErr_InvalidProperty); 
 			} else {
@@ -3613,15 +3616,21 @@ void SymbiosisComponent::getPropertyInfo(::AudioUnitPropertyID id, ::AudioUnitSc
 		case kMusicDeviceProperty_InstrumentCount:
 			SY_TRACE2(SY_TRACE_AU, "AU GetPropertyInfo: kMusicDeviceProperty_InstrumentCount (scope: %d, element: %d)"
 					, static_cast<int>(scope), static_cast<int>(element));
-			if (scope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			(*isReadable) = true;
 			(*isWritable) = false;
 			(*minDataSize) = sizeof (::UInt32);
 			(*normalDataSize) = sizeof (::UInt32);
 			break;
-
+			
+/*		case kAudioUnitProperty_FastDispatch:
+			if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			(*isReadable) = true;
+			(*isWritable) = false;
+			(*minDataSize) = sizeof (void *);
+			(*normalDataSize) = sizeof (void *);
+			break;
+*/
 		case kAudioUnitProperty_FastDispatch: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_FastDispatch (not supported)"); goto unsupported;
 		case kAudioUnitProperty_CPULoad: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_CPULoad (not supported)"); goto unsupported;
 		case kAudioUnitProperty_SRCAlgorithm: SY_TRACE(SY_TRACE_AU, "AU GetPropertyInfo: kAudioUnitProperty_SRCAlgorithm (not supported)"); goto unsupported;
@@ -4014,24 +4023,26 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 			case kAudioUnitProperty_CocoaUI: {
 			#if (SY_INCLUDE_GUI_SUPPORT)
 				AudioUnitCocoaViewInfo cocoaInfo;
-				// This is important. Since the class name will be the same for all Symbiosis wrapped plug-ins there
-				// will be Objective-C name collisions. Instead of trying to avoid that, we accept it as long as we
-				// are using the same binary version of the class implementation (hence the date in the class name).
-				// However, we need to locate the bundle that has loaded the currently active class object instance
-				// for Symbiosis20010220_CocoaViewFactory, i.e. the first loaded and opened Symbiosis bundle. Otherwise
-				// there will be a failure when the host tries to retrieve the class from the new bundle (because of a
-				// collision).
+				// This is important. Since the class name may be the same for many Symbiosis wrapped plug-ins there
+				// will be Objective-C name collisions. Instead of trying to avoid that, we accept it as long as we are
+				// using the same binary version of the class implementation (hence the unique class name requirement).
+				// However, we need to locate the bundle that has loaded the currently active class object instance for
+				// CocoaViewFactory, i.e. the first loaded and opened Symbiosis bundle. Otherwise there will be a
+				// failure when the host tries to retrieve the class from the new bundle (because of a collision).
 				
-				// I don't know why, but using objc_getClass is required for this to work. Following line doesn't work.
-				// Class factoryClass = [Symbiosis20010220_CocoaViewFactory class];
-				Class factoryClass = objc_getClass("Symbiosis20010220_CocoaViewFactory");
+				// I don't know why, but using objc_getClass is required for this to work. Following line doesn't work:
+				// Class factoryClass = [CocoaViewFactory class];
+				
+				SY_TRACE1(SY_TRACE_MISC, "Cocoa View Class: %s", SY_STRINGIZE(SY_UNIQUE_NAME(CocoaViewFactory)));
+				Class factoryClass = objc_getClass(SY_STRINGIZE(SY_UNIQUE_NAME(CocoaViewFactory)));
 				SY_ASSERT(factoryClass != nil);
 				NSBundle* symbiosisBundle = [NSBundle bundleForClass:factoryClass];
 				NSString* bundlePath = [symbiosisBundle bundlePath];
 				cocoaInfo.mCocoaAUViewBundleLocation = (CFURLRef)[[NSURL fileURLWithPath:bundlePath] retain];
 				SY_ASSERT(cocoaInfo.mCocoaAUViewBundleLocation != nil);
 				cocoaInfo.mCocoaAUViewClass[0]
-						= ::CFStringCreateWithCString(NULL, "Symbiosis20010220_CocoaViewFactory", kCFStringEncodingUTF8);
+						= ::CFStringCreateWithCString(NULL, SY_STRINGIZE(SY_UNIQUE_NAME(CocoaViewFactory))
+						, kCFStringEncodingUTF8);
 				*((AudioUnitCocoaViewInfo *)outData) = cocoaInfo;
 			#else
 				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
@@ -4468,6 +4479,19 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 	}
 }
 
+void SymbiosisComponent::midiInput(int offset, int status, int data1, int data2) {
+	if (vst->wantsMidi()) {
+		SY_ASSERT0(vstMidiEvents.numEvents < kMaxVSTMIDIEvents, "Too many MIDI events received");
+		if (vstMidiEvents.numEvents >= kMaxVSTMIDIEvents) throw MacOSException(memFullErr);
+		VstMidiEvent* e = reinterpret_cast<VstMidiEvent*>(vstMidiEvents.events[vstMidiEvents.numEvents]);
+		e->deltaFrames = offset;
+		e->midiData[0] = status;
+		e->midiData[1] = data1;
+		e->midiData[2] = data2;
+		++vstMidiEvents.numEvents;
+	}
+}
+
 void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 	switch (params->what) {
 		case kAudioUnitInitializeSelect:
@@ -4621,12 +4645,9 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			SY_TRACE2(SY_TRACE_FREQUENT, "AU Get parameter: %d, %d", static_cast<int>(pinID)
 					, static_cast<int>(pinScope));
 			SY_ASSERT(poutValue != 0);
-			if (pinScope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(pinID) < 0 || static_cast<int>(pinID) >= vst->getParameterCount()) {
+			if (pinScope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(pinID) < 0 || static_cast<int>(pinID) >= vst->getParameterCount())
 				throw MacOSException(kAudioUnitErr_InvalidParameter);
-			}
 			(*poutValue) = scaleToAUParameter(pinID, vst->getParameter(pinID));
 			break;
 		}
@@ -4642,12 +4663,9 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		
 			SY_TRACE4(SY_TRACE_FREQUENT, "AU Set parameter: %d, %d, %f, %d", static_cast<int>(pinID)
 					, static_cast<int>(pinScope), pinValue, static_cast<int>(pinBufferOffsetInFrames));
-			if (pinScope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
-			if (static_cast<int>(pinID) < 0 || static_cast<int>(pinID) >= vst->getParameterCount()) {
+			if (pinScope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+			if (static_cast<int>(pinID) < 0 || static_cast<int>(pinID) >= vst->getParameterCount())
 				throw MacOSException(kAudioUnitErr_InvalidParameter);
-			}
 			vst->setParameter(pinID, scaleFromAUParameter(pinID, pinValue));
 			break;
 		}
@@ -4658,9 +4676,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			PARAM(AudioUnitScope, pinScope, 0, 2);
 		//	PARAM(AudioUnitElement, pinElement, 1, 2);
 		
-			if (pinScope != kAudioUnitScope_Global) {
-				throw MacOSException(kAudioUnitErr_InvalidScope);
-			}
+			if (pinScope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 			if (vst->isResumed()) {
 				vst->suspend();
 				vst->resume();
@@ -4696,8 +4712,8 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			memset(&receiver, 0, sizeof (receiver));
 			receiver.inputProc = pinProc;
 			receiver.inputProcRefCon = pinProcRefCon;
-			renderNotificationReceivers[propertyListenersCount] = receiver;
-			++propertyListenersCount;
+			renderNotificationReceivers[renderNotificationReceiversCount] = receiver;
+			++renderNotificationReceiversCount;
 			break;
 		}
 		
@@ -4729,13 +4745,10 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		
 			for (int i = 0; i < static_cast<int>(pinNumParamEvents); ++i) {
 				const AudioUnitParameterEvent& theEvent = (pinParameterEvent)[i];
-				if (theEvent.scope != kAudioUnitScope_Global) {
-					throw MacOSException(kAudioUnitErr_InvalidScope);
-				}
+				if (theEvent.scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
 				if (static_cast<int>(theEvent.parameter) < 0 || static_cast<int>(theEvent.parameter)
-						>= vst->getParameterCount()) {
+						>= vst->getParameterCount())
 					throw MacOSException(kAudioUnitErr_InvalidParameter);
-				}
 				if (theEvent.eventType == kParameterEvent_Immediate) {
 					SY_ASSERT(0 <= static_cast<int>(theEvent.eventValues.immediate.bufferOffset)
 							&& static_cast<int>(theEvent.eventValues.immediate.bufferOffset) < maxFramesPerSlice);
@@ -4753,19 +4766,8 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			PARAM(UInt32, pinData1, 1, 4);
 			PARAM(UInt32, pinData2, 2, 4);
 			PARAM(UInt32, pinOffsetSampleFrame, 3, 4);
-		
-			if (vst->wantsMidi()) {
-				SY_ASSERT0(vstMidiEvents.numEvents < kMaxVSTMIDIEvents, "Too many MIDI events received");
-				if (vstMidiEvents.numEvents >= kMaxVSTMIDIEvents) {
-					throw MacOSException(memFullErr);
-				}
-				VstMidiEvent* e = reinterpret_cast<VstMidiEvent*>(vstMidiEvents.events[vstMidiEvents.numEvents]);
-				e->deltaFrames = pinOffsetSampleFrame;
-				e->midiData[0] = pinStatus;
-				e->midiData[1] = pinData1;
-				e->midiData[2] = pinData2;
-				++vstMidiEvents.numEvents;
-			}
+			
+			midiInput(pinOffsetSampleFrame, pinStatus, pinData1, pinData2);
 			break;
 		}
 		
@@ -4786,7 +4788,7 @@ NSView* SymbiosisComponent::createView() {
 	vst->getEditorDimensions(width, height);
 
 	SY_ASSERT(cocoaView == 0);
-	cocoaView = [[Symbiosis20010220_CocoaView alloc] initWithFrame:NSMakeRect(0, 0, width, height) symbiosis:this];
+	cocoaView = [[SY_UNIQUE_NAME(CocoaView) alloc] initWithFrame:NSMakeRect(0, 0, width, height) symbiosis:this];
 	SY_ASSERT(cocoaView != 0);
 
 	SY_ASSERT(!vst->isEditorOpen());
@@ -4958,7 +4960,7 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 	viewEventListenerUserData = userData;
 }
 
-#endif (!SY_USE_COCOA_GUI)
+#endif // #elif (!SY_USE_COCOA_GUI)
 
 #endif (SY_INCLUDE_GUI_SUPPORT)
 
@@ -4996,7 +4998,10 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 					case kComponentCanDoSelect:
 						return 1;
 					
-					default: return 0;
+					default: {
+						SY_TRACE1(SY_TRACE_AU, "AU cannot do selector: %d", static_cast<int>(params->params[0]));
+						return 0;
+					}
 				}
 				break;
 				
@@ -5051,9 +5056,12 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 
 #if (SY_INCLUDE_GUI_SUPPORT)
 
+extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisViewEntry(::ComponentParameters* params
+		, ::Handle userDataHandle);
+
 #if (SY_USE_COCOA_GUI)
 
-@implementation Symbiosis20010220_CocoaView
+@implementation SY_UNIQUE_NAME(CocoaView)
 
 - initWithFrame:(NSRect)frame symbiosis:(SymbiosisComponent*)symbiosisComponent {
 	SY_ASSERT(symbiosisComponent != 0);
@@ -5061,15 +5069,20 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 	return self;
 }
 
-- (void)dealloc { SY_ASSERT(symbiosis != 0); symbiosis->dropView(); [super dealloc]; }
+- (void)detach { symbiosis = 0; }
+
+- (void)dealloc {
+	if (symbiosis != 0) symbiosis->dropView();
+	[super dealloc];
+}
 
 @end
 
-@implementation Symbiosis20010220_CocoaViewFactory
+@implementation SY_UNIQUE_NAME(CocoaViewFactory)
 
 - (unsigned int) interfaceVersion { return 0; }
 
-- (NSString*) description { return @"Symbiosis Cocoa View"; }
+- (NSString*) description { return @"Editor"; }
 
 - (NSView*)uiViewForAudioUnit:(AudioUnit)inAU withSize:(NSSize)inPreferredSize {
 	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(inAU));
@@ -5078,6 +5091,14 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 }
 
 @end
+
+// Including a dummy for SymbiosisViewEntry to allow it in the "Exported Symbols File" for universal builds.
+
+extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisViewEntry(::ComponentParameters* params
+		, ::Handle userDataHandle) {
+	SY_ASSERT(0);
+	return badComponentSelector;
+}
 
 #elif (!SY_USE_COCOA_GUI)
 
@@ -5094,7 +5115,10 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 					case kComponentCanDoSelect:
 					case kAudioUnitCarbonViewCreateSelect:
 					case kAudioUnitCarbonViewSetEventListenerSelect: return 1;
-					default: return 0;
+					default: {
+						SY_TRACE1(SY_TRACE_AU, "AUView cannot do selector: %d", static_cast<int>(params->params[0]));
+						return 0;
+					}
 				}
 				break;
 				
@@ -5181,6 +5205,6 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 	return noErr;
 }
 
-#endif (!SY_USE_COCOA_GUI)
+#endif // #elif (!SY_USE_COCOA_GUI)
 
-#endif (SY_INCLUDE_GUI_SUPPORT)
+#endif // #if (SY_INCLUDE_GUI_SUPPORT)

@@ -1,6 +1,9 @@
+#! /usr/local/bin/PikaCmd
+
 include('stdlib.pika');
 include('htmlify.pika');
 
+css = replace(load('docstyle.css'), "\n\t", '', find, 1);
 head = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 	<head>
@@ -11,6 +14,7 @@ head = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/
 			table, th, td { border: 1px solid black; padding: 5px; border-collapse:collapse; }
 			th { text-align: left }
 			img { border: 0 none }
+			' # css # '	
 		</style>
 	</head>
 	<body>

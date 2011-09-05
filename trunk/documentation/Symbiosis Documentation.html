@@ -8,11 +8,12 @@
 			table, th, td { border: 1px solid black; padding: 5px; border-collapse:collapse; }
 			th { text-align: left }
 			img { border: 0 none }
+			html {background:#faf8f3;}body {min-width:650px;max-width:960px;_width:650px;color:#000;margin:0;font-family:'Cambria',Georgia,'Times New Roman',Times,serif;height:100%;overflow:visible;padding:36px;}table {line-height:18px;margin-bottom:17px;border:1px solid #ccc;border-collapse:collapse;border-bottom-color:#aaa;border-radius:2px;box-shadow:0px 1px 0 #ddd;-moz-border-radius:2px;-moz-box-shadow:0px 1px 0 #ddd;-webkit-box-shadow:0px 1px 0 #ddd;}tr { background:#fff;vertical-align:top;}th,tr:nth-child(even) { background:#eee;}td {border:1px dotted #ccc;padding:2px 18px 4px 9px;font-size:0.9em;}th {background:#ddd;border:1px solid #bbb;color:#000;font-weight:normal;padding:4px 18px 4px 9px;text-align:left;font-size:0.85em;}tr:nth-child(1) th {background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#ccc), to(#bbb));background:-moz-linear-gradient(top, #ccc, #bbb);border:1px solid #aaa;border-bottom-color:#999;border-top-color:#bbb;box-shadow:0px 1px 1px #ccc;-moz-box-shadow:0px 1px 1px #ccc;-webkit-box-shadow:0px 1px 1px #ccc;color:#333;padding:8px 18px 8px 9px;text-shadow:0 1px #ddd;}tt {color:#5d5d5d;padding-right:4px;padding-left:4px;}pre {border:1px solid #d0d0d0;overflow:auto;color:#5f5f5f;padding:0.4em;}ul {list-style-type:disc;padding-left:14px;list-style-position:inside;}h1,h2,h3,h4,h5,h6 {font-weight:bold;margin-bottom:18px;}h1,h2 { line-height:36px; }h3,h4 { line-height:18px; }h1 { font-size:2.0em; }h2 { font-size:1.5em; }h3 { font-size:1.3em; }h4 { font-size:1.2em; }h5 { font-size:1.1em; }h6 { font-size:1.0em; }a { text-decoration:none; }a[href]:hover { text-decoration:underline; }a sup{ font-size:0.7em; }	
 		</style>
 	</head>
 	<body>
 <p><img src="Symbiosis.png" alt=""></p>
-<h1><a name="Symbiosis">Symbiosis</a></h1>
+<h1><a name="Symbiosis_v1.3">Symbiosis v1.3</a></h1>
 <h2><a name="Table_of_Contents">Table of Contents</a></h2>
 
 <ul>
@@ -140,38 +141,46 @@
 <br></li>
 </ol>
 <h3><a name="Wrapping_the_VST_Using_Alternatives_1_or_2">Wrapping the VST Using Alternatives 1 or 2</a></h3>
-<p>If you have chosen wrapping alternative 1 or 2 (using a pre-built wrapper) the first step is to duplicate one of the pre-built wrappers (<tt>Symbiosis.component</tt>) from the zip-file <tt>PreBuiltWrappers.zip</tt>. The "development" and "beta" versions contain tracing and assertions that are written to the standard <tt>console.log</tt> (which you can observe with the "Console" application)<a href="#fn0001"><sup>*</sup></a>. The "beta" and "release" versions are compiled with optimizations and are faster than the "development" version, although they may be harder to debug. All pre-built wrappers are built as universal binaries for x86 and PPC.</p>
-<p>Rename your chosen wrapper (to whatever you wish to call your plug-in) and add an alias (or copy) your VST plug-in to the bundle. The VST file or alias should be put under <tt>Contents/Resources/</tt> in the wrapper bundle.</p>
+<p>If you have chosen wrapping alternative 1 or 2 (using a pre-built wrapper) the first step is to duplicate one of the pre-built wrappers (<tt>Symbiosis.component</tt>) from the zip-file <tt>PreBuiltWrappers.zip</tt>. The "development" and "beta" versions contain tracing and assertions that are written to the standard <tt>console.log</tt> (which you can observe with the "Console" application)<a href="#fn0001"><sup>*</sup></a>. The "beta" and "release" versions are compiled with optimizations and are faster than the "development" version, although they may be harder to debug. All pre-built wrappers are built as universal binaries for x86 (32 and 64-bit) and PPC. First time around you should choose the "development" or "beta" builds.</p>
+<p>Rename your wrapper to whatever you wish to call your plug-in and add an alias (or copy) your VST plug-in to the bundle. The VST file or alias should be put under <tt>Contents/Resources/</tt> in the wrapper bundle.</p>
 <p>Audio Units are based on the component API (as used by QuickTime) and components are identified by the operating system using classic Mac resources. Therefore, the next step is to edit and recompile these resources for your AU. Open the sample <tt>.rez`-file (`Symbiosis.r</tt>) that is included in the distribution under <tt>Contents/Resources/</tt> and modify it according to the instructions inside (don't rename the file!).</p>
 <p>You then need to compile <tt>Symbiosis.r</tt> into <tt>Symbiosis.rsrc</tt> by using the "Rez" tool. There is a script included in the distribution called <tt>CompileSymbiosisRsrc.command</tt> that helps you with this step. Locate the script next to your modified <tt>Symbiosis.r</tt> file and double-click it (if you can't run the script you may need to perform a <tt>chmod +x</tt> on the script file from a shell prompt). Now look for <tt>Symbiosis.rsrc</tt>. Found it? Excellent!</p>
 <p>Finally, you also need to edit the OS X <tt>Info.plist</tt> and fill out the standard bundle version info plus choose a few Symbiosis specific configuration options. <tt>Info.plist</tt> is located inside your wrapper bundle under <tt>Contents/</tt>. It contains comments with further instructions. (You may need to open <tt>Info.plist</tt> with a text-editor like <tt>TextEdit</tt> to see the comments.)</p>
 <p>Move on to <a href="#Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a>.</p>
 <p><small><a name="fn0001"><sup>*</sup> Notice that the standard assertion handling in C++ simply terminates the entire application if something fails. If the application terminates during beta testing, always check <tt>console.log</tt> for the reason. If you build your own wrapper you may want to use a custom assertion mechanism. See <a href="#Preprocessor_Defines">Preprocessor Defines</a> for more info.</a></small></p>
 <h3><a name="Wrapping_the_VST_Using_Alternatives_3,_4_or_5">Wrapping the VST Using Alternatives 3, 4 or 5</a></h3>
-<p>If you have chosen one of the latter wrapping alternative (i.e. including the Symbiosis source in your project) you should first make sure that you have a "Build ResourceManager Resources" build phase for your target. If there is no such phase, create one by choosing "New Build Phase -&gt; New Build ResourceManager Resources Build Phase" from the "Project" menu. Now you can copy and add the following files to your VST project:</p>
+<p>If you have chosen one of the latter wrapping alternative (i.e. including the Symbiosis source in your project) you should first make sure that you have a "Build ResourceManager Resources" Build Phase for your target. If there is no such Phase, create one by choosing "New Build Phase -&gt; New Build ResourceManager Resources Build Phase" from the "Project" menu. Now you can copy and add the following files to your VST project:</p>
 
 <ul>
-<li>Symbiosis.cpp<br></li>
-<li>Symbiosis.r (make sure it also appears under the "Build ResourceManager Resources" build phase)<br></li>
+<li>Symbiosis.mm<br></li>
+<li>Symbiosis.r (make sure it also appears under the "Build ResourceManager Resources" Build Phase)<br></li>
 <li>AudioUnit.framework (from <tt>/System/Library/Frameworks/</tt>)<br></li>
 <li>AudioToolbox.framework (from <tt>/System/Library/Frameworks/</tt>)</li>
 </ul>
 <p>Edit your copy of <tt>Symbiosis.r</tt> according to the instructions inside. Next, add the Symbiosis specific configuration options found in <tt>Symbiosis.plist</tt> to the <tt>Info.plist</tt> file that should already exist for your VST project (you may have called it something else though). You will find more instructions in the <tt>Symbiosis.plist</tt> file. (You may need to open <tt>Symbiosis.plist</tt> with a text-editor like <tt>TextEdit</tt> to see the comments.)</p>
-<p>If you have a custom "exported symbols file" for your project, you need to add these two entries to it:</p>
+<p>If you have a custom "exported symbols file" for your project, you need to add these entries to it:</p>
 
 <ul>
 <li>_SymbiosisEntry<br></li>
 <li>_SymbiosisViewEntry.</li>
 </ul>
-<p>That's about it.</p>
+<br>One more thing, if you are targetting 64-bit you need to have a special header file that defines a unique class prefix.
+ Objective-C has a flat name space. This is far from ideal for plug-ins. Each unique class must have a unique name and we
+ accomplish this through the use of some clever macros. These macros require a prefix that you must define in
+ <tt>SymbiosisClassPrefix.h</tt>. Here is an example definition:
+<pre>#define SY_CLASS_PREFIX comsonicchargebitspeek102<br></pre>
+<p>Or even better, add a "Run Script Build Phase" to your target(s), enter the following script:</p>
+<pre>date "+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S" &gt;${SOURCE_ROOT}/SymbiosisClassPrefix.h<br></pre>
+<p>Move this Build Phase to the top so that it is executed at the beginning of the compilation. Now we are virtually guaranteed to obtain a unique prefix for every unique build.</p>
+<p>That's about it. Just make sure to build your plug-in without the NDEBUG setting the first time around as explained in the next section.</p>
 <h2><a name="Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a></h2>
 <p>Now let us fire up the engines and take your AU for a spin. A good idea for the first tour is to make sure your plug-in passes the "AU validation tests" by using the "AUVal" tool from Apple ("AUVal" should come preinstalled with OS X or with the development tools). If it does not pass, some hosts will not load your Audio Unit. Although Symbiosis will do its best to assure that your adapted VST passes validation, there is no guarantee that your VST code is 100% compatible without modification. (For example, there are a few tweakable configuration settings and vendor-specific VST extensions that may affect the outcome of the validation.)</p>
 <p>First, put your AU component in <tt>Library/Audio/Plug-Ins/Components/</tt> either in the root (system-wide) or your home dir (local). Next, open up the terminal application and type <tt>auval -a</tt>. Look for your unique AU signature (the one you chose for your <tt>.r</tt> file). If you cannot see it, you may need to restart the computer for the OS to discover the new AU. If this still fails, something has gone seriously wrong with your wrapping. Start over from square 1 and try a different wrapping alternative as a test. </p>
 <p>Now run <tt>auval -v &lt;type&gt; &lt;subtype&gt; &lt;signature&gt;</tt> where <tt>&lt;type&gt;</tt>, <tt>&lt;subtype&gt;</tt> and <tt>&lt;signature&gt;</tt> should be the ones defined in the <tt>.r</tt> file. (<tt>&lt;type&gt;</tt> is typically one of <tt>aufx</tt>, <tt>aumu</tt> or <tt>aumf</tt> for "instrument", "effect" and "effect with MIDI"). Hold your breath and pray for your plug-in to pass the tests.</p>
-<p>Important! When you run the AU for the first time, the wrapper automatically creates a few configuration files inside your component bundle under <tt>Contents/Resources/</tt> as well as ".aupresets" files for the default / initial VST program bank. It is a very good idea to distribute your Audio Units with these files pre-created, even if you do not modify them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have sufficient write privileges for the directory in question, this might prevent the Audio Unit from loading. See <a href="#Advanced_Porting_Options">Advanced Porting Options</a> for more info on these files.</p>
+<p>Important! When you run the development or beta build of your AU for the first time, the wrapper automatically creates a few important configuration files inside your component bundle under <tt>Contents/Resources/</tt> as well as ".aupresets" files for the default / initial VST program bank. You should distribute your Audio Units with these files pre-created, even if you do not modify them. Otherwise they will be created on the end-user's computer on the first run and in case the user doesn't have sufficient write privileges for the directory in question, this can prevent the Audio Unit from loading. The release build (when NDEBUG is defined) will never attempt to create these files. See <a href="#Advanced_Porting_Options">Advanced Porting Options</a> for more info on these files.</p>
 <h2><a name="Advanced_Porting_Options">Advanced Porting Options</a></h2>
 <p>Symbiosis creates two configuration files inside your AU bundle the first time it is launched. <tt>SYParameters.txt</tt> and <tt>SYFactoryPresets.txt</tt>. It will also create <tt>.aupreset</tt> files for all the VST programs in the initial startup bank. All these files are created directly under <tt>Contents/Resources/</tt> in your bundle.</p>
-<p>It is a good idea to edit at least <tt>SYParameters.txt</tt> and include all the created files in the final distribution of your Audio Unit. (Please read an important note concerning this under <a href="#Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a>.) If you are using wrapping alternative 3, 4 or 5 (including Symbiosis.cpp etc into your VST project) you can simply drop the files into your project and they will be copied in the build process.</p>
+<p>It is a good idea to edit at least <tt>SYParameters.txt</tt> and you should include all the created files in the final distribution of your Audio Unit. (Please read an important note concerning this under <a href="#Running_Your_AU_for_the_First_Time">Running Your AU for the First Time</a>.) If you are using wrapping alternative 3, 4 or 5 (including Symbiosis.mm etc into your VST project) you can simply drop the files into your project and they will be copied in the build process.</p>
 <p>Finally, if you are serious about creating a fully featured Audio Unit you might want to look into supporting Symbiosis' optional <a href="#Vendor-Specific_Extensions">Vendor-Specific Extensions</a> below.</p>
 <h3><a name="SYParameters.txt">SYParameters.txt</a></h3>
 <p>This file is a tab separated table with parameter information. One line per parameter with an extra header line at the top. You may choose to exclude certain parameters from the AU version by simply removing the corresponding lines from this file.</p>
@@ -202,7 +211,7 @@
 <td>&nbsp;</td><td><tt>b</tt> for boolean switch (0 is off, 1 is on)</td>
 </tr>
 <tr>
-<td>&nbsp;</td><td>a|b|c|d for discrete parameter settings (evenly distributed between 0 and 1), e.g. <tt>sine|tri|saw|pulse</tt></td>
+<td>&nbsp;</td><td>a|b|c|d for discrete parameter settings, e.g. <tt>sine|tri|saw|pulse</tt></td>
 </tr>
 <tr>
 <td>&nbsp;</td><td><tt>?</tt> to convert the value with the <a href="#Vendor-Specific_Extensions">Vendor-Specific Extensions</a> (described below).</td>
@@ -211,12 +220,12 @@
 <td>unit</td><td>The parameter suffix / unit.</td>
 </tr>
 <tr>
-<td>default</td><td>The initial default setting.</td>
+<td>default</td><td>The initial default setting. (Scaled according to <tt>min</tt> and <tt>max</tt> range.)</td>
 </tr>
 </table>
 <p><small><a name="fn0002"><sup>*</sup> If changes to this parameter will automatically modify other parameters you need to suffix this column with <tt>+</tt>. This information is important for AU hosts.</a></small></p>
 <p><small><a name="fn0003"><sup>**</sup> You may wish to edit this column as AU can handle longer parameter names than VST.</a></small></p>
-<p><small><a name="fn0004"><sup>***</sup> VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are used to scale and normalize the AU parameter range from / to the 0 and 1 range.</a></small></p>
+<p><small><a name="fn0004"><sup>***</sup> VST parameter values are always between 0 and 1, but AU parameters have arbitrary range. The min and max values are used to scale and normalize the AU parameter range from / to the 0 and 1 range. For discrete parameters (those having <tt>|</tt> -delimited lists in the <tt>display</tt> column) the <tt>min</tt> value must be 0 and the <tt>max</tt> value should be the count of discrete options minus one, e.g. <tt>3</tt> if there are four choices.</a></small></p>
 <h3><a name="SYFactoryPresets.txt">SYFactoryPresets.txt</a></h3>
 <p>This file simply contains a list of factory preset files (one file name per row). You can edit this file to remove or add factory presets. Symbiosis expects to find the factory preset files under <tt>Contents/Resources/</tt> (as always).</p>
 <h3><a name="Vendor-Specific_Extensions">Vendor-Specific Extensions</a></h3>
@@ -246,7 +255,7 @@
 <p>As always, the best explanation is an example. This is from the example plug-in "Sinoplex" that is provided with Symbiosis.</p>
 <pre>VstIntPtr Sinoplex::vendorSpecific(VstInt32 lArg1, VstIntPtr lArg2, void* ptrArg, float floatArg) {<br>    switch (lArg1) {<br>        case 'sHi!': return 1;                                                                                      // Can we speak Symbiosian?<br>        case 'sI00': inputIsSilent = (lArg2 != 0); return 1;                                                        // Is input silent?<br>        case 'sO00': return outputIsSilent;                                                                         // Is output silent?<br>        <br>        case 'sV2S': {                                                                                              // Parameter value to string conversion.<br>            float value = *reinterpret_cast&lt;float*&gt;(ptrArg);<br>            SinoplexProgram::Parameter param = static_cast&lt;SinoplexProgram::Parameter&gt;(lArg2);<br>            currentProgram-&gt;convertParameterValueToString(param, value, reinterpret_cast&lt;char*&gt;(ptrArg));<br>            return 1;<br>        }<br>        <br>        case 'sS2V': {                                                                                              // String to parameter value conversion.<br>            SinoplexProgram::Parameter param = static_cast&lt;SinoplexProgram::Parameter&gt;(lArg2);<br>            float value = currentProgram-&gt;convertParameterStringToValue(param, reinterpret_cast&lt;char*&gt;(ptrArg));<br>            *reinterpret_cast&lt;float*&gt;(ptrArg) = value;<br>            return 1;<br>        }<br>    <br>        default: return AudioEffectX::hostVendorSpecific(lArg1, lArg2, ptrArg, floatArg);<br>    }<br>}<br></pre>
 <h2><a name="Preprocessor_Defines">Preprocessor Defines</a></h2>
-<p>These are the preprocessor macros used to configure Symbiosis.cpp.</p>
+<p>These are the preprocessor macros used to configure Symbiosis.mm.</p>
 <table>
 <tr>
 <th>Macro</th><th>Description</th><th>Alternatives</th><th>Default</th>
@@ -297,6 +306,9 @@
 <td>SY_INCLUDE_GUI_SUPPORT</td><td>Include support for custom GUI</td><td>0, 1</td><td>1</td>
 </tr>
 <tr>
+<td>SY_INCLUDE_CONFIG_GEN</td><td>Include config file generation</td><td>0, 1</td><td>1 or 0 if NDEBUG is defined</td>
+</tr>
+<tr>
 <td>SY_USE_COCOA_GUI</td><td>Use Cocoa Views for GUI</td><td>0, 1</td><td>0 in 32-bit, 1 in 64-bit</td>
 </tr>
 </table>
@@ -304,7 +316,7 @@
 <h2><a name="Copyrights_and_Trademarks">Copyrights and Trademarks</a></h2>
 <p>Symbiosis is released under the "New Simplified BSD License". <br>
 <a href="http://www.opensource.org/licenses/bsd-license.php">http://www.opensource.org/licenses/bsd-license.php</a></p>
-<p>Copyright (c) 2010-2011, NuEdge Development / Magnus Lidstr&ouml;m <br>
+<p>Copyright (c) 2009-2011, NuEdge Development / Magnus Lidstr&ouml;m <br>
 All rights reserved.</p>
 
 <ul>

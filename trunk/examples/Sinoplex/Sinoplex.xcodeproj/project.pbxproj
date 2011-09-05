@@ -139,6 +139,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F7A9205C0903D3A3009996D9 /* Build configuration list for PBXNativeTarget "Sinoplex" */;
 			buildPhases = (
+				F7FDD5F4140DA01400F4533F /* ShellScript */,
 				8D01CCCB0486CAD60068D4B7 /* Sources */,
 				8D01CCCD0486CAD60068D4B7 /* Frameworks */,
 				F74922720C87BEAA0057A327 /* Rez */,
@@ -225,6 +226,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "cd $TARGET_BUILD_DIR/../Components\nrm -f -R $PRODUCT_NAME.component\ncp -R $TARGET_BUILD_DIR/$WRAPPER_NAME $PRODUCT_NAME.component\n";
+		};
+		F7FDD5F4140DA01400F4533F /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "date \"+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S\" >${SOURCE_ROOT}/SymbiosisClassPrefix.h\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

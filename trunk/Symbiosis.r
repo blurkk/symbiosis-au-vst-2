@@ -106,10 +106,10 @@ resource 'thng' (10000, NAME) {
 
 #if (CUSTOM_GUI)
 
-resource 'STR ' (10005, "AUViewName", purgeable) { NAME " AUView" };
-resource 'STR ' (10006, "AUViewDescription", purgeable) { NAME " AUView" }; // Description for AUView is same as name.
+resource 'STR ' (10005, "AUViewName", purgeable) { "Editor" };
+resource 'STR ' (10006, "AUViewDescription", purgeable) { "Editor" }; // Description for AUView is same as name.
 resource 'dlle' (10007, "AUViewEntryPoint") { "SymbiosisViewEntry" };
-resource 'thng' (10001, NAME " AUView") {
+resource 'thng' (10001, "Editor") {
 	kAudioUnitCarbonViewComponentType,
 	SUBTYPE,
 	SIGNATURE,

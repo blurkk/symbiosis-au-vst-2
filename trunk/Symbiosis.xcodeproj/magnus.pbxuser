@@ -1,12 +1,11 @@
 // !$*UTF8*$!
 {
 	089C1669FE841209C02AAC07 /* Project object */ = {
-		activeBuildConfigurationName = Development;
+		activeBuildConfigurationName = Beta;
 		activeExecutable = F7A900E813116F760062CEF8 /* Logic */;
 		activeTarget = 8D01CCC60486CAD60068D4B7 /* Symbiosis */;
 		addToTargets = (
 			8D01CCC60486CAD60068D4B7 /* Symbiosis */,
-			F7A900B013116D860062CEF8 /* Test */,
 		);
 		breakpoints = (
 		);
@@ -85,7 +84,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					864,
+					802,
 					20,
 					48,
 					43,
@@ -143,7 +142,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					20,
-					689,
+					762,
 					60,
 					20,
 					48,
@@ -160,20 +159,18 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 331901287;
-			PBXWorkspaceStateSaveDate = 331901287;
+			PBXPerProjectTemplateStateSaveDate = 336924449;
+			PBXWorkspaceStateSaveDate = 336924449;
 		};
 		perUserProjectItems = {
-			F723D15D131B1CE600E19969 /* PBXTextBookmark */ = F723D15D131B1CE600E19969 /* PBXTextBookmark */;
+			F73B1CF2140D3DB200D2724C /* PBXTextBookmark */ = F73B1CF2140D3DB200D2724C /* PBXTextBookmark */;
 			F73C00D013A6376800944871 /* PBXTextBookmark */ = F73C00D013A6376800944871 /* PBXTextBookmark */;
-			F73CC3A71368C1630065AE1C /* PBXTextBookmark */ = F73CC3A71368C1630065AE1C /* PBXTextBookmark */;
+			F76EDB701415196500207820 /* PBXTextBookmark */ = F76EDB701415196500207820 /* PBXTextBookmark */;
+			F76EDB711415196500207820 /* PBXTextBookmark */ = F76EDB711415196500207820 /* PBXTextBookmark */;
 			F788C9DB13C93D1D00060949 /* PBXTextBookmark */ = F788C9DB13C93D1D00060949 /* PBXTextBookmark */;
 			F788C9DC13C93D1D00060949 /* PBXTextBookmark */ = F788C9DC13C93D1D00060949 /* PBXTextBookmark */;
-			F788C9DE13C93D1D00060949 /* PBXTextBookmark */ = F788C9DE13C93D1D00060949 /* PBXTextBookmark */;
-			F788C9E013C93D1D00060949 /* PBXTextBookmark */ = F788C9E013C93D1D00060949 /* PBXTextBookmark */;
-			F788C9E213C93D1D00060949 /* PBXTextBookmark */ = F788C9E213C93D1D00060949 /* PBXTextBookmark */;
-			F788C9E313C93D1D00060949 /* PBXTextBookmark */ = F788C9E313C93D1D00060949 /* PBXTextBookmark */;
 			F7A902CA1311E0350062CEF8 /* PBXTextBookmark */ = F7A902CA1311E0350062CEF8 /* PBXTextBookmark */;
+			F7FDD605140DA14A00F4533F /* PBXTextBookmark */ = F7FDD605140DA14A00F4533F /* PBXTextBookmark */;
 		};
 		sourceControlManager = F7D698380909427700040FB7 /* Source Control */;
 		userBuildSettings = {
@@ -191,22 +188,15 @@
 	8D01CCC60486CAD60068D4B7 /* Symbiosis */ = {
 		activeExec = 0;
 	};
-	F723D15D131B1CE600E19969 /* PBXTextBookmark */ = {
+	F73B1CF2140D3DB200D2724C /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
-		fRef = F723D15E131B1CE600E19969 /* Symbiosis Documentation.txt */;
-		name = "Symbiosis Documentation.txt: 310";
+		fRef = F788C9DF13C93D1D00060949 /* audioeffect.h */;
+		name = "audioeffect.h: 22";
 		rLen = 0;
-		rLoc = 18372;
+		rLoc = 856;
 		rType = 0;
-		vrLen = 2843;
-		vrLoc = 17517;
-	};
-	F723D15E131B1CE600E19969 /* Symbiosis Documentation.txt */ = {
-		isa = PBXFileReference;
-		lastKnownFileType = text;
-		name = "Symbiosis Documentation.txt";
-		path = "/Users/magnus/projects/symbiosis-au-vst/documentation/Symbiosis Documentation.txt";
-		sourceTree = "<absolute>";
+		vrLen = 2569;
+		vrLoc = 0;
 	};
 	F73C00D013A6376800944871 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
@@ -225,15 +215,25 @@
 		path = /Users/magnus/projects/lab/ScriptLab/NuXScript/NuxScript.cpp;
 		sourceTree = "<absolute>";
 	};
-	F73CC3A71368C1630065AE1C /* PBXTextBookmark */ = {
+	F76EDB701415196500207820 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
-		name = "Symbiosis.r: 85";
+		name = "Symbiosis.r: 112";
 		rLen = 0;
-		rLoc = 3078;
+		rLoc = 3664;
 		rType = 0;
-		vrLen = 1092;
-		vrLoc = 2293;
+		vrLen = 1346;
+		vrLoc = 1835;
+	};
+	F76EDB711415196500207820 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7D69A5F09096C9F00040FB7 /* Symbiosis.r */;
+		name = "Symbiosis.r: 112";
+		rLen = 0;
+		rLoc = 3664;
+		rType = 0;
+		vrLen = 1346;
+		vrLoc = 1835;
 	};
 	F7714BD513C6953100372C78 /* AudioUnitProperties.h */ = {
 		isa = PBXFileReference;
@@ -241,11 +241,6 @@
 		name = AudioUnitProperties.h;
 		path = /System/Library/Frameworks/AudioUnit.framework/Versions/A/Headers/AudioUnitProperties.h;
 		sourceTree = "<absolute>";
-		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1349, 37622}}";
-			sepNavSelRange = "{7028, 0}";
-			sepNavVisRange = "{6561, 2732}";
-		};
 	};
 	F788C9DB13C93D1D00060949 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
@@ -269,64 +264,17 @@
 	};
 	F788C9DD13C93D1D00060949 /* audioeffectx.h */ = {
 		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
 		name = audioeffectx.h;
 		path = "/Users/magnus/projects/symbiosis-au-vst/VST2400/public.sdk/source/vst2.x/audioeffectx.h";
 		sourceTree = "<absolute>";
 	};
-	F788C9DE13C93D1D00060949 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F788C9DF13C93D1D00060949 /* audioeffect.h */;
-		name = "audioeffect.h: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 2569;
-		vrLoc = 0;
-	};
 	F788C9DF13C93D1D00060949 /* audioeffect.h */ = {
 		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
 		name = audioeffect.h;
 		path = "/Users/magnus/projects/symbiosis-au-vst/VST2400/public.sdk/source/vst2.x/audioeffect.h";
 		sourceTree = "<absolute>";
-	};
-	F788C9E013C93D1D00060949 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F788C9E113C93D1D00060949 /* aeffectx.h */;
-		name = "aeffectx.h: 365";
-		rLen = 0;
-		rLoc = 24401;
-		rType = 0;
-		vrLen = 3853;
-		vrLoc = 21472;
-	};
-	F788C9E113C93D1D00060949 /* aeffectx.h */ = {
-		isa = PBXFileReference;
-		name = aeffectx.h;
-		path = "/Users/magnus/projects/symbiosis-au-vst/VST2400/pluginterfaces/vst2.x/aeffectx.h";
-		sourceTree = "<absolute>";
-	};
-	F788C9E213C93D1D00060949 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
-		name = "Symbiosis.mm: 4387";
-		rLen = 9;
-		rLoc = 193931;
-		rType = 0;
-		vrLen = 1843;
-		vrLoc = 190671;
-	};
-	F788C9E313C93D1D00060949 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
-		name = "Symbiosis.mm: 4439";
-		rLen = 9;
-		rLoc = 193931;
-		rType = 0;
-		vrLen = 2150;
-		vrLoc = 191569;
-	};
-	F7A900B013116D860062CEF8 /* Test */ = {
-		activeExec = 0;
 	};
 	F7A900E813116F760062CEF8 /* Logic */ = {
 		isa = PBXExecutable;
@@ -385,9 +333,9 @@
 	};
 	F7A902651311D9390062CEF8 /* Symbiosis.mm */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1054, 67691}}";
-			sepNavSelRange = "{193931, 9}";
-			sepNavVisRange = "{191569, 2150}";
+			sepNavIntBoundsRect = "{{0, 0}, {992, 67769}}";
+			sepNavSelRange = "{107416, 0}";
+			sepNavVisRange = "{106471, 2168}";
 			sepNavWindowFrame = "{{19, 0}, {1099, 778}}";
 		};
 	};
@@ -484,9 +432,9 @@
 	};
 	F7D69A5F09096C9F00040FB7 /* Symbiosis.r */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1034, 1846}}";
-			sepNavSelRange = "{3078, 0}";
-			sepNavVisRange = "{2293, 1092}";
+			sepNavIntBoundsRect = "{{0, 0}, {1034, 1950}}";
+			sepNavSelRange = "{3664, 0}";
+			sepNavVisRange = "{1835, 1346}";
 			sepNavVisRect = "{{0, 0}, {1046, 645}}";
 			sepNavWindowFrame = "{{19, 0}, {1230, 778}}";
 		};
@@ -499,5 +447,15 @@
 			sepNavVisRect = "{{0, 0}, {1191, 649}}";
 			sepNavWindowFrame = "{{29, -271}, {1230, 778}}";
 		};
+	};
+	F7FDD605140DA14A00F4533F /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F7A902651311D9390062CEF8 /* Symbiosis.mm */;
+		name = "Symbiosis.mm: 5250";
+		rLen = 0;
+		rLoc = 221791;
+		rType = 0;
+		vrLen = 1942;
+		vrLoc = 219672;
 	};
 }
