@@ -225,7 +225,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd $TARGET_BUILD_DIR/../Components\nrm -f -R $PRODUCT_NAME.component\ncp -R $TARGET_BUILD_DIR/$WRAPPER_NAME $PRODUCT_NAME.component\n";
+			shellScript = "set -e\ncd $TARGET_BUILD_DIR/../Components\nrm -f -R $PRODUCT_NAME.component\ncp -R $TARGET_BUILD_DIR/$WRAPPER_NAME $PRODUCT_NAME.component\n";
 		};
 		F7FDD5F4140DA01400F4533F /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -238,7 +238,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "date \"+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S\" >${SOURCE_ROOT}/SymbiosisClassPrefix.h\n";
+			shellScript = "";
 		};
 /* End PBXShellScriptBuildPhase section */
 

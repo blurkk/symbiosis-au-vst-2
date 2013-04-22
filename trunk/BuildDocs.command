@@ -5,8 +5,15 @@ if [ -x ./PikaCmd ]
 then
 	chmod +x ./PikaCmd
 else
-	echo Building PikaCmd
-	g++ -x c++ -pipe -Wno-trigraphs -fno-rtti -O3 -Wreturn-type -Wunused-variable -DNDEBUG -fmessage-length=0 -funroll-loops -ffast-math -fstrict-aliasing -msse3 -fvisibility=hidden -fvisibility-inlines-hidden -fno-threadsafe-statics -mmacosx-version-min=10.4 -o ./PikaCmd PikaCmdAmalgam.cpp
+	cd PikaCmdSource
+	./BuildPikaCmd.sh
+	cd ..
+	mv PikaCmdSource/PikaCmd .
 fi
 ./PikaCmd
-if [[ -a $(which doxygen) ]]; then doxygen; fi
+if [[ -a $(which doxygen) ]]; then
+	# I had problems getting doxygen to parse my .mm properly, but when renamed to .cpp it worked (and no, EXTENSION_MAPPING didn't help)
+	mv ../Symbiosis.mm ../Symbiosis.cpp
+	doxygen
+	mv ../Symbiosis.cpp ../Symbiosis.mm
+fi

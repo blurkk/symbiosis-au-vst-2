@@ -15,10 +15,14 @@
 // project configuration: -d ppc_$(ppc) -d i386_$(i386) -d x86_64_$(x86_64)
 //
 
-#ifndef ppc_YES || i386_YES || x86_64_YES
-	#define ppc_YES
-	#define i386_YES
-	#define x86_64_YES
+#ifndef ppc_YES
+	#ifndef i386_YES
+		#ifndef x86_64_YES
+			#define ppc_YES
+			#define i386_YES
+			#define x86_64_YES
+		#endif
+	#endif
 #endif
 
 // AudioUnit name in "company: product" format. This is typically the name that is presented to the user by the host
@@ -76,8 +80,10 @@ resource 'thng' (10000, NAME) {
 	{
 		#ifndef ppc_YES
 			#ifndef i386_YES
-				#printf("***** You must define ppc_YES, i386_YES, x86_64_YES or a combination of these, see comment in .r for more info. *****\n")
-				#error
+				#ifndef x86_64_YES
+					#printf("***** You must define ppc_YES, i386_YES, x86_64_YES or a combination of these, see comment in .r for more info. *****\n")
+					#error
+				#endif
 			#endif
 		#endif
 		#ifdef ppc_YES
@@ -124,8 +130,10 @@ resource 'thng' (10001, "Editor") {
 	{
 		#ifndef ppc_YES
 			#ifndef i386_YES
-				#printf("***** You must define ppc_YES, i386_YES, x86_64_YES or a combination of these, see comment in .r for more info. *****\n")
-				#error
+				#ifndef x86_64_YES
+					#printf("***** You must define ppc_YES, i386_YES, x86_64_YES or a combination of these, see comment in .r for more info. *****\n")
+					#error
+				#endif
 			#endif
 		#endif
 		#ifdef ppc_YES
