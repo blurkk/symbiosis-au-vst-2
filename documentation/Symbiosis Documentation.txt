@@ -266,20 +266,6 @@ called it something else though). You will find more instructions in the `Symbio
 
  - _SymbiosisEntry
  - _SymbiosisViewEntry.
- 
- One more thing, if you are targetting 64-bit you need to have a special header file that defines a unique class prefix.
-Objective-C has a flat name space. This is far from ideal for plug-ins. Each unique class must have a unique name and we
-accomplish this through the use of some clever macros. These macros require a prefix that you must define in
-`SymbiosisClassPrefix.h`. Here is an example definition:
-
-    #define SY_CLASS_PREFIX comsonicchargebitspeek102
-
- Or even better, add a "Run Script Build Phase" to your target(s), enter the following script:
-
-    date "+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S" >${SOURCE_ROOT}/SymbiosisClassPrefix.h
-
- Move this Build Phase to the top so that it is executed at the beginning of the compilation. Now we are virtually
-guaranteed to obtain a unique prefix for every unique build.
 
  That's about it. Just make sure to build your plug-in without the NDEBUG setting the first time around as explained in
 the next section.
@@ -351,6 +337,7 @@ this file.
  display        A string that defines how the parameter is displayed to the end user. Use one of the following:
                 `=` for linear scaling (within the `min` to `max` range).
                 `b` for boolean switch (0 is off, 1 is on)
+                `i` for integer (scaled from `min` to `max`)
                 a|b|c|d for discrete parameter settings, e.g. `sine|tri|saw|pulse`
                 `?` to convert the value with the Vendor-Specific Extensions (described below).
  unit           The parameter suffix / unit.
@@ -465,7 +452,7 @@ Copyrights and Trademarks
  Symbiosis is released under the "New Simplified BSD License".
  http://www.opensource.org/licenses/bsd-license.php
 
- Copyright (c) 2009-2011, NuEdge Development / Magnus Lidström
+ Copyright (c) 2009-2013, NuEdge Development / Magnus Lidström
  All rights reserved.
 
  *)  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the

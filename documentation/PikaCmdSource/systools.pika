@@ -1,0 +1,417 @@
+/*
+	systools.pika v0.942
+
+	PikaScript is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
+	
+	Copyright (c) 2009-2013, NuEdge Development / Magnus Lidstroem
+	All rights reserved.
+*/
+/*
+	include('filename')
+	
+		Improved 'include' that looks for include files in a list of search paths. Use 'include.addSearchPath()' or the
+		environment variable PIKAINCLUDE to define search paths. Include files will also be searched for first in the
+		same directory as the currently executing .pika. The global '::run.root' will contain this directory path.
+	
+	run('filename')
+		
+		Augmented to support the ::run.root variable.
+
+	'pathSlash' = appendDirSlash('path')
+		
+		Appends '/' to 'path' if the its last character is not already '/', '\' or ':'.
+
+	'path' = removeDirSlash('pathSlash')
+		
+		Removes last character from 'pathSlash' if it is '/', '\' or ':'. You can use it to climb a path upwards like
+		this: { parent = dirOfPath(removeDirSlash('/abc/def/ghi')) }
+		
+	'dir' = dirOfPath('path')
+	
+		Extracts the directory of 'path' (including trailing '/' etc).
+		
+	'name' = basenameOfPath('path')
+	
+		Extracts the base name (i.e. filename without extension) of 'path'
+		
+	'name' = filenameOfPath('path')
+	
+		Extracts the filename (incl. any extension) of 'path'.
+		
+	'.ext' = extensionOfPath('path')
+	
+		Extracts the extension of 'path', including the leading '.'. Returns void if no extension.
+		
+	splitPath('path', @dir, @name, @extension)
+	
+		Splits a full path into directory, base name and extension.
+		
+	'output' = pipe('command', [throwOnError = true])
+	
+		Executes a shell command, captures its output and returns it. Optionally throws exception if command exits with
+		a non-zero return code.
+		
+	eraseFile('path')
+	
+		Erases file(s). 'path' can contain wildcard characters.
+		
+	moveFile('fromPath', 'toPath')
+		
+		Moves / renames file(s). 'fromPath' can contain wildcard characters. 'toPath' may or may not contain a filename.
+		
+	copyFile('fromPath', 'toPath')
+	
+		Copies file(s). 'fromPath' can contain wildcard characters. 'toPath' may or may not contain a filename.
+		
+	makeDir('path')
+		
+		Creates a dir (and any intermediate dirs as necessary). Throws if dir already exists.
+		
+	removeDir('path')
+	
+		Removes a dir. Throws if dir is not empty.
+		
+	renameFile('path', 'newName')
+		
+		Renames a file. 'newName' should not contain directory.
+		
+	concatFiles(['sources', ...], 'toPath')
+	
+		Concatenates all sources and replaces 'toPath'. 'toPath' must not be one of 'sources'.
+		
+	'path' = fromNativePath('nativePath')
+	
+		Converts a path in native representation (e.g. using '\' as director separator instead of '/') to platform-
+		normalized representation.
+		
+	'nativePath' = toNativePath('path')
+			
+		Converts a path in platform-normalized representation (e.g. always using '/' as director separator) to native
+		representation.
+		
+	'path' = currentDir()
+	
+		Returns the current working dir. (Notice: there is no way to set the current working dir.)
+		
+	dir('files', >action, ['order' = void], [?descending = false])
+	
+		Lists files in a directory (or files that matches a wildcard specifier) and executes >action for each file.
+		'order' can be void (for undefined), 'name', 'time' or 'size'.
+		
+	'yyyy-mm-dd hh:mm:ss' = fileTime('path')
+	
+		Returns the time of a file in ISO format. Time accuracy may not include seconds, in which case they will always
+		be zero.
+		
+	+bytes = fileSize('path')
+	
+		Returns file size in bytes.
+		
+	?found = pathExists('path')
+		
+		Returns true if path exists.
+		
+	?newer = isFileNewer('comparePath', 'toPath')
+	
+		Returns true if 'comparePath' is newer than 'toPath' or 'comparePath' exists and 'toPath' does not.
+		
+	sleep(+secs)
+	
+		Pauses for a specific number of seconds. Timing accuracy may vary.
+*/
+
+include('stdlib.pika');
+
+appendDirSlash = function { $0 # (if (span(right($0, 1), '/\:') == 0) '/') };
+removeDirSlash = function { if (span(right($0, 1), '/\:') != 0) chop($0, 1) else $0 };
+dirOfPath = function { $0{:rfind($0, '/\:') + 1} };
+basenameOfPath = function { fn = $0{rfind($0, '/\:') + 1:}; ( if ((i = rfind(fn, '.')) >= 0) fn{:i} else fn ) };
+filenameOfPath = function { $0{rfind($0, '/\:') + 1:} };
+extensionOfPath = function { ext = $0{rfind($0, '/\:.'):}; (if (ext{0} == '.') ext else void) };
+splitPath = function {
+	args(@full, @dir, @name, @extension);
+	if (!wildmatch(full, '{*}{[^<>:"/\|?*]*}{.[^<>:"/\|?*.]*}', dir, name, extension)) {
+		[extension] = void;
+		if (!wildmatch(full, '{*}{[^<>:"/\|?*]*}', dir, name)) throw("Invalid path")
+	}
+};
+pipe.dir = void;
+pipe.newTempPath = function {
+	if (::pipe.dir == void) {
+		::pipe.dir = bake('{TEMP_DIR}PikaPipes/');
+		system(bake('{MKDIR_COMMAND} {toNativePath(pipe.dir)} {DIRECT_ALL_TO_NULL}'));
+	};
+	bake('{pipe.dir}{radix(trunc(random(65536 * 65536) + time()), 16)}');
+};
+pipe.stdOutPath = void;
+pipe.stdErrPath = void;
+pipe = function {
+	vargs(@command,, @throwOnError);
+	defaults(@throwOnError, true);
+	commandExe = command{:i = find(command, ' ')};
+	commandArgs = command{i:};
+	commandLine = toNativePath(commandExe) # ' ' # commandArgs;
+	
+	if (::pipe.stdOutPath == void) ::pipe.stdOutPath = pipe.newTempPath();
+	if (::pipe.stdErrPath == void) ::pipe.stdErrPath = pipe.newTempPath();
+
+	err = void;
+	rc = system(bake('({commandLine}) 1>{toNativePath(pipe.stdOutPath)} 2>{toNativePath(pipe.stdErrPath)}'));
+	if (rc != 0) {
+		err = bake('Error executing {escape(command)}');
+		if (try(>e = load(pipe.stdErrPath)) == void && e != '') {
+			e = replace(e, "\t\r\n", ' ', find, 1);
+			if (length(e) > 80) e = e{:80 - 3} # '...';
+			err #= ': ' # e;
+		};
+	};
+	o = load(pipe.stdOutPath);
+	system(bake('{DEL_COMMAND} {toNativePath(pipe.stdOutPath)} {DIRECT_ALL_TO_NULL}'));
+	system(bake('{DEL_COMMAND} {toNativePath(pipe.stdErrPath)} {DIRECT_ALL_TO_NULL}'));
+	if (err != void && throwOnError) throw(err);
+	( trim(o, void) )
+};
+eraseFile = function { pipe(bake('{DEL_COMMAND} {toNativePath($0)}')) };
+moveFile = function { pipe(bake('{MOVE_COMMAND} {toNativePath($0)} {toNativePath($1)}')) };
+copyFile = function { pipe(bake('{COPY_COMMAND} {toNativePath($0)} {toNativePath($1)}')) };
+makeDir = function { pipe(bake('{MKDIR_COMMAND} {toNativePath($0)}')) }; // Error if already exists
+removeDir = function { pipe(bake('{RMDIR_COMMAND} {toNativePath($0)}')) };
+
+if (PLATFORM == 'UNIX') {
+
+	fromNativePath = function { replace($0, '\ ', ' ') };
+	toNativePath = function { replace($0, ' ', '\ ') };
+	currentDir = function { appendDirSlash(pipe('pwd -L')) };
+
+	renameFile = function {
+		assert(dirOfPath($1) == void, 'Can only rename files in the same directory');
+		pipe(bake('mv -i {toNativePath($0)} {toNativePath(dirOfPath($0) # $1)} </dev/null'))
+	};
+
+	map(@dir.ORDER_OPTIONS, '.f','' , '.t','' , 'name.f','' , 'name.t','r' , 'size.f','Sr' , 'size.t','S'
+			, 'time.f','tr' , 'time.t','t');
+
+	concatFiles = function {
+		n = $n;
+		assert(> n > 1);
+		cmd = 'cat';
+		for (i = 0; i < n - 1; ++i) { cmd #= ' ' # toNativePath(p = $[i]); assert(> gotPaths[undotify(p)] = true); };
+		cmd #= ' 1>' # toNativePath(d = $[n - 1]) # ' 2>/dev/null';
+		assert(> !exists(@gotPaths[undotify(d)])
+				, 'the destination file must not be one of the source files for concatFiles()');
+		if (system(cmd) != 0) throw('Error concatenating files with command: ' # cmd);
+	};
+
+	dir = function {
+		vargs(@files, @action,, @order, @descending);
+		defaults(@order,void , @descending,false);
+		if (right(files, 1) == '/') files #= '*';
+		options = dir.ORDER_OPTIONS[order][descending{0}];
+		tokenize(pipe(bake('ls -kp1d{options} {toNativePath(files)}'), false), >action($0{rfind(chop($0, 1), '/') + 1:}));
+		( void )
+	};
+
+	fileTime.statOptions = '';
+
+	discoverStatOptions = function {
+		if (::fileTime.statOptions == '') {
+			if (system('stat -c%y . 1>/dev/null 2>&1') == 0) {
+				::fileTime.statOptions = '-c%y';
+				::fileSize.statOptions = '-c%s';
+			} else {
+				::fileTime.statOptions = '-f%Sm -t"%F %T"';
+				::fileSize.statOptions = '-f%z';
+			}
+		}
+	};
+
+	fileTime = function {
+		discoverStatOptions();
+		r = pipe(bake('stat {fileTime.statOptions} {toNativePath($0)}'));
+		if (r == void) throw('Unable to obtain file time for ' # $0);
+		( r{:19} )
+	};
+
+	fileSize = function {
+		discoverStatOptions();
+		r = pipe(bake('stat {fileSize.statOptions} {toNativePath($0)}'));
+		if (r == void) throw('Unable to obtain file size for ' # $0);
+		( r )
+	};
+
+	pathExists = function { (system(bake('test -e {toNativePath($0)}')) == 0) };
+
+	isFileNewer = function {
+		p0 = toNativePath($0);
+		p1 = toNativePath($1);
+		( system(bake('test -e {p0} -a ! -e {p1} -o {p0} -nt {p1}')) == 0 )
+	};
+
+	sleep = function { pipe(bake('sleep {$0}')); };
+
+	DIR_SLASH = '/';
+	DEL_COMMAND = 'rm -f';
+	MOVE_COMMAND = 'mv';
+	COPY_COMMAND = 'cp -f';
+	MKDIR_COMMAND = 'mkdir -p';
+	RMDIR_COMMAND = 'rmdir';
+	DEV_NULL = '/dev/null';
+	DIRECT_ALL_TO_NULL = '1>/dev/null 2>&1';
+	TEMP_DIR = appendDirSlash(coalesce(getenv('TMPDIR'), '/tmp/'));
+
+} else if (PLATFORM == 'WINDOWS') {
+
+	toNativePath = function { $0 = replace($0, '/', '\'); if (span(' ', $0) == 1) $0 = '"' # $0 # '"'; ( $0 ) };
+	fromNativePath = function { replace($0, '\', '/') };
+	currentDir = function { appendDirSlash(fromNativePath(pipe('cd'))) };
+	renameFile = function { pipe(bake('ren {toNativePath($0)} {toNativePath($1)}')) };
+
+	map(@dir.ORDER_OPTIONS, '.f','' , '.t','' , 'name.f','/ON' , 'name.t','/O-N' , 'size.f','/OS' , 'size.t','/O-S'
+			, 'time.f','/OD' , 'time.t','/O-D');
+
+	concatFiles = function {
+		n = $n;
+		assert(> n > 1);
+		cmd = 'COPY /Y /B ';
+		for (i = 0; i < n - 1; ++i) {
+			cmd #= (if (i > 0) ' + ') # toNativePath(p = $[i]);
+			assert(> gotPaths[undotify(p)] = true);
+		};
+		cmd #= ' ' # toNativePath(d = $[n - 1]);
+		assert(> !exists(@gotPaths[undotify(d)])
+				, 'the destination file must not be one of the source files for concatFiles()');
+		pipe(cmd);
+	};
+	
+	dir = function {
+		vargs(@files, @action,, @order, @descending);
+		defaults(@order,'' , @descending,false);
+		singleFile = void;
+		dirs = true;
+		if (span('*', files) == 0 && find(right(files, 1), '/\:') != 0) {
+			singleFile = lower(filenameOfPath(files));
+			files #= '*'
+		};
+		options = dir.ORDER_OPTIONS[order][descending{0}];
+		tokenize(pipe(bake(
+				'SET DIRCMD=&DIR /B /AD-H {toNativePath(files)}&ECHO \&&DIR /B {options} {toNativePath(files)}')
+				, false), >{
+			if ($0 == '\') dirs = false
+			else if (dirs) dirs[undotify($0)] = true
+			else if (singleFile == void || lower($0) == singleFile) action($0 # (if (exists(@dirs[undotify($0)])) '/'));
+		});
+	};
+	
+	pathExists = function { (system(bake('IF NOT EXIST {toNativePath($0)} EXIT 1')) == 0) };
+
+	dirSingleFile = function {
+		s = pipe(bake('SET DIRCMD=&DIR /TW /4 /-C {toNativePath($0)}'));
+		for (; s != '' && span(s{0}, '0123456789') == 0; s = s{find(s, LF) + 1:}) ;
+		if (s == '') throw('Unable to obtain file info for ' # $0);
+		( s )
+	};
+	
+	fileTime.dateFormat = '';
+	fileTime = function {
+		if (::fileTime.dateFormat == '') {
+			system(bake('ECHO >{DEV_NULL}')); // In case NUL is not supported.
+			s = lower(pipe(bake('date <{DEV_NULL}'), false));
+			yi = search(s, 'yy');
+			mi = search(s, 'mm');
+			di = search(s, 'dd');
+			if (yi < mi && yi < di) ::fileTime.dateFormat = (if (mi < di) 'YMD' else 'YDM')
+			else if (yi > mi && yi > di) ::fileTime.dateFormat = (if (mi < di) 'MDY' else 'DMY')
+		};
+		
+		df = fileTime.dateFormat;
+		if (!wildmatch(dirSingleFile($0)
+				, (if (df{0} == 'Y') '{[0-9]????}[^0-9]{[0-9]??}[^0-9]{[0-9]??}'
+				else '{[0-9]??}[^0-9]{[0-9]??}[^0-9]{[0-9]????}') # '  {[0-9]??}[^0-9]{[0-9]??} {*}'
+				, @a[df{0}], @a[df{1}], @a[df{2}], @h, @m, @r))
+			throw('Unable to obtain file time for ' # $0);
+		if (upper(r{0}) == 'P' && (h # m) != '1200') h = trim(h, '0', void) + 12
+		else if (upper(r{0}) == 'A' && (h # m) == '1200') h = 0;
+		( bake("{a.Y}-{a.M}-{a.D} {h}:{m}:00") )
+	};
+	
+	fileSize = function {
+		if (!wildmatch(dirSingleFile($0){30:}, '[ ]*{[0-9]?*} *', @n)) throw('Unable to obtain file size for ' # $0);
+		( n )
+	};
+
+	isFileNewer = function {
+		if ($0 == $1) ( false )
+		else {
+			assert(dirOfPath($0) == dirOfPath($1), 'Can only compare files in the same directory');
+			s = pipe(bake('DIR /B /O-D {toNativePath($0)} {toNativePath($1)}'));
+			( s{:find(s, LF)} == $0{rfind($0, '/\:') + 1:} )
+		}
+	};
+	
+	compose(@sleep.COMMANDS, 'TIMEOUT /T {s}', 'CHOICE /T {s} /D y');
+
+	sleep.command = 0;
+
+	sleep = function {
+		for (s = $0;
+			if (sleep.command < sleep.COMMANDS.n)
+				( system(bake(sleep.COMMANDS[sleep.command] # ' {DIRECT_ALL_TO_NULL}')) != 0 )
+			else {
+				for (et = time() + round(s); time() < et;)
+					system(bake('PING 123.45.67.89 -n 1 -w {round((et - time()) * 500)} {DIRECT_ALL_TO_NULL}'));
+				( false )
+			}; ++::sleep.command);
+	};
+
+	TEMP_DIR = appendDirSlash(fromNativePath(coalesce(getenv('TEMP'), '\temp')));
+	DEV_NULL = 'NUL';
+	if (system('ECHO >NUL') != 0) // "Windows Fundamental" does not have NULL.SYS
+		DEV_NULL = toNativePath(bake('{TEMP_DIR}devnul'));
+	DIR_SLASH = '\';
+	DEL_COMMAND = 'DEL /Q';
+	MOVE_COMMAND = 'MOVE';
+	COPY_COMMAND = 'COPY /Y';
+	MKDIR_COMMAND = 'MKDIR';
+	RMDIR_COMMAND = 'RMDIR /Q';
+	DIRECT_ALL_TO_NULL = bake('1>{DEV_NULL} 2>&1');
+	
+} else {
+	throw("Unsupported platform");
+};
+
+// --- Improved 'include' and 'run' ---
+
+run.runThis = function {
+	args(@path, @source, @frame);
+	if (source{:2} == '#!') source = source{find(source, LF):};
+	lastRoot = ::run.root;
+	::run.root = path{:rfind(path, '/\:') + 1};
+	x = try(>evaluate(source, frame));
+	::run.root = lastRoot;
+	if (x != void) throw(x);
+};
+run = >{
+	function {
+		fn = $0;
+		if (run.root == void || try(>source = load(path = run.root # fn)) != void) source = load(path = fn);
+		run.runThis(path, source, @^$);
+	}($0)
+};
+run.root = (if (exists(@::$0)) ::$0{:rfind(::$0, '/\:') + 1} else '');
+
+include = >{
+	function {
+		fn = $0;
+		for (i = (if (run.root == void) 0 else -1); {
+			if (i >= include.searchPaths.n) throw(err)
+			else if (exists(@::included[(path = (if (i < 0) run.root else include.searchPaths[i]) # fn)])) ( false )
+			else if ((x = try(>source = load(path))) != void) { err = coalesce(@err, x); ( true ) }
+			else { run.runThis(path, source, @^$); ::included[path] = true; ( false ) }
+		}; ++i)
+	}($0)
+};
+compose(@include.searchPaths, '');
+include.addSearchPath = >append(@include.searchPaths, $0 # (if (right($0, 1) != '/') '/'));
+if (exists(@::getenv)) tokenize(getenv('PIKAINCLUDE'), include.addSearchPath, ';,');
+
+( void )

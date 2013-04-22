@@ -1,17 +1,17 @@
 /**
-	\file Symbiosis.cpp
+	\file Symbiosis.mm
 
 	NuEdge Development Symbiosis AU / VST portability tools.
 	
 	\version
 
-	Version 1.3b
+	Version 1.3
 
 	\page Copyright
 
 	Symbiosis is released under the "New Simplified BSD License". http://www.opensource.org/licenses/bsd-license.php
 	
-	Copyright (c) 2010-2011, NuEdge Development / Magnus Lidstroem
+	Copyright (c) 2010-2013, NuEdge Development / Magnus Lidstroem
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -40,6 +40,7 @@
 #include <AudioToolbox/AudioUnitUtilities.h>
 #include <mach-o/dyld.h>
 #include <mach-o/ldsyms.h>
+#include <mach/mach_time.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <assert.h>
@@ -59,31 +60,9 @@
 #endif
 
 #if (SY_USE_COCOA_GUI)
-	#import <Cocoa/Cocoa.h>
-	#import <AudioUnit/AUCocoaUIView.h>
-	#import "objc/runtime.h"
-	#include "SymbiosisClassPrefix.h"
-
-	// IMPORTANT: YOU NEED TO CREATE SymbiosisClassPrefix.h WHEN BUILDING 64-BIT.
-	// 
-	// Objective-C has a flat name space, far from ideal for plug-ins. This means that each unique class must have a
-	// unique name and we accomplish this through the use of some clever macros. These macros require a prefix that you
-	// must define in SymbiosisClassPrefix.h. Define like this:
-	//
-	// #define SY_CLASS_PREFIX comsonicchargebitspeek102
-	//
-	// Or even better, add a "Run Script Build Phase" to your target(s), enter the following script:
-	//
-	//     date "+#define SY_CLASS_PREFIX netnuedgesymbiosis%Y%m%d%H%M%S" >${SOURCE_ROOT}/SymbiosisClassPrefix.h
-	//
-	// Move this Build Phase to the top so that it is executed at the beginning of the compilation. Now we are virtually
-	// guaranteed to obtain a unique prefix for every unique build.
-
-	#define SY_UNIQUE_NAME_3(x, y) x##_##y
-	#define SY_UNIQUE_NAME_2(x, y) SY_UNIQUE_NAME_3(x, y)
-	#define SY_UNIQUE_NAME(y) SY_UNIQUE_NAME_2(SY_CLASS_PREFIX, y)
-	#define SY_STRINGIZE_2(y) #y
-	#define SY_STRINGIZE(y) SY_STRINGIZE_2(y)
+	#include <Cocoa/Cocoa.h>
+	#include <AudioUnit/AUCocoaUIView.h>
+	#include <objc/objc-runtime.h>
 #elif (!SY_USE_COCOA_GUI)
 	#include <AudioUnit/AudioUnitCarbonView.h>
 #endif
@@ -137,7 +116,7 @@
 #if (SY_DO_TRACE)
 
 	#if !defined(SY_TRACE_MISC)
-		#define SY_TRACE_MISC 0
+		#define SY_TRACE_MISC 1
 	#endif
 	#if !defined(SY_TRACE_EXCEPTIONS)
 		#define SY_TRACE_EXCEPTIONS 1
@@ -397,6 +376,7 @@ static const char* cfStringToCString(::CFStringRef stringRef, ::CFStringEncoding
 	const char* stringPointer = ::CFStringGetCStringPtr(stringRef, encoding);
 	if (stringPointer == 0) {
 		::Boolean wasOK = ::CFStringGetCString(stringRef, buffer, maxStringLength + 1, encoding);
+		(void)wasOK;
 		SY_ASSERT(wasOK);
 		stringPointer = buffer;
 	}
@@ -547,12 +527,14 @@ static unsigned char* loadFromFile(const ::FSRef* fsRef, size_t& size) throw(Mac
 		throwOnOSError(::FSReadFork(fileFork, fsFromStart, 0, static_cast< ::ByteCount >(forkSize), bytes, &actualCount));
 		SY_ASSERT(actualCount == static_cast< ::ByteCount >(forkSize));
 		::OSErr err = ::FSCloseFork(fileFork);
+		(void)err;
 		SY_ASSERT(err == noErr);
 		isForkOpen = false;
 	}
 	catch (...) {
 		if (isForkOpen) {
 			::OSErr err = ::FSCloseFork(fileFork);
+			(void)err;
 			SY_ASSERT(err == noErr);
 			isForkOpen = false;
 		}
@@ -581,12 +563,14 @@ static void saveToFile(const ::FSRef* fsRef, size_t size, const unsigned char by
 			SY_ASSERT(actualCount == size);
 		}
 		::OSErr err = ::FSCloseFork(fileFork);
+		(void)err;
 		SY_ASSERT(err == noErr);
 		isForkOpen = false;
 	}
 	catch (...) {
 		if (isForkOpen) {
 			::OSErr err = ::FSCloseFork(fileFork);
+			(void)err;
 			SY_ASSERT(err == noErr);
 			isForkOpen = false;
 		}
@@ -761,7 +745,7 @@ class VSTPlugIn {
 	public:		bool setParameterFromString(VstInt32 parameterIndex, const char* string);								///< Tries to update the value of parameter \p to the value represented as an ascii string in \p string. The function is not mandatory, and false will be returned if the plug-in could not convert the string for one reason or another.
 	public:		void resume();																							///< Resumes the plug-in. You must call this method before performing any processing. It is illegal to call this method if the plug-in is already in resumed state. (I.e. each call to resume() should be balanced with a call to suspend().)
 	public:		void suspend();																							///< Suspends the plug-in. Calling this method allows the plug-in to release any resources necessary for processing (and if necessary update it's gui accordingly). It is illegal to call any of the processing methods when the plug-in is in suspended state. It is also illegal to call suspend more than once without a call to resume() in between. 
-	public:		bool wantsMidi() const;																					///< Returns true if the plug-in has flagged that it is interested in receiving MIDI data.
+	public:		bool wantsMidi();																						///< Returns true if the plug-in has flagged that it is interested in receiving MIDI data. Will issue a call to plug-ins "canDo". Should only be called when plug-ins is "resumed".
 	public:		void processAccumulating(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount);///< Processes samples from \p inBuffers and accumulates result in \p outBuffers. This is a legacy method for performing audio processing. processReplacing() is preferred. See processReplacing() for further documentation.
 	public:		void processEvents(const VstEvents& events);															///< Processes the VST events in \p events (typically MIDI events). The events should be sorted in time (see deltaFrames in the VstEvent struct). Call this method before processReplacing(), and never more than once. The VstEvents struct only contains room for 2 events, so you would normally need to allocate your own VstEvents struct on the heap, or alternatively use a customized "hacked" VstEvents struct with more than 2 elements. See the VstEvents and VstEvent structs in the VST SDK documentation for more info. 
 	public:		void processReplacing(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount);	///< Processes samples from \p inBuffers and places result in \p outBuffers. \p inBuffers and \p outBuffers are arrays with pointers to floating-point buffers for the sample data. You need to allocate and setup pointers to at least getInputCount() number of input buffers and getOutputCount() number of output buffers. Each input buffer should contain \p sampleCount number of samples, and each output buffer should contain space for at least as many samples. It is legal to use the input buffers as output buffers (for "in place processing").
@@ -803,29 +787,6 @@ class VSTPlugIn {
 	protected:	float currentSampleRate;
 	protected:	VstInt32 currentBlockSize;
 };
-
-#if (SY_INCLUDE_GUI_SUPPORT && SY_USE_COCOA_GUI)
-
-class SymbiosisComponent;
-
-/**
-	CocoaView is an NSView with one simple override on 'dealloc' that calls the VST's close method.
-*/
-@interface SY_UNIQUE_NAME(CocoaView) : NSView { SymbiosisComponent* symbiosis; }
-
-- initWithFrame:(NSRect)frame symbiosis:(SymbiosisComponent*)symbiosisComponent;
-- (void)detach;
-- (void)dealloc;
-
-@end
-
-@interface SY_UNIQUE_NAME(CocoaViewFactory) : NSObject <AUCocoaUIBase> { }
-
-- (NSString*) description;
-
-@end
-
-#endif
 
 /**
 	SymbiosisComponent is our main class that manages the translation of all calls between AU and VST.
@@ -958,6 +919,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	double tailTime;
 	protected:	bool vstSupportsBypass;
 	protected:	bool isBypassing;
+	protected:	bool vstWantsMidi;
 	protected:	int inputBusCount;
 	protected:	int outputBusCount;
 	protected:	int inputBusChannelNumbers[kMaxBuses + 1];
@@ -972,7 +934,7 @@ class SymbiosisComponent : public VSTHost {
 	protected:	::EventLoopTimerRef idleTimerRef;
 #if (SY_INCLUDE_GUI_SUPPORT)
 #if (SY_USE_COCOA_GUI)
-	protected:	SY_UNIQUE_NAME(CocoaView)* cocoaView;
+	protected:	NSView* cocoaView;
 #elif (!SY_USE_COCOA_GUI)
 	protected:	::AudioUnitCarbonView viewComponentInstance;
 	protected:	::AudioUnitCarbonViewEventListener viewEventListener;
@@ -996,7 +958,6 @@ VstInt32 VSTPlugIn::getParameterCount() const { SY_ASSERT(aeffect != 0); return 
 VstInt32 VSTPlugIn::getInputCount() const { SY_ASSERT(aeffect != 0); return aeffect->numInputs; }
 VstInt32 VSTPlugIn::getOutputCount() const { SY_ASSERT(aeffect != 0); return aeffect->numOutputs; }
 VstInt32 VSTPlugIn::getInitialDelay() const { SY_ASSERT(aeffect != 0); return aeffect->initialDelay; }
-bool VSTPlugIn::wantsMidi() const { SY_ASSERT(resumedFlag); return wantsMidiFlag; }
 VstInt32 VSTPlugIn::getTailSize() { return static_cast<VstInt32>(dispatch(effGetTailSize, 0, 0, 0, 0)); }				// 0 = not supported, 1 = no tail 
 void VSTPlugIn::closeEditor() { SY_ASSERT(editorOpenFlag); dispatch(effEditClose, 0, 0, 0, 0); editorOpenFlag = false; }
 
@@ -1186,19 +1147,21 @@ void VSTPlugIn::open() {
 			, "Could not locate function in bundle executable (\"main_macho\" or \"VSTPluginMain\")");
 	SY_ASSERT(tempPlugInPointer == 0);
 	tempPlugInPointer = this;
+	AEffect* newAEffect = 0;
 	try {
-		AEffect* newAEffect = (*mainFunction)(staticAudioMasterCallback);												// During startup we use a temporary global plug-in pointer since we haven't been able to store it into the 'resvd1' field of 'aeffect' yet.
+		newAEffect = (*mainFunction)(staticAudioMasterCallback);														// During startup we use a temporary global plug-in pointer since we haven't been able to store it into the 'resvd1' field of 'aeffect' yet.
 		if (newAEffect == 0 || newAEffect->magic != kEffectMagic) {
 			throw SymbiosisException("VST main() doesn't return object AEffect*");
 		}
-		SY_ASSERT(aeffect == 0 || aeffect == newAEffect);
-		aeffect = newAEffect;
-		aeffect->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	}
 	catch (...) {
+		aeffect = 0;																									// Plug-in should have done it's own destruction in this case. So throw this reference away in case audioMasterCallback set it to prevent double destruction.
 		tempPlugInPointer = 0;
 		throw;
 	}
+	SY_ASSERT(aeffect == 0 || aeffect == newAEffect);
+	aeffect = newAEffect;
+	aeffect->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	tempPlugInPointer = 0;
 	setSampleRate(currentSampleRate);
 	if (currentBlockSize != 0) {
@@ -1345,6 +1308,12 @@ void VSTPlugIn::suspend() {
 	SY_ASSERT(resumedFlag);
 	dispatch(effMainsChanged, 0, 0, 0, 0);
 	resumedFlag = false;
+}
+
+bool VSTPlugIn::wantsMidi() {
+	SY_ASSERT(resumedFlag);
+	VstIntPtr canDoReturn = dispatch(effCanDo, 0, 0, const_cast<char*>("receiveVstMidiEvent"), 0);
+	return (canDoReturn == 0 ? wantsMidiFlag : canDoReturn > 0);
 }
 
 void VSTPlugIn::processAccumulating(const float* const* inBuffers, float* const* outBuffers, VstInt32 sampleCount) {
@@ -1723,6 +1692,7 @@ void VSTPlugIn::getEditorDimensions(VstInt32& width, VstInt32& height) {
 	SY_ASSERT(hasEditor());
 	ERect* rectPointer = 0;
 	VstIntPtr vstDispatchReturn = dispatch(effEditGetRect, 0, 0, reinterpret_cast<void*>(&rectPointer), 0);
+	(void)vstDispatchReturn;
 	SY_ASSERT(vstDispatchReturn != 0);
 	SY_ASSERT(rectPointer != 0);
 	SY_ASSERT(rectPointer->left <= rectPointer->right);
@@ -1762,7 +1732,7 @@ VSTPlugIn::~VSTPlugIn() {
 
 	if (aeffect != 0) {
 		dispatch(effClose, 0, 0, 0, 0);
-		aeffect = false;
+		openFlag = false;
 		aeffect = 0; // Note: sending an effClose to a VST destroys the aeffect instance
 	}
 
@@ -1773,14 +1743,26 @@ VSTPlugIn::~VSTPlugIn() {
 
 /* --- SymbiosisComponent --- */
 
-void SymbiosisComponent::idle(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn == vst); }
-VstInt32 SymbiosisComponent::getVersion(VSTPlugIn& plugIn) { SY_ASSERT(&plugIn == vst); return kSymbiosisVSTVersion; }
+void SymbiosisComponent::idle(VSTPlugIn& plugIn) {
+	(void)plugIn;
+	SY_ASSERT(&plugIn == vst);
+}
+
+VstInt32 SymbiosisComponent::getVersion(VSTPlugIn& plugIn) {
+	(void)plugIn;
+	SY_ASSERT(&plugIn == vst);
+	return kSymbiosisVSTVersion;
+}
+
 SymbiosisComponent::~SymbiosisComponent() { uninit(); }
 
 void SymbiosisComponent::uninit() {
 #if (SY_INCLUDE_GUI_SUPPORT)
 #if (SY_USE_COCOA_GUI)
-	if (cocoaView != 0) [cocoaView detach];
+	if (cocoaView != 0) {
+		Ivar v = object_setInstanceVariable(cocoaView, "symbiosis", 0);
+		SY_ASSERT(v != 0);
+	}
 #elif (!SY_USE_COCOA_GUI)
 	if (viewComponentInstance != 0) {
 		::SetComponentInstanceStorage(reinterpret_cast< ::ComponentInstance >(viewComponentInstance), 0);
@@ -2184,12 +2166,14 @@ void SymbiosisComponent::convertVSTPresetsInDomain(short domain, const char comp
 		} while (fsGetCatalogInfoBulkReturn == noErr);
 
 		::OSErr err = ::FSCloseIterator(iterator);
+		(void)err;
 		SY_ASSERT(err == noErr);
 		iterator = 0;
 	}
 	catch (...) {
 		if (iterator != 0) {
 			::OSErr err = ::FSCloseIterator(iterator);
+			(void)err;
 			SY_ASSERT(err == noErr);
 			iterator = 0;
 		}
@@ -2445,25 +2429,26 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 				info.name[51] = '\0';
 				info.unitName = 0;
 				info.unit = kAudioUnitParameterUnit_Generic;
+				info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
+							| kAudioUnitParameterFlag_IsWritable;
 				if (auUnit[0] != '\0' && strcmp(auUnit, "-") != 0) {
 					info.unitName = ::CFStringCreateWithCString(0, auUnit, kCFStringEncodingMacRoman);
 					SY_ASSERT(info.unitName != 0);
 					info.unit = kAudioUnitParameterUnit_CustomUnit;
 				}
 				if (strcmp(auDisplayOptionPointer, "=") == 0) {
-					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
-							| kAudioUnitParameterFlag_IsWritable;
+					;
 				} else if (strcmp(auDisplayOptionPointer, "?") == 0) {
-					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
-							| kAudioUnitParameterFlag_IsWritable | kAudioUnitParameterFlag_ValuesHaveStrings;
+					info.flags |= kAudioUnitParameterFlag_ValuesHaveStrings;
 				} else if (strcmp(auDisplayOptionPointer, "b") == 0) {
 					SY_ASSERT2(auMin == 0, "Error in SYParameters.txt: "
 							"min parameter for 'b' display type is %f, must be 0 (parameter: %s)", auMin, auName);
 					SY_ASSERT2(auMax == 1, "Error in SYParameters.txt: "
 							"max parameter for 'b' display type is %f, must be 1 (parameter: %s)", auMax, auName);
 					info.unit = kAudioUnitParameterUnit_Boolean;
-					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
-							| kAudioUnitParameterFlag_IsWritable;
+				} else if (strcmp(auDisplayOptionPointer, "i") == 0) {
+					info.unit = kAudioUnitParameterUnit_Indexed;
+					info.flags |= kAudioUnitParameterFlag_ValuesHaveStrings;
 				} else {
 					SY_ASSERT(choicesString == 0);
 					choicesString = ::CFStringCreateWithCString(0, auDisplayOptionPointer, kCFStringEncodingMacRoman);
@@ -2475,13 +2460,12 @@ void SymbiosisComponent::readParameterMapping(const ::FSRef* fsRef) {
 					SY_ASSERT2(auMin == 0, "Error in SYParameters.txt: "
 							"min parameter for '|' display type is %f, must be 0 (parameter: %s)", auMin, auName);
 					float expectedMax = static_cast<float>(::CFArrayGetCount(choicesArray) - 1);
+					(void)expectedMax;
 					SY_ASSERT(expectedMax >= 0);
 					SY_ASSERT3(auMax == expectedMax, "Error in SYParameters.txt: "
 							"max parameter for '|' display type is %f, should be %.0f (parameter: %s)"
 							, auMax, expectedMax, auName);
 					info.unit = kAudioUnitParameterUnit_Indexed;
-					info.flags = kAudioUnitParameterFlag_HasCFNameString | kAudioUnitParameterFlag_IsReadable
-							| kAudioUnitParameterFlag_IsWritable;
 				}
 				info.clumpID = 0;
 				info.cfNameString = ::CFStringCreateWithCString(0, auName, kCFStringEncodingMacRoman);
@@ -2675,7 +2659,8 @@ void SymbiosisComponent::tryToIdentifyHostApplication() {
 		::CFStringRef mainBundleIdRef = ::CFBundleGetIdentifier(mainBundleRef);
 		::CFTypeRef versionRef = ::CFBundleGetValueForInfoDictionaryKey(mainBundleRef
 				, CFSTR("CFBundleShortVersionString"));
-
+		
+	#if (SY_DO_TRACE)
 		char buffer[1024];
 		SY_TRACE2(SY_TRACE_MISC, "Main bundle id reference : %p = %s"
 				, mainBundleIdRef, (mainBundleIdRef != 0)
@@ -2684,7 +2669,8 @@ void SymbiosisComponent::tryToIdentifyHostApplication() {
 				, versionRef, (versionRef != 0 && ::CFGetTypeID(versionRef) == ::CFStringGetTypeID())
 				? cfStringToCString(reinterpret_cast< ::CFStringRef >(versionRef), kCFStringEncodingMacRoman, buffer
 				, 1023) : "?");
-
+	#endif
+	
 		if (mainBundleIdRef != 0 && versionRef != 0 && ::CFGetTypeID(versionRef) == ::CFStringGetTypeID()) {
 			if (::CFStringCompare(mainBundleIdRef, CFSTR("com.apple.logic.pro"), 0) == kCFCompareEqualTo
 					|| ::CFStringCompare(mainBundleIdRef, CFSTR("com.apple.logic.express"), 0) == kCFCompareEqualTo) {
@@ -2711,8 +2697,8 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		, propertyListenersCount(0), factoryPresetsArray(0), parameterCount(0), parameterInfos(0)
 		, parameterValueStrings(0), presetIsFXB(false), autoConvertPresets(false), updateNameOnLoad(false)
 		, canDoMonoIO(false), vst(0), vstGotSymbiosisExtensions(false), vstSupportsTail(false), initialDelayTime(0.0)
-		, tailTime(0.0), vstSupportsBypass(false), isBypassing(false), inputBusCount(0), outputBusCount(0)
-		, auChannelInfoCount(0), hostApplication(undetermined), idleTimerRef(0)
+		, tailTime(0.0), vstSupportsBypass(false), isBypassing(false), vstWantsMidi(false)
+		, inputBusCount(0), outputBusCount(0), auChannelInfoCount(0), hostApplication(undetermined), idleTimerRef(0)
 	#if (SY_INCLUDE_GUI_SUPPORT)
 	#if (SY_USE_COCOA_GUI)
 		, cocoaView(0)
@@ -2897,8 +2883,8 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		/*
 			Instruments may have a variable number of channels on it's output buses if we return an "unsupported" error
 			on kAudioUnitProperty_SupportedNumChannels. Effects need to support this though (or they will be required to
-			take any number of inputs -> any number of outputs), which also means *effects need the same number of
-			channels on all output buses.* This is simply a limitation in the AU design. Not much we can do about it.
+			take any number of inputs -> any number of outputs), which also means effects need the same number of
+			channels on all output buses. This is simply a limitation in the AU design. Not much we can do about it.
 			According to Apple, this choice of design was made for historical reasons.
 			
 			Furthermore, Logic 7 (or older) doesn't support a mixture of mono and stereo on instruments either.
@@ -2989,24 +2975,24 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 			if (canDoMonoIO) {
 				if (maxInputChannels == 2) {
 					if (maxOutputChannels == 2) {
-						SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+						SY_ASSERT(auChannelInfoCount < (int)(sizeof (auChannelInfos) / sizeof (*auChannelInfos)));
 						auChannelInfos[auChannelInfoCount].inChannels = 1;
 						auChannelInfos[auChannelInfoCount].outChannels = 1;
 						++auChannelInfoCount;
 					}
-					SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+					SY_ASSERT(auChannelInfoCount < (int)(sizeof (auChannelInfos) / sizeof (*auChannelInfos)));
 					auChannelInfos[auChannelInfoCount].inChannels = 1;
 					auChannelInfos[auChannelInfoCount].outChannels = maxOutputChannels;
 					++auChannelInfoCount;
 				}
 				if (maxOutputChannels == 2) {
-					SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+					SY_ASSERT(auChannelInfoCount < (int)(sizeof (auChannelInfos) / sizeof (*auChannelInfos)));
 					auChannelInfos[auChannelInfoCount].inChannels = maxInputChannels;
 					auChannelInfos[auChannelInfoCount].outChannels = 1;
 					++auChannelInfoCount;
 				}
 			}
-			SY_ASSERT(auChannelInfoCount < sizeof (auChannelInfos) / sizeof (*auChannelInfos));
+			SY_ASSERT(auChannelInfoCount < (int)(sizeof (auChannelInfos) / sizeof (*auChannelInfos)));
 			auChannelInfos[auChannelInfoCount].inChannels = maxInputChannels;
 			auChannelInfos[auChannelInfoCount].outChannels = maxOutputChannels;
 			++auChannelInfoCount;
@@ -3082,18 +3068,21 @@ float SymbiosisComponent::scaleToAUParameter(int parameterIndex, float vstValue)
 }
 
 void SymbiosisComponent::getVendor(VSTPlugIn& plugIn, char vendor[63 + 1]) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(vendor != 0);
 	strcpy(vendor, kSymbiosisVSTVendorString);
 }
 
 void SymbiosisComponent::getProduct(VSTPlugIn& plugIn, char product[63 + 1]) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(product != 0);
 	strcpy(product, kSymbiosisVSTProductString);
 }
 
 bool SymbiosisComponent::canDo(VSTPlugIn& plugIn, const char string[]) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(string != 0);
 	if (strcmp(string, "sendVstEvents") == 0
@@ -3114,13 +3103,20 @@ VstInt32 VSTPlugIn::getVersion() {
 }
 
 VstTimeInfo* SymbiosisComponent::getTimeInfo(VSTPlugIn& plugIn, int /*flags*/) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	return &vstTimeInfo;
 }
 
 void SymbiosisComponent::beginEdit(VSTPlugIn& plugIn, int parameterIndex) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
-	SY_ASSERT(parameterIndex >= 0 && parameterIndex < vst->getParameterCount());
+	
+	// VSTGUI 3.6 always calls beginEdit and endEdit for controls even if they aren't actually automating parameters.
+	// You would normally use a tag outside the allowed range for such controls to prevent interference. So we
+	// check that here too, although I hate having to do so (poor design in VSTGUI IMHO).	
+
+	if (parameterIndex < 0 || parameterIndex >= vst->getParameterCount()) return;
 
 	::AudioUnitEvent myEvent;
 	memset(&myEvent, 0, sizeof (::AudioUnitEvent));
@@ -3148,6 +3144,7 @@ void SymbiosisComponent::beginEdit(VSTPlugIn& plugIn, int parameterIndex) {
 }
 
 void SymbiosisComponent::automate(VSTPlugIn& plugIn, int parameterIndex, float /*value*/) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < vst->getParameterCount());
 
@@ -3169,8 +3166,14 @@ void SymbiosisComponent::automate(VSTPlugIn& plugIn, int parameterIndex, float /
 }
 
 void SymbiosisComponent::endEdit(VSTPlugIn& plugIn, int parameterIndex) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
-	SY_ASSERT(parameterIndex >= 0 && parameterIndex < vst->getParameterCount());
+
+	// VSTGUI 3.6 always calls beginEdit and endEdit for controls even if they aren't actually automating parameters.
+	// You would normally use a tag outside the allowed range for such controls to prevent interference. So we
+	// check that here too, although I hate having to do so (poor design in VSTGUI IMHO).	
+
+	if (parameterIndex < 0 || parameterIndex >= vst->getParameterCount()) return;
 
 	::AudioUnitEvent myEvent;
 	memset(&myEvent, 0, sizeof (::AudioUnitEvent));
@@ -3197,6 +3200,9 @@ void SymbiosisComponent::endEdit(VSTPlugIn& plugIn, int parameterIndex) {
 }
 
 bool SymbiosisComponent::isIOPinConnected(VSTPlugIn& plugIn, bool checkOutputPin, int pinIndex) {
+	(void)plugIn;
+	(void)pinIndex;
+	(void)checkOutputPin;
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(pinIndex < (checkOutputPin ? vst->getOutputCount() : vst->getInputCount()));
 	// FIX : only works without multiple buses
@@ -3205,6 +3211,7 @@ bool SymbiosisComponent::isIOPinConnected(VSTPlugIn& plugIn, bool checkOutputPin
 }
 
 void SymbiosisComponent::updateDisplay(VSTPlugIn& plugIn) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	if (updateCurrentAUPreset()) {
 		propertyChanged(kAudioUnitProperty_CurrentPreset, kAudioUnitScope_Global, 0);
@@ -3213,6 +3220,7 @@ void SymbiosisComponent::updateDisplay(VSTPlugIn& plugIn) {
 }
 
 void SymbiosisComponent::resizeWindow(VSTPlugIn& plugIn, int width, int height) {
+	(void)plugIn;
 	SY_ASSERT(&plugIn == vst);
 	SY_ASSERT(width > 0);
 	SY_ASSERT(height > 0);
@@ -3905,6 +3913,76 @@ void SymbiosisComponent::render(::AudioUnitRenderActionFlags* ioActionFlags, con
 	}
 }
 
+#if (SY_INCLUDE_GUI_SUPPORT)
+#if (SY_USE_COCOA_GUI)
+
+static Class cocoaFactoryClass = nil;
+static Class cocoaViewClass = nil;
+
+static unsigned int factoryInterfaceVersion(id, SEL) { return 0; }
+static NSString* factoryDescription(id, SEL) { return @"Editor"; }
+static NSView* factoryUIViewForAudioUnit(id, SEL, ::AudioUnit au, NSSize) {
+	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(au));
+	SY_ASSERT(symbiosisComponent != 0);	
+	return symbiosisComponent->createView();
+}
+
+static void viewDealloc(id self, SEL) {
+	SymbiosisComponent* symbiosis = 0;
+	Ivar v = object_getInstanceVariable(self, "symbiosis", reinterpret_cast<void**>(&symbiosis));
+	SY_ASSERT(v != 0);
+	if (symbiosis != 0) symbiosis->dropView();
+	objc_super s = { self, [NSView class] };
+	objc_msgSendSuper(&s, @selector(dealloc));
+}
+
+static void initObjectiveCClasses() {
+	if (cocoaFactoryClass == nil) {
+		uint64_t uniqueNumber = mach_absolute_time();
+		do {
+			char name[256];
+			sprintf(name, "SymbiosisViewFactory%llx", uniqueNumber);
+			cocoaFactoryClass = objc_allocateClassPair([NSObject class], name, 0);
+			++uniqueNumber;
+			SY_TRACE1(SY_TRACE_MISC, "Allocated Cocoa class: %s", name);
+		} while (cocoaFactoryClass == nil);
+		
+		BOOL addProtocolReturn = class_addProtocol(cocoaFactoryClass, @protocol (AUCocoaUIBase));
+		SY_ASSERT(addProtocolReturn);
+		BOOL addMethodReturn = class_addMethod(cocoaFactoryClass, @selector(interfaceVersion), (IMP)factoryInterfaceVersion, "I@:");
+		SY_ASSERT(addMethodReturn);
+		addMethodReturn = class_addMethod(cocoaFactoryClass, @selector(description), (IMP)factoryDescription, "@@:");
+		SY_ASSERT(addMethodReturn);
+		{
+			char types[1024];
+			sprintf(types, "@@:%s%s", @encode(AudioUnit), @encode(NSSize));
+			addMethodReturn = class_addMethod(cocoaFactoryClass, @selector(uiViewForAudioUnit:withSize:), (IMP)factoryUIViewForAudioUnit, types);
+			SY_ASSERT(addMethodReturn);
+		}
+		objc_registerClassPair(cocoaFactoryClass);
+
+		do {
+			char name[256];
+			sprintf(name, "SymbiosisView%llx", uniqueNumber);
+			cocoaViewClass = objc_allocateClassPair([NSView class], name, 0);
+			++uniqueNumber;
+			SY_TRACE1(SY_TRACE_MISC, "Allocated Cocoa class: %s", name);
+		} while (cocoaViewClass == nil);
+
+		BOOL addIvarReturn = class_addIvar(cocoaViewClass, "symbiosis", sizeof (SymbiosisComponent*)
+				, log2(sizeof (SymbiosisComponent*)), "I");
+		SY_ASSERT(addIvarReturn);
+		
+		addMethodReturn = class_addMethod(cocoaViewClass, @selector(dealloc), (IMP)viewDealloc, "v@:");
+		SY_ASSERT(addMethodReturn);
+
+		objc_registerClassPair(cocoaViewClass);
+	}
+}
+
+#endif // (SY_USE_COCOA_GUI)
+#endif // (SY_INCLUDE_GUI_SUPPORT)
+
 void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::AudioUnitElement inElement
 		, ::AudioUnitScope inScope, ::AudioUnitPropertyID inID) {					
 	SY_ASSERT(ioDataSize != 0);
@@ -4023,26 +4101,14 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 			case kAudioUnitProperty_CocoaUI: {
 			#if (SY_INCLUDE_GUI_SUPPORT)
 				AudioUnitCocoaViewInfo cocoaInfo;
-				// This is important. Since the class name may be the same for many Symbiosis wrapped plug-ins there
-				// will be Objective-C name collisions. Instead of trying to avoid that, we accept it as long as we are
-				// using the same binary version of the class implementation (hence the unique class name requirement).
-				// However, we need to locate the bundle that has loaded the currently active class object instance for
-				// CocoaViewFactory, i.e. the first loaded and opened Symbiosis bundle. Otherwise there will be a
-				// failure when the host tries to retrieve the class from the new bundle (because of a collision).
-				
-				// I don't know why, but using objc_getClass is required for this to work. Following line doesn't work:
-				// Class factoryClass = [CocoaViewFactory class];
-				
-				SY_TRACE1(SY_TRACE_MISC, "Cocoa View Class: %s", SY_STRINGIZE(SY_UNIQUE_NAME(CocoaViewFactory)));
-				Class factoryClass = objc_getClass(SY_STRINGIZE(SY_UNIQUE_NAME(CocoaViewFactory)));
-				SY_ASSERT(factoryClass != nil);
-				NSBundle* symbiosisBundle = [NSBundle bundleForClass:factoryClass];
+
+				initObjectiveCClasses();
+
+				NSBundle* symbiosisBundle = [NSBundle bundleForClass:cocoaFactoryClass];
 				NSString* bundlePath = [symbiosisBundle bundlePath];
 				cocoaInfo.mCocoaAUViewBundleLocation = (CFURLRef)[[NSURL fileURLWithPath:bundlePath] retain];
 				SY_ASSERT(cocoaInfo.mCocoaAUViewBundleLocation != nil);
-				cocoaInfo.mCocoaAUViewClass[0]
-						= ::CFStringCreateWithCString(NULL, SY_STRINGIZE(SY_UNIQUE_NAME(CocoaViewFactory))
-						, kCFStringEncodingUTF8);
+				cocoaInfo.mCocoaAUViewClass[0] = ::CFStringCreateWithCString(NULL, class_getName(cocoaFactoryClass), kCFStringEncodingUTF8);
 				*((AudioUnitCocoaViewInfo *)outData) = cocoaInfo;
 			#else
 				throw MacOSException(kAudioUnitErr_InvalidProperty);													// Emperically it seems better to return an invalid property error if we have no gui
@@ -4114,6 +4180,7 @@ void SymbiosisComponent::getProperty(::UInt32* ioDataSize, void* outData, ::Audi
 				SY_ASSERT(vstGotSymbiosisExtensions);
 				char buffer[2047 + 1];
 				::Boolean wasOK = ::CFStringGetCString(vfs->inString, buffer, 2048, kCFStringEncodingMacRoman);
+				(void)wasOK;
 				SY_ASSERT(wasOK);
 				SY_TRACE2(SY_TRACE_MISC, "Trying to convert '%s' for parameter %d", buffer
 						, static_cast<int>(vfs->inParamID));
@@ -4473,6 +4540,7 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 			isBypassing = (*reinterpret_cast< const ::UInt32* >(inData) != 0);
 			SY_TRACE1(SY_TRACE_AU, "AU Bypassing %s", (isBypassing ? "on" : "off"));
 			bool success = vst->setBypass(isBypassing);
+			(void)success;
 			SY_ASSERT0(success, "Could not set or reset VST bypass state");
 			break;
 		}
@@ -4480,7 +4548,7 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 }
 
 void SymbiosisComponent::midiInput(int offset, int status, int data1, int data2) {
-	if (vst->wantsMidi()) {
+	if (vstWantsMidi) {
 		SY_ASSERT0(vstMidiEvents.numEvents < kMaxVSTMIDIEvents, "Too many MIDI events received");
 		if (vstMidiEvents.numEvents >= kMaxVSTMIDIEvents) throw MacOSException(memFullErr);
 		VstMidiEvent* e = reinterpret_cast<VstMidiEvent*>(vstMidiEvents.events[vstMidiEvents.numEvents]);
@@ -4499,6 +4567,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 			if (!vst->isResumed()) {
 				vst->resume();
 				updateInitialDelayAndTailTimes();
+				vstWantsMidi = vst->wantsMidi();
 			}
 			break;
 		
@@ -4660,6 +4729,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 		//	PARAM(AudioUnitElement, pinElement, 2, 5);
 			PARAM(Float32, pinValue, 3, 5);
 			PARAM(UInt32, pinBufferOffsetInFrames, 4, 5);
+			(void)pinBufferOffsetInFrames;
 		
 			SY_TRACE4(SY_TRACE_FREQUENT, "AU Set parameter: %d, %d, %f, %d", static_cast<int>(pinID)
 					, static_cast<int>(pinScope), pinValue, static_cast<int>(pinBufferOffsetInFrames));
@@ -4681,6 +4751,7 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 				vst->suspend();
 				vst->resume();
 				updateInitialDelayAndTailTimes();
+				vstWantsMidi = vst->wantsMidi();
 			}
 			lastRenderSampleTime = -12345678.0;
 			break;
@@ -4782,29 +4853,58 @@ void SymbiosisComponent::dispatch(::ComponentParameters* params) {
 #if (SY_USE_COCOA_GUI)
 
 NSView* SymbiosisComponent::createView() {
-	SY_ASSERT(vst->hasEditor());
+	SY_TRACE(SY_TRACE_MISC, "void SymbiosisComponent::createView()")
+	try {
+		SY_ASSERT(vst->hasEditor());
 
-	int width, height;
-	vst->getEditorDimensions(width, height);
+		if (cocoaView != 0) dropView();
+		
+		int width, height;
+		vst->getEditorDimensions(width, height);
 
-	SY_ASSERT(cocoaView == 0);
-	cocoaView = [[SY_UNIQUE_NAME(CocoaView) alloc] initWithFrame:NSMakeRect(0, 0, width, height) symbiosis:this];
-	SY_ASSERT(cocoaView != 0);
+		SY_ASSERT(cocoaView == 0);
+		cocoaView = class_createInstance(cocoaViewClass, 0);
+		SY_ASSERT(cocoaView != 0);
+		
+		Ivar v = object_setInstanceVariable(cocoaView, "symbiosis", this);
+		SY_ASSERT(v != 0);
 
-	SY_ASSERT(!vst->isEditorOpen());
-	vst->openEditor(cocoaView);
-	SY_ASSERT(vst->isEditorOpen());
+		[cocoaView initWithFrame:NSMakeRect(0, 0, width, height)];
 
-	return [cocoaView autorelease];    
+		SY_ASSERT(!vst->isEditorOpen());
+		vst->openEditor(cocoaView);
+		SY_ASSERT(vst->isEditorOpen());
+
+		return [cocoaView autorelease];    
+	}
+	catch (std::exception& x) {
+		SY_TRACE1(SY_TRACE_EXCEPTIONS, "Caught exception when creating Cocoa view: %s", x.what());
+		return nil;
+	}
+	catch (...) {
+		SY_TRACE(SY_TRACE_EXCEPTIONS, "Caught general exception when creating Cocoa view");
+		return nil;
+	}
 }
 
 void SymbiosisComponent::dropView() {
-	SY_ASSERT(vst->hasEditor());
-	SY_ASSERT(vst->isEditorOpen());
-	vst->closeEditor();
-	SY_ASSERT(!vst->isEditorOpen());
-	SY_ASSERT(cocoaView != 0);
-	cocoaView = 0;
+	SY_TRACE(SY_TRACE_MISC, "void SymbiosisComponent::dropView()")
+	try {
+		SY_ASSERT(vst->hasEditor());
+		SY_ASSERT(vst->isEditorOpen());
+		vst->closeEditor();
+		SY_ASSERT(!vst->isEditorOpen());
+		SY_ASSERT(cocoaView != 0);
+		Ivar v = object_setInstanceVariable(cocoaView, "symbiosis", 0);
+		SY_ASSERT(v != 0);
+		cocoaView = 0;
+	}
+	catch (std::exception& x) {
+		SY_TRACE1(SY_TRACE_EXCEPTIONS, "Caught exception when dropping Cocoa view: %s", x.what());
+	}
+	catch (...) {
+		SY_TRACE(SY_TRACE_EXCEPTIONS, "Caught general exception when dropping Cocoa view");
+	}
 }
 
 #elif (!SY_USE_COCOA_GUI)
@@ -4815,7 +4915,7 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 	if (viewComponentInstance != 0) {
 		throw MacOSException(kAudioUnitErr_CannotDoInCurrentContext);
 	}
-		
+	
 	try {
 		SY_ASSERT(vst->hasEditor());
 		SY_ASSERT(viewComponentInstance == 0);
@@ -4935,6 +5035,7 @@ void SymbiosisComponent::createView(::ControlRef* createdControl, const ::Float3
 }
 
 void SymbiosisComponent::dropView(::AudioUnitCarbonView auViewComponentInstance) {
+	(void)auViewComponentInstance;
 	SY_TRACE3(SY_TRACE_MISC
 			, "void SymbiosisComponent::dropView(::AudioUnitCarbonView auViewComponentInstance=@0x%8.8X)"
 			" (auComponentInstance=@0x%8.8X, viewComponentInstance=@0x%8.8X)"
@@ -4962,7 +5063,7 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 
 #endif // #elif (!SY_USE_COCOA_GUI)
 
-#endif (SY_INCLUDE_GUI_SUPPORT)
+#endif // (SY_INCLUDE_GUI_SUPPORT)
 
 ::EventLoopTimerUPP SymbiosisComponent::idleTimerUPP = ::NewEventLoopTimerUPP(idleTimerAction);
 
@@ -5061,41 +5162,12 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisVie
 
 #if (SY_USE_COCOA_GUI)
 
-@implementation SY_UNIQUE_NAME(CocoaView)
-
-- initWithFrame:(NSRect)frame symbiosis:(SymbiosisComponent*)symbiosisComponent {
-	SY_ASSERT(symbiosisComponent != 0);
-	if ((self = [super initWithFrame:frame]) != nil) symbiosis = symbiosisComponent;
-	return self;
-}
-
-- (void)detach { symbiosis = 0; }
-
-- (void)dealloc {
-	if (symbiosis != 0) symbiosis->dropView();
-	[super dealloc];
-}
-
-@end
-
-@implementation SY_UNIQUE_NAME(CocoaViewFactory)
-
-- (unsigned int) interfaceVersion { return 0; }
-
-- (NSString*) description { return @"Editor"; }
-
-- (NSView*)uiViewForAudioUnit:(AudioUnit)inAU withSize:(NSSize)inPreferredSize {
-	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(inAU));
-	SY_ASSERT(symbiosisComponent != 0);	
-	return symbiosisComponent->createView();
-}
-
-@end
-
 // Including a dummy for SymbiosisViewEntry to allow it in the "Exported Symbols File" for universal builds.
 
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisViewEntry(::ComponentParameters* params
 		, ::Handle userDataHandle) {
+	(void)params;
+	(void)userDataHandle;
 	SY_ASSERT(0);
 	return badComponentSelector;
 }
