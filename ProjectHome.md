@@ -1,0 +1,3 @@
+Symbiosis is a developer tool for adapting Mac OS X VST plug-ins to the Audio Unit (AU) standard. The project is released free with source code. It essentially consists of a single C++ file that you can compile into your VST project to make the plug-in compatible with the Audio Unit protocol. Optionally, you may choose to use a pre-built "wrapper plug-in" for adapting your existing VST plug-in to the AU standard without even having to recompile any source code.
+
+**Join the mailing-list at http://groups.google.com/group/symbiosis-au-vst for the latest news and talk.**
