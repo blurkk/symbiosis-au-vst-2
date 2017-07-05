@@ -1712,6 +1712,11 @@ void VSTPlugIn::openEditor(::WindowRef inWindow) {
 	if (vstDispatchReturn == 0) {
 		throw SymbiosisException("VST could not open editor");
 	}
+	// BM: Window size may change between opens, e.g. if a plugin has multiple instances and the user changes
+	// default size in one instance, which is then picked up when opening another instance with editor closed.
+	int width, height;
+	getEditorDimensions(width, height);
+	host.resizeWindow(*this, width, height);
 }
 
 #if (SY_USE_COCOA_GUI)
@@ -1724,6 +1729,11 @@ void VSTPlugIn::openEditor(::NSView* inNSView) {
 	if (vstDispatchReturn == 0) {
 		throw SymbiosisException("VST could not open editor");
 	}
+	// BM: Window size may change between opens, e.g. if a plugin has multiple instances and the user changes
+	// default size in one instance, which is then picked up when opening another instance with editor closed.
+	int width, height;
+	getEditorDimensions(width, height);
+	host.resizeWindow(*this, width, height);
 }
 #endif
 
