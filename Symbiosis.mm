@@ -3285,7 +3285,8 @@ bool SymbiosisComponent::updateCurrentAUPreset() {
 		vst->getCurrentProgramName(programName);
 		newPresetName = ::CFStringCreateWithCString(0, programName, kCFStringEncodingMacRoman);
 		SY_ASSERT(newPresetName != 0);
-		if (::CFStringCompare(currentAUPreset.presetName, newPresetName, 0) != kCFCompareEqualTo) {
+		if (currentAUPreset.presetNumber != programNumber
+				|| ::CFStringCompare(currentAUPreset.presetName, newPresetName, 0) != kCFCompareEqualTo) {
 			releaseCFRef((::CFTypeRef*)&currentAUPreset.presetName);
 			currentAUPreset.presetNumber = programNumber;
 			currentAUPreset.presetName = newPresetName;
