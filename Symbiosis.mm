@@ -1233,8 +1233,10 @@ float VSTPlugIn::getParameter(VstInt32 parameterIndex) {
 	SY_ASSERT0((aeffect->getParameter != 0), "VST getParameter function pointer was null");
 	try {
 		float value = (*aeffect->getParameter)(aeffect, parameterIndex);
+			SY_TRACE2(SY_TRACE_AU, "VST getParameter: %d; value: %f"
+					, static_cast<int>(parameterIndex), value);
 		SY_ASSERT(value >= 0.0f);
-		SY_ASSERT(value <= 1.0f);
+		//SY_ASSERT(value <= 1.0f);
 		return value;
 	}
 	catch (...) {
@@ -3054,7 +3056,7 @@ float SymbiosisComponent::scaleFromAUParameter(int parameterIndex, float auValue
 
 float SymbiosisComponent::scaleToAUParameter(int parameterIndex, float vstValue) {
 	SY_ASSERT(parameterIndex >= 0 && parameterIndex < vst->getParameterCount());
-	SY_ASSERT(vstValue >= 0.0f && vstValue <= 1.0f);
+	//SY_ASSERT(vstValue >= 0.0f && vstValue <= 1.0f);
 	const ::AudioUnitParameterInfo& parameterInfo = parameterInfos[parameterIndex];
 	switch (parameterInfo.unit) {
 		default: SY_ASSERT(0);
