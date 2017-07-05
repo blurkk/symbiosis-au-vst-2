@@ -3278,16 +3278,18 @@ void SymbiosisComponent::updateCurrentVSTProgramName(::CFStringRef presetName) {
 bool SymbiosisComponent::updateCurrentAUPreset() {
 	::CFStringRef newPresetName = 0;		
 	try {
+		int programNumber = vst->getCurrentProgram();
 		char programName[24 + 1] = "";
 		vst->getCurrentProgramName(programName);
 		newPresetName = ::CFStringCreateWithCString(0, programName, kCFStringEncodingMacRoman);
 		SY_ASSERT(newPresetName != 0);
 		if (::CFStringCompare(currentAUPreset.presetName, newPresetName, 0) != kCFCompareEqualTo) {
 			releaseCFRef((::CFTypeRef*)&currentAUPreset.presetName);
-			currentAUPreset.presetNumber = -1;
+			currentAUPreset.presetNumber = programNumber;
 			currentAUPreset.presetName = newPresetName;
 			newPresetName = 0;
-			SY_TRACE1(SY_TRACE_MISC, "Updated current preset to user preset named %s", programName);
+			SY_TRACE2(SY_TRACE_MISC, "Updated current preset to user preset #%d named %s",
+					  programNumber, programName);
 			return true;
 		} else {
 			releaseCFRef((::CFTypeRef*)&newPresetName);
@@ -4499,13 +4501,19 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 
 		case kAudioUnitProperty_CurrentPreset:
 		case kAudioUnitProperty_PresentPreset: {
+			SY_TRACE2(SY_TRACE_MISC, "*** Setting %s AU preset (%d)",
+					  (inID == kAudioUnitProperty_CurrentPreset ? "current" : "present"), static_cast<int>(inID));
 			::AUPreset requestedPreset;
 			memset(&requestedPreset, 0, sizeof (::AUPreset));
 			if (inDataSize >= sizeof (::AUPreset)) {
 				requestedPreset = *reinterpret_cast< const ::AUPreset* >(inData);
+				SY_TRACE1(SY_TRACE_MISC, "--- using full preset data: number=%d",
+						  static_cast<int>(requestedPreset.presetNumber));
 			} else {
 				SY_ASSERT(inDataSize == sizeof (::SInt32));
 				requestedPreset.presetNumber = *reinterpret_cast< const ::SInt32* >(inData);
+				SY_TRACE1(SY_TRACE_MISC, "--- using preset index: number=%d",
+						  static_cast<int>(requestedPreset.presetNumber));
 			}
 			if (requestedPreset.presetNumber < 0) {
 				if (requestedPreset.presetName != 0) {
@@ -4524,6 +4532,7 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 					::CFDataRef dataRef = factoryPresetData[requestedPreset.presetNumber];
 					SY_ASSERT(dataRef != 0);
 					SY_ASSERT(::CFGetTypeID(dataRef) == ::CFDataGetTypeID());
+					vst->setCurrentProgram(requestedPreset.presetNumber); // Keep VST program slots in sync with selected AU preset
 					bool loadedPerfectly = vst->loadFXPOrFXB(::CFDataGetLength(dataRef), ::CFDataGetBytePtr(dataRef));
 					if (!loadedPerfectly) {
 						SY_TRACE(SY_TRACE_MISC, "Warning, FXP / FXB may not have loaded perfectly");
