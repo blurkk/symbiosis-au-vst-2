@@ -1693,7 +1693,6 @@ void VSTPlugIn::getEditorDimensions(VstInt32& width, VstInt32& height) {
 	ERect* rectPointer = 0;
 	VstIntPtr vstDispatchReturn = dispatch(effEditGetRect, 0, 0, reinterpret_cast<void*>(&rectPointer), 0);
 	(void)vstDispatchReturn;
-	SY_ASSERT(vstDispatchReturn != 0);
 	SY_ASSERT(rectPointer != 0);
 	SY_ASSERT(rectPointer->left <= rectPointer->right);
 	SY_ASSERT(rectPointer->top <= rectPointer->bottom);
