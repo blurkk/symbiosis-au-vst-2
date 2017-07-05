@@ -3794,7 +3794,6 @@ void SymbiosisComponent::renderOutput(int frameCount, const float* const* inputP
 		, bool inputIsSilent) {
 	if (vstMidiEvents.numEvents > 0) {
 		vst->processEvents(*reinterpret_cast<const VstEvents*>(&vstMidiEvents));
-		vstMidiEvents.numEvents = 0;
 	}
 	if (vstGotSymbiosisExtensions) {
 		vst->vendorSpecific('sI00', inputIsSilent ? 1 : 0, 0, 0);
@@ -3824,6 +3823,9 @@ void SymbiosisComponent::renderOutput(int frameCount, const float* const* inputP
 		}
 	} else {
 		silentOutput = false;
+	}
+	if (vstMidiEvents.numEvents > 0) {
+		vstMidiEvents.numEvents = 0;
 	}
 }
 
