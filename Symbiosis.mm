@@ -5149,7 +5149,6 @@ class SymbiosisV2;
 struct AudioComponentPlugInInstanceContainer {
     AudioComponentPlugInInterface       mPlugInInterface;
     OSType mMagic;
-    AudioUnit mCompInstance;
     SymbiosisV2 *mImpl;
 };
 
@@ -5516,7 +5515,6 @@ public:
         OSStatus result = noErr;
         AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
         // @todo Check magic
-        acpic->mCompInstance = compInstance;
         NSLog(@"  Constructing (presumed) SymbiosisV2 in for AudioComponentInstance %p", compInstance);
         acpic->mImpl = new SymbiosisV2(compInstance);
         result = acpic->mImpl ? noErr : kAudio_MemFullError;
@@ -5582,7 +5580,6 @@ public:
         acpic->mPlugInInterface.Lookup = Lookup;
         acpic->mPlugInInterface.reserved = NULL;
         acpic->mMagic = 'Acpi';
-        acpic->mCompInstance = NULL;
         acpic->mImpl = NULL;
         NSLog(@"***");
         NSLog(@"*** Created AudioComponentPlugInInstanceContainer %p from description %p", acpic, inDesc);
