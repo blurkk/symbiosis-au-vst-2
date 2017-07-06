@@ -47,6 +47,7 @@
 #include <assert.h>
 #include <exception>
 #include <new>
+#include <map>
 
 //#include "CoreAudio/AudioUnits/AUPublic/AUBase/ComponentBase.h"
 
@@ -56,6 +57,7 @@
 	#define SY_INCLUDE_GUI_SUPPORT 1
 #endif
 
+#define SY_USE_COCOA_GUI 1
 #if !defined(SY_USE_COCOA_GUI)
 	#if __LP64__
 		#define SY_USE_COCOA_GUI 1
@@ -948,6 +950,8 @@ class SymbiosisComponent : public VSTHost {
 	protected:	::ControlRef viewControl;
 #endif
 #endif
+public:
+    static std::map<::AudioUnit, SymbiosisComponent *> s_instanceMap;
 };
 
 /* --- VSTPlugIn --- */
@@ -1760,7 +1764,10 @@ VstInt32 SymbiosisComponent::getVersion(VSTPlugIn& plugIn) {
 
 SymbiosisComponent::~SymbiosisComponent() { uninit(); }
 
+std::map<::AudioUnit, SymbiosisComponent *> SymbiosisComponent::s_instanceMap;
+
 void SymbiosisComponent::uninit() {
+    s_instanceMap[auComponentInstance] = 0;
 #if (SY_INCLUDE_GUI_SUPPORT)
 #if (SY_USE_COCOA_GUI)
 	if (cocoaView != 0) {
@@ -1873,15 +1880,39 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
 	::CFMutableDictionaryRef dictionary = 0;
 	::CFMutableDataRef data = 0;
 	try {
-		::ComponentDescription desc;
-		throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
+        dictionary = ::CFDictionaryCreateMutable(0, 0, &kCFTypeDictionaryKeyCallBacks
+                                                 , &kCFTypeDictionaryValueCallBacks);
+        SY_ASSERT(dictionary != 0);
+        addIntToDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
+#if 1
+        AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
+        AudioComponentDescription audDesc = {};
+        OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
+        if (res == noErr)
+        {
+            addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), audDesc.componentType);
+            addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), audDesc.componentSubType);
+            addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), audDesc.componentManufacturer);
+        }
+        else
+        {
+            ::ComponentDescription desc;
+            throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
+            addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
+            addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
+            addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
+        }
+#else
+        //::ComponentDescription desc;
+		//throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
 		dictionary = ::CFDictionaryCreateMutable(0, 0, &kCFTypeDictionaryKeyCallBacks
 				, &kCFTypeDictionaryValueCallBacks);
 		SY_ASSERT(dictionary != 0);
 		addIntToDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-		addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
-		addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
-		addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
+		//addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
+		//addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
+		//addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
+#endif
 		::CFDictionarySetValue(dictionary, CFSTR(kAUPresetNameKey), presetName);
 		data = ::CFDataCreateMutable(0, vstDataSize);
 		SY_ASSERT(data != 0);
@@ -2713,6 +2744,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 {
 	SY_ASSERT(auComponentInstance != 0);
 	
+	s_instanceMap[auComponentInstance] = this;
 	memset(&streamFormat, 0, sizeof (streamFormat));
 	memset(&inputConnections, 0, sizeof (inputConnections));
 	memset(&renderCallbacks, 0, sizeof (renderCallbacks));
@@ -3926,9 +3958,15 @@ static Class cocoaViewClass = nil;
 
 static unsigned int factoryInterfaceVersion(id, SEL) { return 0; }
 static NSString* factoryDescription(id, SEL) { return @"Editor"; }
-static NSView* factoryUIViewForAudioUnit(id, SEL, ::AudioUnit au, NSSize) {
-	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(au));
-	SY_ASSERT(symbiosisComponent != 0);	
+//static NSView* factoryUIViewForAudioUnit(id, SEL, ::AudioUnit au, NSSize) {
+static NSView* factoryUIViewForAudioUnit(id obj, SEL sel, ::AudioUnit au, NSSize size) {
+	NSLog(@"+++factoryUIViewForAudioUnit(%@, %@, au=%p, %@)", obj, NSStringFromSelector(sel), au, NSStringFromSize(size));
+	AudioComponent ac = AudioComponentInstanceGetComponent(au);
+	NSLog(@" -> AudioComponent: %p", ac);
+//	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(au));
+	SymbiosisComponent* symbiosisComponent = SymbiosisComponent::s_instanceMap[au];
+	NSLog(@" -> SymbiosisComponent: %p", symbiosisComponent);
+	SY_ASSERT(symbiosisComponent != 0);
 	return symbiosisComponent->createView();
 }
 
@@ -4364,14 +4402,26 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 					throw FormatException("Invalid AUPreset format");
 				}
 				
-				::ComponentDescription desc;
-				throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0
-						, 0));
-				checkIntInDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-				checkIntInDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
-				checkIntInDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
-				checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
-				
+				AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
+				AudioComponentDescription audDesc = {};
+				OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
+				if (res == noErr)
+				{
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetTypeKey), audDesc.componentType);
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), audDesc.componentSubType);
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), audDesc.componentManufacturer);
+				}
+				else
+				{
+					::ComponentDescription desc;
+					throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
+					checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
+				}
+
 				{
 					::SInt32 useProgramNumber = 0;
 					::CFNumberRef numberRef = reinterpret_cast< ::CFNumberRef >(::CFDictionaryGetValue(dictionary
@@ -5097,6 +5147,7 @@ class APFactory {
 public:
     static void *Construct(void *memory, AudioComponentInstance compInstance)
     {
+        NSLog(@"Constructing (presumed) SymbiosisV2 in memory %p for AudioComponentInstance %p", memory, compInstance);
         return new(memory) Implementor(compInstance);
     }
 
@@ -5107,7 +5158,7 @@ public:
 
     // This is the AudioComponentFactoryFunction. It returns an AudioComponentPlugInInstance.
     // The actual implementation object is not created until Open().
-    static AudioComponentPlugInInterface *Factory(const AudioComponentDescription * /* inDesc */)
+    static AudioComponentPlugInInterface *Factory(const AudioComponentDescription *inDesc)
     {
         AudioComponentPlugInInstance *acpi =
                 (AudioComponentPlugInInstance *)malloc( offsetof(AudioComponentPlugInInstance, mInstanceStorage) + sizeof(Implementor) );
@@ -5119,6 +5170,9 @@ public:
         acpi->mDestruct = Destruct;
         acpi->mPad[0] = NULL;
         acpi->mPad[1] = NULL;
+        NSLog(@"***");
+        NSLog(@"*** Created AudioComponentPlugInInstance %p from description %p", acpi, inDesc);
+        NSLog(@"***");
         return (AudioComponentPlugInInterface*)acpi;
     }
 
@@ -5149,29 +5203,23 @@ class AUMIDIEffectFactory : public APFactory<AUMIDILookup, Implementor>
 };
 #endif
 
-#if 0
-#define AUDIOCOMPONENT_ENTRY(FactoryType, Class) \
-    extern "C" void * Class##Factory(const AudioComponentDescription *inDesc); \
-    extern "C" void * Class##Factory(const AudioComponentDescription *inDesc) { \
-        return FactoryType<Class>::Factory(inDesc); \
-    }
-#endif
-
 #define ACPI    ((AudioComponentPlugInInstance *)self)
 //#define ACImp   ((ComponentBase *)&ACPI->mInstanceStorage)
 #define ACImp   (&ACPI->mInstanceStorage)
 
 
-
-class SymbiosisV2
+class SymbiosisV2 : public SymbiosisComponent
 {
 public:
     SymbiosisV2(AudioComponentInstance compInstance)
-     : m_sc(0)
+     //: m_sc(0)
+     : SymbiosisComponent(compInstance)
     {
-        NSLog(@"SymbiosisV2 constructed");
+        NSLog(@"SymbiosisV2 %p constructed for AudioComponentInstance %p", this, compInstance);
+#if 0
         m_sc = new SymbiosisComponent(compInstance);
         ::SetComponentInstanceStorage(compInstance, reinterpret_cast< ::Handle >(m_sc));
+#endif
     }
 
     ~SymbiosisV2()
@@ -5182,17 +5230,26 @@ public:
     OSStatus DoInitialize()
     {
         NSLog(@"DoInitialize");
+        if (!vst->isResumed()) {
+            vst->resume();
+            updateInitialDelayAndTailTimes();
+            vstWantsMidi = vst->wantsMidi();
+        }
         return noErr;
     }
 
     void DoCleanup()
     {
         NSLog(@"DoCleanup");
+        if (vst->isResumed()) {
+            vst->suspend();
+        }
     }
 
     static OSStatus AUMethodGetPropertyInfo(void *self, AudioUnitPropertyID prop, AudioUnitScope scope, AudioUnitElement elem, UInt32 *outDataSize, Boolean *outWritable)
     {
         OSStatus result = noErr;
+#if 0
         //try {
             UInt32 dataSize = 0;        // 13517289 GetPropetyInfo was returning an uninitialized value when there is an error. This is a problem for auval.
             Boolean writable = false;
@@ -5210,11 +5267,286 @@ public:
 //                *outWritable = writable;
         //}
         //COMPONENT_CATCH
+#else
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            NSLog(@"acpi: %p; sv2: %p", acpi, sv2);
+
+            if (outDataSize != 0) {
+                (*outDataSize) = 0;
+            }
+            if (outWritable != 0) {
+                (*outWritable) = false;
+            }
+            bool readable = false;
+            bool writable = false;
+            int minDataSize = 0;
+            int normalDataSize = 0;
+            sv2->getPropertyInfo(prop, scope, elem, &readable, &writable, &minDataSize, &normalDataSize);
+            if (outDataSize != 0) {
+                (*outDataSize) = normalDataSize;
+            }
+            if (outWritable != 0) {
+                (*outWritable) = writable;
+            }
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+#endif
+        return result;
+    }
+
+    static OSStatus AUMethodGetProperty(void *self, AudioUnitPropertyID inID, AudioUnitScope inScope, AudioUnitElement inElement, void *outData, UInt32 *ioDataSize)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            sv2->getProperty(ioDataSize, outData, inElement, inScope, inID);
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodSetProperty(void *self, AudioUnitPropertyID inID, AudioUnitScope inScope, AudioUnitElement inElement, const void *inData, UInt32 inDataSize)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            sv2->setProperty(inDataSize, inData, inElement, inScope, inID);
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodAddPropertyListener(void *self, AudioUnitPropertyID prop, AudioUnitPropertyListenerProc proc, void *userData)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            if (sv2->propertyListenersCount >= kMaxPropertyListeners) {
+                throw MacOSException(memFullErr);
+            }
+            AUPropertyListener listener;
+            memset(&listener, 0, sizeof (listener));
+            listener.fPropertyID = prop;
+            listener.fListenerProc = proc;
+            listener.fListenerRefCon = userData;
+            sv2->propertyListeners[sv2->propertyListenersCount] = listener;
+            ++sv2->propertyListenersCount;
+            SY_TRACE3(SY_TRACE_AU, "AU Added listener %p (refcon: %p) on property: %d", proc, userData
+                      , static_cast<int>(prop));
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodRemovePropertyListener(void *self, AudioUnitPropertyID prop, AudioUnitPropertyListenerProc proc)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            int i = 0;
+            int j = 0;
+            while (i < sv2->propertyListenersCount) {
+                if (sv2->propertyListeners[i].fPropertyID != prop || sv2->propertyListeners[i].fListenerProc != proc) {
+                    sv2->propertyListeners[j] = sv2->propertyListeners[i];
+                    ++j;
+                } else {
+                    SY_TRACE1(SY_TRACE_AU, "AU Removed listener on %d", static_cast<int>(prop));
+                }
+                ++i;
+            }
+            sv2->propertyListenersCount = j;
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodRemovePropertyListenerWithUserData(void *self, AudioUnitPropertyID prop, AudioUnitPropertyListenerProc proc, void *userData)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            int i = 0;
+            int j = 0;
+            while (i < sv2->propertyListenersCount) {
+                if (sv2->propertyListeners[i].fPropertyID != prop || sv2->propertyListeners[i].fListenerProc != proc
+                    || sv2->propertyListeners[i].fListenerRefCon != userData) {
+                    sv2->propertyListeners[j] = sv2->propertyListeners[i];
+                    ++j;
+                } else {
+                    SY_TRACE1(SY_TRACE_AU, "AU Removed listener on %d", static_cast<int>(prop));
+                }
+                ++i;
+            }
+            sv2->propertyListenersCount = j;
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodAddRenderNotify(void *self, AURenderCallback proc, void *userData)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            if (sv2->renderNotificationReceiversCount >= kMaxAURenderCallbacks) {
+                throw MacOSException(memFullErr);
+            }
+            ::AURenderCallbackStruct receiver;
+            memset(&receiver, 0, sizeof (receiver));
+            receiver.inputProc = proc;
+            receiver.inputProcRefCon = userData;
+            sv2->renderNotificationReceivers[sv2->renderNotificationReceiversCount] = receiver;
+            ++sv2->renderNotificationReceiversCount;
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodRemoveRenderNotify(void *self, AURenderCallback proc, void *userData)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            int i = 0;
+            int j = 0;
+            while (i < sv2->renderNotificationReceiversCount) {
+                if (sv2->renderNotificationReceivers[i].inputProc != proc
+                    || sv2->renderNotificationReceivers[i].inputProcRefCon != userData) {
+                    sv2->renderNotificationReceivers[j] = sv2->renderNotificationReceivers[i];
+                    ++j;
+                }
+                ++i;
+            }
+            sv2->renderNotificationReceiversCount = j;
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodGetParameter(void *self, AudioUnitParameterID param, AudioUnitScope scope, AudioUnitElement elem, AudioUnitParameterValue *value)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            SY_TRACE2(SY_TRACE_FREQUENT, "AU Get parameter: %d, %d", static_cast<int>(param)
+                      , static_cast<int>(scope));
+            SY_ASSERT(value != 0);
+            if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+            if (static_cast<int>(param) < 0 || static_cast<int>(param) >= sv2->vst->getParameterCount())
+                throw MacOSException(kAudioUnitErr_InvalidParameter);
+            (*value) = sv2->scaleToAUParameter(param, sv2->vst->getParameter(param));
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodSetParameter(void *self, AudioUnitParameterID param, AudioUnitScope scope, AudioUnitElement elem, AudioUnitParameterValue value, UInt32 bufferOffset)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            SY_TRACE4(SY_TRACE_FREQUENT, "AU Set parameter: %d, %d, %f, %d", static_cast<int>(param)
+                      , static_cast<int>(scope), value, static_cast<int>(bufferOffset));
+            if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+            if (static_cast<int>(param) < 0 || static_cast<int>(param) >= sv2->vst->getParameterCount())
+                throw MacOSException(kAudioUnitErr_InvalidParameter);
+            sv2->vst->setParameter(param, sv2->scaleFromAUParameter(param, value));
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodScheduleParameters(void *self, const AudioUnitParameterEvent *events, UInt32 numEvents)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            for (int i = 0; i < static_cast<int>(numEvents); ++i) {
+                const AudioUnitParameterEvent& theEvent = (events)[i];
+                if (theEvent.scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+                if (static_cast<int>(theEvent.parameter) < 0 || static_cast<int>(theEvent.parameter)
+                    >= sv2->vst->getParameterCount())
+                    throw MacOSException(kAudioUnitErr_InvalidParameter);
+                if (theEvent.eventType == kParameterEvent_Immediate) {
+                    SY_ASSERT(0 <= static_cast<int>(theEvent.eventValues.immediate.bufferOffset)
+                              && static_cast<int>(theEvent.eventValues.immediate.bufferOffset) < sv2->maxFramesPerSlice);
+                    sv2->vst->setParameter(theEvent.parameter, sv2->scaleFromAUParameter(theEvent.parameter
+                                                                               , theEvent.eventValues.immediate.value));
+                }
+            }
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodRender(void *self, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inOutputBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            sv2->render(ioActionFlags, inTimeStamp, inOutputBusNumber, inNumberFrames, ioData);
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodReset(void *self, AudioUnitScope scope, AudioUnitElement elem)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
+            if (sv2->vst->isResumed()) {
+                sv2->vst->suspend();
+                sv2->vst->resume();
+                sv2->updateInitialDelayAndTailTimes();
+                sv2->vstWantsMidi = sv2->vst->wantsMidi();
+            }
+            sv2->lastRenderSampleTime = -12345678.0;
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
+        return result;
+    }
+
+    static OSStatus AUMethodMIDIEvent(void *self, UInt32 inStatus, UInt32 inData1, UInt32 inData2, UInt32 inOffsetSampleFrame)
+    {
+        OSStatus result = noErr;
+        try {
+            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
+            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+
+            sv2->midiInput(inOffsetSampleFrame, inStatus, inData1, inData2);
+        }
+        SY_COMPONENT_CATCH("SymbiosisEntry");
         return result;
     }
 
 private:
-    SymbiosisComponent* m_sc;
+    //SymbiosisComponent* m_sc;
 };
 
 //AUDIOCOMPONENT_ENTRY(AUBaseFactory, SymbiosisV2)
@@ -5266,7 +5598,7 @@ static OSStatus AUMethodInitialize(void *self)
     OSStatus result = noErr;
     //try {
     //    AUI_LOCK
-        result = AUI->DoInitialize();
+        result = ((SymbiosisV2 *)&ACPI->mInstanceStorage)->DoInitialize();
     //}
     //COMPONENT_CATCH
     return result;
@@ -5277,12 +5609,24 @@ static OSStatus AUMethodUninitialize(void *self)
     OSStatus result = noErr;
     //try {
     //    AUI_LOCK
-        AUI->DoCleanup();
+        ((SymbiosisV2 *)&ACPI->mInstanceStorage)->DoCleanup();
     //}
     //COMPONENT_CATCH
     return result;
 }
 
+
+/*!
+ @typedef        AudioComponentMethod
+ @abstract       The broad prototype for an audio plugin method
+ @discussion     Every audio plugin will implement a collection of methods that match a particular
+ selector. For example, the AudioUnitInitialize API call is implemented by a
+ plugin implementing the kAudioUnitInitializeSelect selector. Any function implementing
+ an audio plugin selector conforms to the basic pattern where the first argument
+ is a pointer to the plugin instance structure, has 0 or more specific arguments,
+ and returns an OSStatus.
+ */
+//typedef OSStatus (*AudioComponentMethod)(void *self,...);
 
 
 AudioComponentMethod AUBaseLookup::Lookup (SInt16 selector)
@@ -5291,21 +5635,25 @@ AudioComponentMethod AUBaseLookup::Lookup (SInt16 selector)
         case kAudioUnitInitializeSelect:        return (AudioComponentMethod)AUMethodInitialize;
         case kAudioUnitUninitializeSelect:      return (AudioComponentMethod)AUMethodUninitialize;
         case kAudioUnitGetPropertyInfoSelect:   return (AudioComponentMethod)SymbiosisV2::AUMethodGetPropertyInfo;
-#if 0
-        case kAudioUnitGetPropertySelect:       return (AudioComponentMethod)AUMethodGetProperty;
-        case kAudioUnitSetPropertySelect:       return (AudioComponentMethod)AUMethodSetProperty;
-        case kAudioUnitAddPropertyListenerSelect:return (AudioComponentMethod)AUMethodAddPropertyListener;
+        case kAudioUnitGetPropertySelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodGetProperty;
+        case kAudioUnitSetPropertySelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodSetProperty;
+        case kAudioUnitAddPropertyListenerSelect:return (AudioComponentMethod)SymbiosisV2::AUMethodAddPropertyListener;
         case kAudioUnitRemovePropertyListenerSelect:
-                                                return (AudioComponentMethod)AUMethodRemovePropertyListener;
+                                                return (AudioComponentMethod)SymbiosisV2::AUMethodRemovePropertyListener;
         case kAudioUnitRemovePropertyListenerWithUserDataSelect:
-                                                return (AudioComponentMethod)AUMethodRemovePropertyListenerWithUserData;
-        case kAudioUnitAddRenderNotifySelect:   return (AudioComponentMethod)AUMethodAddRenderNotify;
-        case kAudioUnitRemoveRenderNotifySelect:return (AudioComponentMethod)AUMethodRemoveRenderNotify;
-        case kAudioUnitGetParameterSelect:      return (AudioComponentMethod)AUMethodGetParameter;
-        case kAudioUnitSetParameterSelect:      return (AudioComponentMethod)AUMethodSetParameter;
-        case kAudioUnitScheduleParametersSelect:return (AudioComponentMethod)AUMethodScheduleParameters;
-        case kAudioUnitRenderSelect:            return (AudioComponentMethod)AUMethodRender;
-        case kAudioUnitResetSelect:             return (AudioComponentMethod)AUMethodReset;
+                                                return (AudioComponentMethod)SymbiosisV2::AUMethodRemovePropertyListenerWithUserData;
+        case kAudioUnitAddRenderNotifySelect:   return (AudioComponentMethod)SymbiosisV2::AUMethodAddRenderNotify;
+        case kAudioUnitRemoveRenderNotifySelect:return (AudioComponentMethod)SymbiosisV2::AUMethodRemoveRenderNotify;
+        case kAudioUnitGetParameterSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodGetParameter;
+        case kAudioUnitSetParameterSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodSetParameter;
+        case kAudioUnitScheduleParametersSelect:return (AudioComponentMethod)SymbiosisV2::AUMethodScheduleParameters;
+        case kAudioUnitRenderSelect:            return (AudioComponentMethod)SymbiosisV2::AUMethodRender;
+        case kAudioUnitResetSelect:             return (AudioComponentMethod)SymbiosisV2::AUMethodReset;
+        case kMusicDeviceMIDIEventSelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodMIDIEvent;
+#if 0
+        case kComponentCanDoSelect:
+            fprintf(stderr, "can do called");
+            return NULL;
 #endif
         default:
             break;
@@ -5321,6 +5669,20 @@ AudioComponentMethod AUBaseLookup::Lookup (SInt16 selector)
 // 64-bit only:
 //@interface SymbiosisV2 : AUAudioUnit // AUAudioUnitV2Bridge
 //@end
+#if 0
+struct ComponentParameters {
+    UInt8               flags;                  /* call modifiers: sync/async, deferred, immed, etc */
+    UInt8               paramSize;              /* size in bytes of actual parameters passed to this call */
+    SInt16              what;                   /* routine selector, negative for Component management calls */
+#if __LP64__
+
+    UInt32              padding;
+#endif
+
+    long                params[1];              /* actual parameters for the indicated routine */
+};
+#endif
+
 
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEntry(::ComponentParameters* params
 		, ::Handle userDataHandle);
