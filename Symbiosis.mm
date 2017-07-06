@@ -1847,30 +1847,57 @@ void SymbiosisComponent::loadConfiguration() {
 void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
 	SY_ASSERT(name != 0);
 	::Handle nameHandle = 0;
+	CFStringRef nameStr = 0;
 	try {
-		::ComponentDescription desc;
-		nameHandle = ::NewHandleClear(255 + 1);
-		throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, nameHandle, 0
-				, 0));
-		int length = *reinterpret_cast<const unsigned char*>(*nameHandle);
-		memcpy(name, reinterpret_cast<const unsigned char*>(*nameHandle) + 1, length);
-		name[length] = 0;
-		::DisposeHandle(nameHandle);
-		nameHandle = 0;
+		AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
+		AudioComponentDescription audDesc = {};
+		OSStatus res = AudioComponentCopyName(ac, &nameStr);
+		if (res == noErr)
+		{
+			const char *bytes = CFStringGetCStringPtr(nameStr, kCFStringEncodingUTF8);
+			strncpy(name, bytes, 255);
+			name[255] = 0;
+			releaseCFRef((::CFTypeRef*)&nameStr);
+		}
+		else
+		{
+			::ComponentDescription desc;
+			nameHandle = ::NewHandleClear(255 + 1);
+			throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, nameHandle, 0
+					, 0));
+			int length = *reinterpret_cast<const unsigned char*>(*nameHandle);
+			memcpy(name, reinterpret_cast<const unsigned char*>(*nameHandle) + 1, length);
+			name[length] = 0;
+			::DisposeHandle(nameHandle);
+			nameHandle = 0;
+		}
 	}
 	catch (...) {
 		if (nameHandle != 0) {
 			::DisposeHandle(nameHandle);
 			nameHandle = 0;
 		}
+		releaseCFRef((::CFTypeRef*)&nameStr);
 		throw;
 	}
 }
 
 ::OSType SymbiosisComponent::getComponentType() const {
-	::ComponentDescription desc;
-	throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
-	return desc.componentType;
+	OSType componentType = 0;
+	AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
+	AudioComponentDescription audDesc = {};
+	OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
+	if (res == noErr)
+	{
+		componentType = audDesc.componentType;
+	}
+	else
+	{
+		::ComponentDescription desc;
+		throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
+		componentType = desc.componentType;
+	}
+	return componentType;
 }
 
 ::CFMutableDictionaryRef SymbiosisComponent::createAUPresetWithVSTData(size_t vstDataSize, const unsigned char vstData[]
@@ -1884,7 +1911,6 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
                                                  , &kCFTypeDictionaryValueCallBacks);
         SY_ASSERT(dictionary != 0);
         addIntToDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-#if 1
         AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
         AudioComponentDescription audDesc = {};
         OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
@@ -1902,17 +1928,6 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
             addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
             addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
         }
-#else
-        //::ComponentDescription desc;
-		//throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
-		dictionary = ::CFDictionaryCreateMutable(0, 0, &kCFTypeDictionaryKeyCallBacks
-				, &kCFTypeDictionaryValueCallBacks);
-		SY_ASSERT(dictionary != 0);
-		addIntToDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-		//addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
-		//addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
-		//addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
-#endif
 		::CFDictionarySetValue(dictionary, CFSTR(kAUPresetNameKey), presetName);
 		data = ::CFDataCreateMutable(0, vstDataSize);
 		SY_ASSERT(data != 0);
@@ -2797,7 +2812,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 
 		// --- Find ourselves and load configuration from info.plist
 
-		//getComponentName(gTraceIdentifierString);
+		getComponentName(gTraceIdentifierString);
 
 		char bundlePath[1023 + 1];
 		getPathForThisImage(bundlePath);																				// We need to find the path through this mechanism since we do not know of a bundle identifier to look for (every component should have a unique identifier).
@@ -2911,8 +2926,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 			default: SY_ASSERT(0);
 		}
 		
-        //::OSType type = getComponentType();
-        ::OSType type = kAudioUnitType_MusicDevice; // Temporarily hard-code until a proper replacement is implemented
+		::OSType type = getComponentType();
 		SY_TRACE4(SY_TRACE_MISC, "Component type: %c%c%c%c", static_cast<char>((type >> 24) & 0xFF)
 				, static_cast<char>((type >> 16) & 0xFF), static_cast<char>((type >> 8) & 0xFF)
 				, static_cast<char>((type >> 0) & 0xFF));
@@ -5125,101 +5139,27 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 /* --- Component entry functions --- */
 
 
-namespace ComponentBase
-{
-    OSStatus AP_Open(void *self, AudioUnit compInstance);
-    OSStatus AP_Close(void *self);
-}
+//==============================================================================
 
-/*! @class AudioComponentPlugInInstance */
-struct AudioComponentPlugInInstance {
+#pragma mark --
+#pragma mark AU v2 entry point and support
+
+class SymbiosisV2;
+
+struct AudioComponentPlugInInstanceContainer {
     AudioComponentPlugInInterface       mPlugInInterface;
-    void *                              (*mConstruct)(void *memory, AudioComponentInstance ci);
-    void                                (*mDestruct)(void *memory);
-    void *                              mPad[2];                // pad to a 16-byte boundary (in either 32 or 64 bit mode)
-    UInt32                              mInstanceStorage;       // the ACI implementation object is constructed into this memory
-                                                                // this member is just a placeholder. it is aligned to a 16byte boundary
+    OSType mMagic;
+    AudioUnit mCompInstance;
+    SymbiosisV2 *mImpl;
 };
-
-/*! @class APFactory */
-template <class APMethodLookup, class Implementor>
-class APFactory {
-public:
-    static void *Construct(void *memory, AudioComponentInstance compInstance)
-    {
-        NSLog(@"Constructing (presumed) SymbiosisV2 in memory %p for AudioComponentInstance %p", memory, compInstance);
-        return new(memory) Implementor(compInstance);
-    }
-
-    static void Destruct(void *memory)
-    {
-        ((Implementor *)memory)->~Implementor();
-    }
-
-    // This is the AudioComponentFactoryFunction. It returns an AudioComponentPlugInInstance.
-    // The actual implementation object is not created until Open().
-    static AudioComponentPlugInInterface *Factory(const AudioComponentDescription *inDesc)
-    {
-        AudioComponentPlugInInstance *acpi =
-                (AudioComponentPlugInInstance *)malloc( offsetof(AudioComponentPlugInInstance, mInstanceStorage) + sizeof(Implementor) );
-        acpi->mPlugInInterface.Open = ComponentBase::AP_Open;
-        acpi->mPlugInInterface.Close = ComponentBase::AP_Close;
-        acpi->mPlugInInterface.Lookup = APMethodLookup::Lookup;
-        acpi->mPlugInInterface.reserved = NULL;
-        acpi->mConstruct = Construct;
-        acpi->mDestruct = Destruct;
-        acpi->mPad[0] = NULL;
-        acpi->mPad[1] = NULL;
-        NSLog(@"***");
-        NSLog(@"*** Created AudioComponentPlugInInstance %p from description %p", acpi, inDesc);
-        NSLog(@"***");
-        return (AudioComponentPlugInInterface*)acpi;
-    }
-
-    // This is for runtime registration (not for plug-ins loaded from bundles).
-    static AudioComponent Register(UInt32 type, UInt32 subtype, UInt32 manuf, CFStringRef name, UInt32 vers, UInt32 flags=0)
-    {
-        AudioComponentDescription desc = { type, subtype, manuf, flags, 0 };
-        return AudioComponentRegister(&desc, name, vers, Factory);
-    }
-};
-
-struct AUBaseLookup {
-    static AudioComponentMethod Lookup (SInt16 selector);
-};
-template <class Implementor>
-class AUBaseFactory : public APFactory<AUBaseLookup, Implementor>
-{
-};
-
-
-#if 0
-struct AUMIDILookup {
-    static AudioComponentMethod Lookup (SInt16 selector);
-};
-template <class Implementor>
-class AUMIDIEffectFactory : public APFactory<AUMIDILookup, Implementor>
-{
-};
-#endif
-
-#define ACPI    ((AudioComponentPlugInInstance *)self)
-//#define ACImp   ((ComponentBase *)&ACPI->mInstanceStorage)
-#define ACImp   (&ACPI->mInstanceStorage)
-
 
 class SymbiosisV2 : public SymbiosisComponent
 {
 public:
     SymbiosisV2(AudioComponentInstance compInstance)
-     //: m_sc(0)
      : SymbiosisComponent(compInstance)
     {
         NSLog(@"SymbiosisV2 %p constructed for AudioComponentInstance %p", this, compInstance);
-#if 0
-        m_sc = new SymbiosisComponent(compInstance);
-        ::SetComponentInstanceStorage(compInstance, reinterpret_cast< ::Handle >(m_sc));
-#endif
     }
 
     ~SymbiosisV2()
@@ -5246,32 +5186,41 @@ public:
         }
     }
 
+static OSStatus AUMethodInitialize(void *self)
+{
+    OSStatus result = noErr;
+    //try {
+    //    AUI_LOCK
+        AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+        // @todo Check magic
+        acpic->mImpl->DoInitialize();
+    //}
+    //COMPONENT_CATCH
+    return result;
+}
+
+static OSStatus AUMethodUninitialize(void *self)
+{
+    OSStatus result = noErr;
+    //try {
+    //    AUI_LOCK
+        AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+        // @todo Check magic
+        acpic->mImpl->DoCleanup();
+    //}
+    //COMPONENT_CATCH
+    return result;
+}
+
+
     static OSStatus AUMethodGetPropertyInfo(void *self, AudioUnitPropertyID prop, AudioUnitScope scope, AudioUnitElement elem, UInt32 *outDataSize, Boolean *outWritable)
     {
         OSStatus result = noErr;
-#if 0
-        //try {
-            UInt32 dataSize = 0;        // 13517289 GetPropetyInfo was returning an uninitialized value when there is an error. This is a problem for auval.
-            Boolean writable = false;
-
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
-            NSLog(@"acpi: %p; sv2: %p", acpi, sv2);
-
-
-        //    AUI_LOCK
-//            result = AUI->DispatchGetPropertyInfo(prop, scope, elem, dataSize, writable);
-//            if (outDataSize != NULL)
-//                *outDataSize = dataSize;
-//            if (outWritable != NULL)
-//                *outWritable = writable;
-        //}
-        //COMPONENT_CATCH
-#else
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
-            NSLog(@"acpi: %p; sv2: %p", acpi, sv2);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
+            NSLog(@"acpic: %p; sv2: %p", acpic, sv2);
 
             if (outDataSize != 0) {
                 (*outDataSize) = 0;
@@ -5292,7 +5241,6 @@ public:
             }
         }
         SY_COMPONENT_CATCH("SymbiosisEntry");
-#endif
         return result;
     }
 
@@ -5300,8 +5248,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
             sv2->getProperty(ioDataSize, outData, inElement, inScope, inID);
         }
         SY_COMPONENT_CATCH("SymbiosisEntry");
@@ -5312,8 +5261,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
             sv2->setProperty(inDataSize, inData, inElement, inScope, inID);
         }
         SY_COMPONENT_CATCH("SymbiosisEntry");
@@ -5324,8 +5274,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             if (sv2->propertyListenersCount >= kMaxPropertyListeners) {
                 throw MacOSException(memFullErr);
@@ -5348,8 +5299,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             int i = 0;
             int j = 0;
@@ -5372,8 +5324,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             int i = 0;
             int j = 0;
@@ -5397,8 +5350,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             if (sv2->renderNotificationReceiversCount >= kMaxAURenderCallbacks) {
                 throw MacOSException(memFullErr);
@@ -5418,8 +5372,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             int i = 0;
             int j = 0;
@@ -5441,8 +5396,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             SY_TRACE2(SY_TRACE_FREQUENT, "AU Get parameter: %d, %d", static_cast<int>(param)
                       , static_cast<int>(scope));
@@ -5460,8 +5416,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             SY_TRACE4(SY_TRACE_FREQUENT, "AU Set parameter: %d, %d, %f, %d", static_cast<int>(param)
                       , static_cast<int>(scope), value, static_cast<int>(bufferOffset));
@@ -5478,8 +5435,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             for (int i = 0; i < static_cast<int>(numEvents); ++i) {
                 const AudioUnitParameterEvent& theEvent = (events)[i];
@@ -5503,8 +5461,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             sv2->render(ioActionFlags, inTimeStamp, inOutputBusNumber, inNumberFrames, ioData);
         }
@@ -5516,8 +5475,9 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             if (scope != kAudioUnitScope_Global) throw MacOSException(kAudioUnitErr_InvalidScope);
             if (sv2->vst->isResumed()) {
@@ -5536,153 +5496,112 @@ public:
     {
         OSStatus result = noErr;
         try {
-            AudioComponentPlugInInstance *acpi = (AudioComponentPlugInInstance *)self;
-            SymbiosisV2 *sv2 = ((SymbiosisV2 *)&acpi->mInstanceStorage);
+            AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+            // @todo Check magic
+            SymbiosisV2 *sv2 = acpic->mImpl;
 
             sv2->midiInput(inOffsetSampleFrame, inStatus, inData1, inData2);
         }
         SY_COMPONENT_CATCH("SymbiosisEntry");
         return result;
     }
-
-private:
-    //SymbiosisComponent* m_sc;
 };
 
-//AUDIOCOMPONENT_ENTRY(AUBaseFactory, SymbiosisV2)
+
+class SymbiosisV2PluginFactory {
+public:
+    static OSStatus AP_Open(void *self, AudioUnit compInstance)
+    {
+        NSLog(@"static AP_Open in SymbiosisV2PluginFactory: self (acpic)=%p", self);
+        OSStatus result = noErr;
+        AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+        // @todo Check magic
+        acpic->mCompInstance = compInstance;
+        NSLog(@"  Constructing (presumed) SymbiosisV2 in for AudioComponentInstance %p", compInstance);
+        acpic->mImpl = new SymbiosisV2(compInstance);
+        result = acpic->mImpl ? noErr : kAudio_MemFullError;
+        return result;
+    }
+
+    static OSStatus AP_Close(void *self)
+    {
+        OSStatus result = noErr;
+        AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
+        // @todo Check magic
+        NSLog(@"static AP_Close in SymbiosisV2PluginFactory: acpi=%p; memory=%p", acpic, acpic->mImpl);
+        delete acpic->mImpl;
+        free(self);
+        return result;
+    }
+
+    /*!
+     @typedef        AudioComponentMethod
+     @abstract       The broad prototype for an audio plugin method
+     @discussion     Every audio plugin will implement a collection of methods that match a particular
+     selector. For example, the AudioUnitInitialize API call is implemented by a
+     plugin implementing the kAudioUnitInitializeSelect selector. Any function implementing
+     an audio plugin selector conforms to the basic pattern where the first argument
+     is a pointer to the plugin instance structure, has 0 or more specific arguments,
+     and returns an OSStatus.
+     */
+    //typedef OSStatus (*AudioComponentMethod)(void *self,...);
+    static AudioComponentMethod Lookup (SInt16 selector)
+    {
+        switch (selector) {
+            case kAudioUnitInitializeSelect:        return (AudioComponentMethod)SymbiosisV2::AUMethodInitialize;
+            case kAudioUnitUninitializeSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodUninitialize;
+            case kAudioUnitGetPropertyInfoSelect:   return (AudioComponentMethod)SymbiosisV2::AUMethodGetPropertyInfo;
+            case kAudioUnitGetPropertySelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodGetProperty;
+            case kAudioUnitSetPropertySelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodSetProperty;
+            case kAudioUnitAddPropertyListenerSelect:return (AudioComponentMethod)SymbiosisV2::AUMethodAddPropertyListener;
+            case kAudioUnitRemovePropertyListenerSelect:
+                                                    return (AudioComponentMethod)SymbiosisV2::AUMethodRemovePropertyListener;
+            case kAudioUnitRemovePropertyListenerWithUserDataSelect:
+                                                    return (AudioComponentMethod)SymbiosisV2::AUMethodRemovePropertyListenerWithUserData;
+            case kAudioUnitAddRenderNotifySelect:   return (AudioComponentMethod)SymbiosisV2::AUMethodAddRenderNotify;
+            case kAudioUnitRemoveRenderNotifySelect:return (AudioComponentMethod)SymbiosisV2::AUMethodRemoveRenderNotify;
+            case kAudioUnitGetParameterSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodGetParameter;
+            case kAudioUnitSetParameterSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodSetParameter;
+            case kAudioUnitScheduleParametersSelect:return (AudioComponentMethod)SymbiosisV2::AUMethodScheduleParameters;
+            case kAudioUnitRenderSelect:            return (AudioComponentMethod)SymbiosisV2::AUMethodRender;
+            case kAudioUnitResetSelect:             return (AudioComponentMethod)SymbiosisV2::AUMethodReset;
+            case kMusicDeviceMIDIEventSelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodMIDIEvent;
+            default:
+                break;
+        }
+        return NULL;
+    }
+
+    // This is the AudioComponentFactoryFunction. It returns an AudioComponentPlugInInstanceContainer.
+    // The actual implementation object is not created until Open().
+    static AudioComponentPlugInInterface *Factory(const AudioComponentDescription *inDesc)
+    {
+        AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)malloc(sizeof (AudioComponentPlugInInstanceContainer));
+        acpic->mPlugInInterface.Open = AP_Open;
+        acpic->mPlugInInterface.Close = AP_Close;
+        acpic->mPlugInInterface.Lookup = Lookup;
+        acpic->mPlugInInterface.reserved = NULL;
+        acpic->mMagic = 'Acpi';
+        acpic->mCompInstance = NULL;
+        acpic->mImpl = NULL;
+        NSLog(@"***");
+        NSLog(@"*** Created AudioComponentPlugInInstanceContainer %p from description %p", acpic, inDesc);
+        NSLog(@"***");
+        return &acpic->mPlugInInterface;
+    }
+};
+
 extern "C" void * SymbiosisV2Factory(const AudioComponentDescription *inDesc)
 {
     fprintf(stderr, "AudioComponentDescription %p\n", inDesc);
-    return AUBaseFactory<SymbiosisV2>::Factory(inDesc);
-}
-
-OSStatus ComponentBase::AP_Open(void *self, AudioUnit compInstance)
-{
-    OSStatus result = noErr;
-//    try {
-//        ComponentInitLocker lock;
-
-//        ComponentBase::sNewInstanceType = ComponentBase::kAudioComponentInstance;
-//        ComponentBase *cb = (ComponentBase *)(*ACPI->mConstruct)(&ACPI->mInstanceStorage, compInstance);
-        (*ACPI->mConstruct)(&ACPI->mInstanceStorage, compInstance);
-//        cb->PostConstructor();  // allows base class to do additional initialization
-        // once the derived class is fully constructed
-        result = noErr;
-//    }
-//    COMPONENT_CATCH
-//    if (result)
-//        delete ACPI;
-    return result;
-}
-
-OSStatus ComponentBase::AP_Close(void *self)
-{
-    OSStatus result = noErr;
-//    try {
-        if (ACImp) {
-            //ACImp->PreDestructor();
-            (*ACPI->mDestruct)(&ACPI->mInstanceStorage);
-            free(self);
-        }
-//    }
-//    COMPONENT_CATCH
-    return result;
-}
-
-//#define AUI ((AUBase *)&ACPI->mInstanceStorage)
-#define AUI ((SymbiosisV2 *)&ACPI->mInstanceStorage)
-
-
-static OSStatus AUMethodInitialize(void *self)
-{
-    OSStatus result = noErr;
-    //try {
-    //    AUI_LOCK
-        result = ((SymbiosisV2 *)&ACPI->mInstanceStorage)->DoInitialize();
-    //}
-    //COMPONENT_CATCH
-    return result;
-}
-
-static OSStatus AUMethodUninitialize(void *self)
-{
-    OSStatus result = noErr;
-    //try {
-    //    AUI_LOCK
-        ((SymbiosisV2 *)&ACPI->mInstanceStorage)->DoCleanup();
-    //}
-    //COMPONENT_CATCH
-    return result;
+    return SymbiosisV2PluginFactory::Factory(inDesc);
 }
 
 
-/*!
- @typedef        AudioComponentMethod
- @abstract       The broad prototype for an audio plugin method
- @discussion     Every audio plugin will implement a collection of methods that match a particular
- selector. For example, the AudioUnitInitialize API call is implemented by a
- plugin implementing the kAudioUnitInitializeSelect selector. Any function implementing
- an audio plugin selector conforms to the basic pattern where the first argument
- is a pointer to the plugin instance structure, has 0 or more specific arguments,
- and returns an OSStatus.
- */
-//typedef OSStatus (*AudioComponentMethod)(void *self,...);
+//==============================================================================
 
-
-AudioComponentMethod AUBaseLookup::Lookup (SInt16 selector)
-{
-    switch (selector) {
-        case kAudioUnitInitializeSelect:        return (AudioComponentMethod)AUMethodInitialize;
-        case kAudioUnitUninitializeSelect:      return (AudioComponentMethod)AUMethodUninitialize;
-        case kAudioUnitGetPropertyInfoSelect:   return (AudioComponentMethod)SymbiosisV2::AUMethodGetPropertyInfo;
-        case kAudioUnitGetPropertySelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodGetProperty;
-        case kAudioUnitSetPropertySelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodSetProperty;
-        case kAudioUnitAddPropertyListenerSelect:return (AudioComponentMethod)SymbiosisV2::AUMethodAddPropertyListener;
-        case kAudioUnitRemovePropertyListenerSelect:
-                                                return (AudioComponentMethod)SymbiosisV2::AUMethodRemovePropertyListener;
-        case kAudioUnitRemovePropertyListenerWithUserDataSelect:
-                                                return (AudioComponentMethod)SymbiosisV2::AUMethodRemovePropertyListenerWithUserData;
-        case kAudioUnitAddRenderNotifySelect:   return (AudioComponentMethod)SymbiosisV2::AUMethodAddRenderNotify;
-        case kAudioUnitRemoveRenderNotifySelect:return (AudioComponentMethod)SymbiosisV2::AUMethodRemoveRenderNotify;
-        case kAudioUnitGetParameterSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodGetParameter;
-        case kAudioUnitSetParameterSelect:      return (AudioComponentMethod)SymbiosisV2::AUMethodSetParameter;
-        case kAudioUnitScheduleParametersSelect:return (AudioComponentMethod)SymbiosisV2::AUMethodScheduleParameters;
-        case kAudioUnitRenderSelect:            return (AudioComponentMethod)SymbiosisV2::AUMethodRender;
-        case kAudioUnitResetSelect:             return (AudioComponentMethod)SymbiosisV2::AUMethodReset;
-        case kMusicDeviceMIDIEventSelect:       return (AudioComponentMethod)SymbiosisV2::AUMethodMIDIEvent;
-#if 0
-        case kComponentCanDoSelect:
-            fprintf(stderr, "can do called");
-            return NULL;
-#endif
-        default:
-            break;
-    }
-    return NULL;
-}
-
-
-
-
-
-
-// 64-bit only:
-//@interface SymbiosisV2 : AUAudioUnit // AUAudioUnitV2Bridge
-//@end
-#if 0
-struct ComponentParameters {
-    UInt8               flags;                  /* call modifiers: sync/async, deferred, immed, etc */
-    UInt8               paramSize;              /* size in bytes of actual parameters passed to this call */
-    SInt16              what;                   /* routine selector, negative for Component management calls */
-#if __LP64__
-
-    UInt32              padding;
-#endif
-
-    long                params[1];              /* actual parameters for the indicated routine */
-};
-#endif
-
+#pragma mark --
+#pragma mark AU v1 component entry point
 
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEntry(::ComponentParameters* params
 		, ::Handle userDataHandle);
