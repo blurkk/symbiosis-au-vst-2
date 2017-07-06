@@ -254,7 +254,7 @@ static const char kDefaultFactoryPresetFileNameCR[kDefaultFactoryPresetFileNameC
 	static const char* kDefaultFactoryPresetName = "Default";
 #endif
 static const char* kInitialPresetName = "Untitled";
-static char gTraceIdentifierString[255 + 1] = "Symbiosis";
+static char gTraceIdentifierString[255 + 1] = "";
 static const int kSymbiosisThngResourceId = 10000;
 static const int kSymbiosisAUViewThngResourceId = 10001;
 #if defined(__POWERPC__)
@@ -799,7 +799,7 @@ class VSTPlugIn {
 	SymbiosisComponent is our main class that manages the translation of all calls between AU and VST.
 */
 class SymbiosisComponent : public VSTHost {
-	public:		SymbiosisComponent(::AudioUnit auComponentInstance);
+public:		SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioComponentDescription *description);
 	public:		virtual void getVendor(VSTPlugIn& plugIn, char vendor[63 + 1]);
 	public:		virtual void getProduct(VSTPlugIn& plugIn, char product[63 + 1]);
 	public:		virtual VstInt32 getVersion(VSTPlugIn& plugIn);
@@ -829,8 +829,6 @@ class SymbiosisComponent : public VSTHost {
 
 	protected:	void uninit();
 	protected:	void loadConfiguration();
-	protected:	void getComponentName(char name[255 + 1]) const;
-	protected:	::OSType getComponentType() const;
 	protected:	::CFMutableDictionaryRef createAUPresetWithVSTData(size_t vstDataSize, const unsigned char vstData[]
 						, ::CFStringRef presetName);
 	protected:	::CFMutableDictionaryRef createAUPresetOfCurrentBank(::CFStringRef nameRef);
@@ -891,6 +889,7 @@ class SymbiosisComponent : public VSTHost {
 				
 	protected:	static ::EventLoopTimerUPP idleTimerUPP;
 	protected:	::AudioUnit auComponentInstance;
+	protected:	const ::AudioComponentDescription *componentDescription;
 	protected:	::CFBundleRef auBundleRef;
 	protected:	::FSRef resourcesFSRef;
 	protected:	::AudioStreamBasicDescription streamFormat;																// Note: only possible difference between input and output stream formats for all buses is the number of channels.
@@ -1844,62 +1843,6 @@ void SymbiosisComponent::loadConfiguration() {
 			(getValueOfKeyInDictionary(syConfigDictionaryRef, CFSTR("CanDoMonoIO"), ::CFBooleanGetTypeID())));
 }
 
-void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
-	SY_ASSERT(name != 0);
-	::Handle nameHandle = 0;
-	CFStringRef nameStr = 0;
-	try {
-		AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
-		AudioComponentDescription audDesc = {};
-		OSStatus res = AudioComponentCopyName(ac, &nameStr);
-		if (res == noErr)
-		{
-			const char *bytes = CFStringGetCStringPtr(nameStr, kCFStringEncodingUTF8);
-			strncpy(name, bytes, 255);
-			name[255] = 0;
-			releaseCFRef((::CFTypeRef*)&nameStr);
-		}
-		else
-		{
-			::ComponentDescription desc;
-			nameHandle = ::NewHandleClear(255 + 1);
-			throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, nameHandle, 0
-					, 0));
-			int length = *reinterpret_cast<const unsigned char*>(*nameHandle);
-			memcpy(name, reinterpret_cast<const unsigned char*>(*nameHandle) + 1, length);
-			name[length] = 0;
-			::DisposeHandle(nameHandle);
-			nameHandle = 0;
-		}
-	}
-	catch (...) {
-		if (nameHandle != 0) {
-			::DisposeHandle(nameHandle);
-			nameHandle = 0;
-		}
-		releaseCFRef((::CFTypeRef*)&nameStr);
-		throw;
-	}
-}
-
-::OSType SymbiosisComponent::getComponentType() const {
-	OSType componentType = 0;
-	AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
-	AudioComponentDescription audDesc = {};
-	OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
-	if (res == noErr)
-	{
-		componentType = audDesc.componentType;
-	}
-	else
-	{
-		::ComponentDescription desc;
-		throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
-		componentType = desc.componentType;
-	}
-	return componentType;
-}
-
 ::CFMutableDictionaryRef SymbiosisComponent::createAUPresetWithVSTData(size_t vstDataSize, const unsigned char vstData[]
 		, ::CFStringRef presetName) {
 	SY_ASSERT(vstData != 0);
@@ -1911,23 +1854,9 @@ void SymbiosisComponent::getComponentName(char name[255 + 1]) const {
                                                  , &kCFTypeDictionaryValueCallBacks);
         SY_ASSERT(dictionary != 0);
         addIntToDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-        AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
-        AudioComponentDescription audDesc = {};
-        OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
-        if (res == noErr)
-        {
-            addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), audDesc.componentType);
-            addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), audDesc.componentSubType);
-            addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), audDesc.componentManufacturer);
-        }
-        else
-        {
-            ::ComponentDescription desc;
-            throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
-            addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
-            addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
-            addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
-        }
+        addIntToDictionary(dictionary, CFSTR(kAUPresetTypeKey), componentDescription->componentType);
+        addIntToDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), componentDescription->componentSubType);
+        addIntToDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), componentDescription->componentManufacturer);
 		::CFDictionarySetValue(dictionary, CFSTR(kAUPresetNameKey), presetName);
 		data = ::CFDataCreateMutable(0, vstDataSize);
 		SY_ASSERT(data != 0);
@@ -2741,8 +2670,8 @@ void SymbiosisComponent::tryToIdentifyHostApplication() {
 	}
 }
 
-SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
-		: auComponentInstance(auComponentInstance), auBundleRef(0), maxFramesPerSlice(kDefaultMaxFramesPerSlice)
+SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioComponentDescription *description)
+		: auComponentInstance(auComponentInstance), componentDescription(description), auBundleRef(0), maxFramesPerSlice(kDefaultMaxFramesPerSlice)
 		, renderNotificationReceiversCount(0), lastRenderSampleTime(-12345678), silentOutput(false)
 		, propertyListenersCount(0), factoryPresetsArray(0), parameterCount(0), parameterInfos(0)
 		, parameterValueStrings(0), presetIsFXB(false), autoConvertPresets(false), updateNameOnLoad(false)
@@ -2811,8 +2740,6 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 		}
 
 		// --- Find ourselves and load configuration from info.plist
-
-		getComponentName(gTraceIdentifierString);
 
 		char bundlePath[1023 + 1];
 		getPathForThisImage(bundlePath);																				// We need to find the path through this mechanism since we do not know of a bundle identifier to look for (every component should have a unique identifier).
@@ -2926,7 +2853,7 @@ SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance)
 			default: SY_ASSERT(0);
 		}
 		
-		::OSType type = getComponentType();
+        ::OSType type = componentDescription->componentType;
 		SY_TRACE4(SY_TRACE_MISC, "Component type: %c%c%c%c", static_cast<char>((type >> 24) & 0xFF)
 				, static_cast<char>((type >> 16) & 0xFF), static_cast<char>((type >> 8) & 0xFF)
 				, static_cast<char>((type >> 0) & 0xFF));
@@ -3977,7 +3904,6 @@ static NSView* factoryUIViewForAudioUnit(id obj, SEL sel, ::AudioUnit au, NSSize
 	NSLog(@"+++factoryUIViewForAudioUnit(%@, %@, au=%p, %@)", obj, NSStringFromSelector(sel), au, NSStringFromSize(size));
 	AudioComponent ac = AudioComponentInstanceGetComponent(au);
 	NSLog(@" -> AudioComponent: %p", ac);
-//	SymbiosisComponent* symbiosisComponent = (SymbiosisComponent*)(::GetComponentInstanceStorage(au));
 	SymbiosisComponent* symbiosisComponent = SymbiosisComponent::s_instanceMap[au];
 	NSLog(@" -> SymbiosisComponent: %p", symbiosisComponent);
 	SY_ASSERT(symbiosisComponent != 0);
@@ -4416,25 +4342,10 @@ void SymbiosisComponent::setProperty(::UInt32 inDataSize, const void* inData, ::
 					throw FormatException("Invalid AUPreset format");
 				}
 				
-				AudioComponent ac = AudioComponentInstanceGetComponent(auComponentInstance);
-				AudioComponentDescription audDesc = {};
-				OSStatus res =  AudioComponentGetDescription(ac, &audDesc);
-				if (res == noErr)
-				{
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetTypeKey), audDesc.componentType);
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), audDesc.componentSubType);
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), audDesc.componentManufacturer);
-				}
-				else
-				{
-					::ComponentDescription desc;
-					throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0));
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetTypeKey), desc.componentType);
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), desc.componentSubType);
-					checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), desc.componentManufacturer);
-				}
+                checkIntInDictionary(dictionary, CFSTR(kAUPresetVersionKey), 1);
+                checkIntInDictionary(dictionary, CFSTR(kAUPresetTypeKey), componentDescription->componentType);
+                checkIntInDictionary(dictionary, CFSTR(kAUPresetSubtypeKey), componentDescription->componentSubType);
+                checkIntInDictionary(dictionary, CFSTR(kAUPresetManufacturerKey), componentDescription->componentManufacturer);
 
 				{
 					::SInt32 useProgramNumber = 0;
@@ -5147,16 +5058,17 @@ void SymbiosisComponent::setViewEventListener(::AudioUnitCarbonViewEventListener
 class SymbiosisV2;
 
 struct AudioComponentPlugInInstanceContainer {
-    AudioComponentPlugInInterface       mPlugInInterface;
+    AudioComponentPlugInInterface mPlugInInterface;
     OSType mMagic;
+    const AudioComponentDescription *mDesc;
     SymbiosisV2 *mImpl;
 };
 
 class SymbiosisV2 : public SymbiosisComponent
 {
 public:
-    SymbiosisV2(AudioComponentInstance compInstance)
-     : SymbiosisComponent(compInstance)
+    SymbiosisV2(AudioComponentInstance compInstance, const AudioComponentDescription *desc)
+     : SymbiosisComponent(compInstance, desc)
     {
         NSLog(@"SymbiosisV2 %p constructed for AudioComponentInstance %p", this, compInstance);
     }
@@ -5513,10 +5425,14 @@ public:
     {
         NSLog(@"static AP_Open in SymbiosisV2PluginFactory: self (acpic)=%p", self);
         OSStatus result = noErr;
+        if (*gTraceIdentifierString == 0)
+        {
+            getComponentName(compInstance, gTraceIdentifierString);
+        }
         AudioComponentPlugInInstanceContainer *acpic = (AudioComponentPlugInInstanceContainer *)self;
         // @todo Check magic
         NSLog(@"  Constructing (presumed) SymbiosisV2 in for AudioComponentInstance %p", compInstance);
-        acpic->mImpl = new SymbiosisV2(compInstance);
+        acpic->mImpl = new SymbiosisV2(compInstance, acpic->mDesc);
         result = acpic->mImpl ? noErr : kAudio_MemFullError;
         return result;
     }
@@ -5580,11 +5496,32 @@ public:
         acpic->mPlugInInterface.Lookup = Lookup;
         acpic->mPlugInInterface.reserved = NULL;
         acpic->mMagic = 'Acpi';
+        acpic->mDesc = inDesc;
         acpic->mImpl = NULL;
         NSLog(@"***");
         NSLog(@"*** Created AudioComponentPlugInInstanceContainer %p from description %p", acpic, inDesc);
         NSLog(@"***");
         return &acpic->mPlugInInterface;
+    }
+
+    static void getComponentName(AudioUnit compInstance, char name[255 + 1]) {
+        SY_ASSERT(name != 0);
+        CFStringRef nameStr = 0;
+        try {
+            AudioComponent ac = AudioComponentInstanceGetComponent(compInstance);
+            OSStatus res = AudioComponentCopyName(ac, &nameStr);
+            if (res == noErr)
+            {
+                const char *bytes = CFStringGetCStringPtr(nameStr, kCFStringEncodingUTF8);
+                strncpy(name, bytes, 255);
+                name[255] = 0;
+                releaseCFRef((::CFTypeRef*)&nameStr);
+            }
+        }
+        catch (...) {
+            releaseCFRef((::CFTypeRef*)&nameStr);
+            throw;
+        }
     }
 };
 
@@ -5602,6 +5539,11 @@ extern "C" void * SymbiosisV2Factory(const AudioComponentDescription *inDesc)
 
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEntry(::ComponentParameters* params
 		, ::Handle userDataHandle);
+
+namespace SymbiosisV1ComponentUtils {
+    void getComponentName(AudioUnit compInstance, char name[255 + 1]);
+};
+
 
 extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEntry(::ComponentParameters* params
 		, ::Handle userDataHandle) {
@@ -5640,7 +5582,24 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 			case kComponentOpenSelect: {
 				SY_TRACE(SY_TRACE_AU, "AU kComponentOpenSelect");
 				::AudioUnit auComponentInstance = reinterpret_cast< ::ComponentInstance >(params->params[0]);
-				SymbiosisComponent* symbiosisComponent = new SymbiosisComponent(auComponentInstance);
+                if (*gTraceIdentifierString == 0)
+                {
+                    SymbiosisV1ComponentUtils::getComponentName(auComponentInstance, gTraceIdentifierString);
+                }
+                static AudioComponentDescription sComponentDescription = {};
+                if (sComponentDescription.componentType == 0)
+                {
+                    ::ComponentDescription desc;
+                    OSStatus res = ::GetComponentInfo(reinterpret_cast< ::Component >(auComponentInstance), &desc, 0, 0, 0);
+                    if (res == noErr)
+                    {
+                        sComponentDescription.componentType = desc.componentType;
+                        sComponentDescription.componentSubType = desc.componentSubType;
+                        sComponentDescription.componentManufacturer = desc.componentManufacturer;
+                    }
+                }
+                fprintf(stderr, "Creating Symbiosis via AU v1 entry point\n");
+                SymbiosisComponent* symbiosisComponent = new SymbiosisComponent(auComponentInstance, &sComponentDescription);
 				::SetComponentInstanceStorage(auComponentInstance, reinterpret_cast< ::Handle >(symbiosisComponent));
 				break;
 			}
@@ -5685,6 +5644,32 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 	SY_COMPONENT_CATCH("SymbiosisEntry");
 	return noErr;
 }
+
+
+namespace SymbiosisV1ComponentUtils {
+    void getComponentName(AudioUnit compInstance, char name[255 + 1]) {
+        SY_ASSERT(name != 0);
+        ::Handle nameHandle = 0;
+        try {
+            ::ComponentDescription desc;
+            nameHandle = ::NewHandleClear(255 + 1);
+            throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(compInstance), &desc, nameHandle, 0, 0));
+            int length = *reinterpret_cast<const unsigned char*>(*nameHandle);
+            memcpy(name, reinterpret_cast<const unsigned char*>(*nameHandle) + 1, length);
+            name[length] = 0;
+            ::DisposeHandle(nameHandle);
+            nameHandle = 0;
+        }
+        catch (...) {
+            if (nameHandle != 0) {
+                ::DisposeHandle(nameHandle);
+                nameHandle = 0;
+            }
+            throw;
+        }
+    }
+};
+
 
 #if (SY_INCLUDE_GUI_SUPPORT)
 
