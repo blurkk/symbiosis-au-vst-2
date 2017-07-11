@@ -48,6 +48,7 @@
 #include <exception>
 #include <new>
 #include <map>
+#include <string>
 
 
 //------------------------------------------------------------------------------
@@ -655,6 +656,11 @@ static void releaseBundleRef(::CFBundleRef& bundleRef) {
 	}
 }
 
+static void setGlobalTraceIdentifier(const char *name) {
+	strncpy(gTraceIdentifierString, name, gTraceIdentifierStringLen - 1);
+	gTraceIdentifierString[gTraceIdentifierStringLen - 1] = 0;
+}
+
 /* --- SymbiosisVstEvents --- */
 
 #if TARGET_API_MAC_CARBON && defined(__LP64__)
@@ -799,7 +805,7 @@ class VSTPlugIn {
 	SymbiosisComponent is our main class that manages the translation of all calls between AU and VST.
 */
 class SymbiosisComponent : public VSTHost {
-public:		SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioComponentDescription *description);
+	public:		SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioComponentDescription *description, const std::string &componentName);
 	public:		virtual void getVendor(VSTPlugIn& plugIn, char vendor[63 + 1]);
 	public:		virtual void getProduct(VSTPlugIn& plugIn, char product[63 + 1]);
 	public:		virtual VstInt32 getVersion(VSTPlugIn& plugIn);
@@ -923,6 +929,7 @@ public:		SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioCompon
 	protected:	static ::EventLoopTimerUPP idleTimerUPP;
 	protected:	::AudioUnit auComponentInstance;
 	protected:	const ::AudioComponentDescription *componentDescription;
+	protected:  std::string componentName;
 	protected:	::CFBundleRef auBundleRef;
 	protected:	::FSRef resourcesFSRef;
 	protected:	::AudioStreamBasicDescription streamFormat;																// Note: only possible difference between input and output stream formats for all buses is the number of channels.
@@ -2347,10 +2354,8 @@ void SymbiosisComponent::loadOrCreateFactoryPresets() {
 }
 
 void SymbiosisComponent::convertVSTPresets() {
-	char name[255 + 1];
-	getComponentName(name);
 	try {
-		convertVSTPresetsInDomain(kUserDomain, name);
+		convertVSTPresetsInDomain(kUserDomain, componentName.c_str());
 	}
 	catch (const std::exception& x) {
 		SY_TRACE1(SY_TRACE_EXCEPTIONS, "Failed converting presets in user domain, caught exception: %s", x.what());
@@ -2361,7 +2366,7 @@ void SymbiosisComponent::convertVSTPresets() {
 		// No throw!
 	}
 	try {
-		convertVSTPresetsInDomain(kLocalDomain, name);
+		convertVSTPresetsInDomain(kLocalDomain, componentName.c_str());
 	}
 	catch (const std::exception& x) {
 		SY_TRACE1(SY_TRACE_EXCEPTIONS, "Failed converting presets in local domain, caught exception: %s", x.what());
@@ -2703,8 +2708,9 @@ void SymbiosisComponent::tryToIdentifyHostApplication() {
 	}
 }
 
-SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioComponentDescription *description)
-		: auComponentInstance(auComponentInstance), componentDescription(description), auBundleRef(0), maxFramesPerSlice(kDefaultMaxFramesPerSlice)
+SymbiosisComponent::SymbiosisComponent(::AudioUnit auComponentInstance, const ::AudioComponentDescription *description, const std::string &componentName)
+		: auComponentInstance(auComponentInstance), componentDescription(description), componentName(componentName)
+		, auBundleRef(0), maxFramesPerSlice(kDefaultMaxFramesPerSlice)
 		, renderNotificationReceiversCount(0), lastRenderSampleTime(-12345678), silentOutput(false)
 		, propertyListenersCount(0), factoryPresetsArray(0), parameterCount(0), parameterInfos(0)
 		, parameterValueStrings(0), presetIsFXB(false), autoConvertPresets(false), updateNameOnLoad(false)
@@ -5015,10 +5021,11 @@ struct AudioComponentPlugInInstanceContainer {
 class SymbiosisAUV2 : public SymbiosisComponent
 {
 public:
-    SymbiosisAUV2(AudioComponentInstance compInstance, const AudioComponentDescription *desc)
-     : SymbiosisComponent(compInstance, desc)
+    SymbiosisAUV2(AudioComponentInstance compInstance, const AudioComponentDescription *desc, const std::string &componentName)
+     : SymbiosisComponent(compInstance, desc, componentName)
     {
-        SY_TRACE2(SY_TRACE_AU, "SymbiosisAUV2 %p constructed for AudioComponentInstance %p", this, compInstance);
+        SY_TRACE3(SY_TRACE_AU, "SymbiosisAUV2 %p constructed for %s AudioComponentInstance %p",
+                  this, componentName.c_str(), compInstance);
     }
 
     ~SymbiosisAUV2()
@@ -5222,14 +5229,15 @@ public:
     {
         SY_TRACE1(SY_TRACE_AU, "Opening component instance %p via AU v2 factory", compInstance);
         OSStatus result = kAudioUnitErr_Uninitialized;
+        std::string componentName = getComponentName(compInstance);
         if (*gTraceIdentifierString == 0)
         {
-            getComponentName(compInstance, gTraceIdentifierString);
+            setGlobalTraceIdentifier(componentName.c_str());
         }
         AudioComponentPlugInInstanceContainer *acpic = static_cast<AudioComponentPlugInInstanceContainer *>(self);
         if (acpic->mMagic == 'Acpi')
         {
-            acpic->mImpl = new SymbiosisAUV2(compInstance, acpic->mDesc);
+            acpic->mImpl = new SymbiosisAUV2(compInstance, acpic->mDesc, componentName);
             result = acpic->mImpl ? noErr : kAudio_MemFullError;
         }
         return result;
@@ -5302,17 +5310,28 @@ public:
         return &acpic->mPlugInInterface;
     }
 
-    static void getComponentName(AudioUnit compInstance, char name[gTraceIdentifierStringLen]) {
-        SY_ASSERT(name != 0);
+    static std::string getComponentName(AudioUnit compInstance) {
         CFStringRef nameStr = 0;
+        std::string name;
         try {
             AudioComponent ac = AudioComponentInstanceGetComponent(compInstance);
             OSStatus res = AudioComponentCopyName(ac, &nameStr);
             if (res == noErr)
             {
                 const char *bytes = CFStringGetCStringPtr(nameStr, kCFStringEncodingUTF8);
-                strncpy(name, bytes, gTraceIdentifierStringLen - 1);
-                name[gTraceIdentifierStringLen - 1] = 0;
+                if (!bytes)
+                {
+                    // CFStringGetCStringPtr() is documented to be an optimisation function that may very well return
+                    // a null pointer. It appears that it does so for 32-bit Audio Units. Although I have found no
+                    // documentation, possibly the raw Core Foundation string containing the name is stored using the
+                    // MacRoman encoding rather than UTF-8 and CFStringGetCStringPtr() as an optimisation won't convert
+                    // it. NSString will do the conversion, however, so use that when the optimisation fails.
+                    bytes = [(NSString *)nameStr cStringUsingEncoding:NSUTF8StringEncoding];
+                }
+                if (bytes)
+                {
+                    name = bytes;
+                }
                 releaseCFRef((::CFTypeRef*)&nameStr);
             }
         }
@@ -5320,6 +5339,7 @@ public:
             releaseCFRef((::CFTypeRef*)&nameStr);
             throw;
         }
+        return name;
     }
 };
 
@@ -5354,16 +5374,17 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 		, ::Handle userDataHandle);
 
 namespace SymbiosisAUV1ComponentUtils {
-    void getComponentName(AudioUnit compInstance, char name[255 + 1]);
+    std::string getComponentName(AudioUnit compInstance);
 };
 
 class SymbiosisAUV1 : public SymbiosisComponent
 {
 public:
-    SymbiosisAUV1(AudioUnit compInstance, const AudioComponentDescription *desc)
-     : SymbiosisComponent(compInstance, desc)
+    SymbiosisAUV1(AudioUnit compInstance, const AudioComponentDescription *desc, std::string &componentName)
+     : SymbiosisComponent(compInstance, desc, componentName)
     {
-        SY_TRACE2(SY_TRACE_AU, "SymbiosisAUV1 %p constructed for AudioUnit instance %p", this, compInstance);
+        SY_TRACE3(SY_TRACE_AU, "SymbiosisAUV1 %p constructed for %s AudioUnit instance %p",
+                  this, componentName.c_str(), compInstance);
     }
 
     ~SymbiosisAUV1()
@@ -5563,9 +5584,10 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 			case kComponentOpenSelect: {
 				SY_TRACE(SY_TRACE_AU, "AU kComponentOpenSelect");
 				::AudioUnit auComponentInstance = reinterpret_cast< ::ComponentInstance >(params->params[0]);
+                std::string componentName = SymbiosisAUV1ComponentUtils::getComponentName(auComponentInstance);
                 if (*gTraceIdentifierString == 0)
                 {
-                    SymbiosisAUV1ComponentUtils::getComponentName(auComponentInstance, gTraceIdentifierString);
+                    setGlobalTraceIdentifier(componentName.c_str());
                 }
                 static AudioComponentDescription sComponentDescription = {};
                 if (sComponentDescription.componentType == 0)
@@ -5579,7 +5601,8 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
                         sComponentDescription.componentManufacturer = desc.componentManufacturer;
                     }
                 }
-                SY_TRACE1(SY_TRACE_AU, "Opening component instance %p via AU v1 entry point:", auComponentInstance);
+                SY_TRACE2(SY_TRACE_AU, "Opening %s component instance %p via AU v1 entry point:",
+                          componentName.c_str(), auComponentInstance);
                 SY_TRACE4(SY_TRACE_AU, "  component type: %c%c%c%c",
                           static_cast<char>((sComponentDescription.componentType >> 24) & 0xFF),
                           static_cast<char>((sComponentDescription.componentType >> 16) & 0xFF),
@@ -5595,7 +5618,7 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
                           static_cast<char>((sComponentDescription.componentManufacturer >> 16) & 0xFF),
                           static_cast<char>((sComponentDescription.componentManufacturer >> 8) & 0xFF),
                           static_cast<char>((sComponentDescription.componentManufacturer >> 0) & 0xFF));
-                SymbiosisAUV1* symbiosisComponent = new SymbiosisAUV1(auComponentInstance, &sComponentDescription);
+                SymbiosisAUV1* symbiosisComponent = new SymbiosisAUV1(auComponentInstance, &sComponentDescription, componentName);
 				::SetComponentInstanceStorage(auComponentInstance, reinterpret_cast< ::Handle >(symbiosisComponent));
 				break;
 			}
@@ -5643,16 +5666,15 @@ extern "C" __attribute__((visibility("default"))) ::ComponentResult SymbiosisEnt
 
 
 namespace SymbiosisAUV1ComponentUtils {
-    void getComponentName(AudioUnit compInstance, char name[255 + 1]) {
-        SY_ASSERT(name != 0);
+    std::string getComponentName(AudioUnit compInstance) {
         ::Handle nameHandle = 0;
+        std::string name;
         try {
             ::ComponentDescription desc;
             nameHandle = ::NewHandleClear(255 + 1);
             throwOnOSError(::GetComponentInfo(reinterpret_cast< ::Component >(compInstance), &desc, nameHandle, 0, 0));
             int length = *reinterpret_cast<const unsigned char*>(*nameHandle);
-            memcpy(name, reinterpret_cast<const unsigned char*>(*nameHandle) + 1, length);
-            name[length] = 0;
+            name = reinterpret_cast<const char*>(*nameHandle) + 1;
             ::DisposeHandle(nameHandle);
             nameHandle = 0;
         }
@@ -5663,6 +5685,7 @@ namespace SymbiosisAUV1ComponentUtils {
             }
             throw;
         }
+        return name;
     }
 };
 
